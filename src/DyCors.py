@@ -10,7 +10,7 @@ DEFAULT_OPTIONS = {"Nmax":50, "nrestart":6, "sigma":0.2, "Ts":3, "Tf":5, "solver
         "l":np.sqrt(0.5), "nu":5/2, "warnings":True}
 METHODS = ['RBF-Expo', 'RBF-Matern', 'GRBF']
 
-def minimize(fun, x0, method='RBF', jac=None, bounds=None, tol=None, options=None, verbose=True):
+def minimize(fun, x0, method='RBF-Expo', jac=None, bounds=None, tol=None, options=None, verbose=True):
     # check options are ok
     if not callable(fun):
         raise TypeError('fun is not callable')
