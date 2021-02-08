@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# from src import minimize
 from DyCors import minimize
 
 def Rastrigin(x):

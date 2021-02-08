@@ -347,7 +347,6 @@ class DyCorsMinimize:
         while (xnew.tolist() in self.x.tolist()):
             iP  +=1
             if iP>=iB.shape[0]:
-                print("break")
                 break
             xnew = self.yk[iB[iP],:]
         self.xnew = xnew
