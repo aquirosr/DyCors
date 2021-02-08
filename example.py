@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src import minimize
+# from src import minimize
+from DyCors import minimize
 
 def Rastrigin(x):
     f = 10*len(x) + sum(x*x - 10*np.cos(2*np.pi*x))
