@@ -1,6 +1,6 @@
 import numpy as np
 
-def LatinHyperCube(d,m):
+def LatinHyperCube(m,d):
     # Latin hypercube sampling
     #   d: dimension
     #   m: number of sample points
@@ -17,7 +17,7 @@ def LatinHyperCube(d,m):
         k      = m//2
     else:
         k      = (m-1)//2
-        P[k,:] = (k+1)*np.ones((1,d))
+        P[k,:] = (k)*np.ones((1,d))
 
     for j in range(1,d):
         P[0:k,j] = np.random.permutation(np.arange(k))

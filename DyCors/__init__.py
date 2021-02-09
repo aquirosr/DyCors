@@ -1,2 +1,2 @@
-from .core import minimize
+from .core import minimize, DyCorsMinimize
 from .SymLatinHypercube import LatinHyperCube

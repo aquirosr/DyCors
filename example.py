@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from DyCors import minimize
+from DyCors import minimize, LatinHyperCube
 
 def Rastrigin(x):
     f = 10*len(x) + sum(x*x - 10*np.cos(2*np.pi*x))
@@ -14,8 +14,12 @@ def df_Rastrigin(x):
 # parameters of the problem
 m,d       = 12,2    # size of initial population, dimensionality
 bounds    = np.array([[-2,2],]*d)  # bounds
+
 x0 = np.outer(m*[1],bounds[:,0]) + np.outer(m*[1],bounds[:,1]-bounds[:,0])\
-          *np.random.rand(m,d) # random
+          *np.random.rand(m,d)
+
+# x0 = np.outer(m*[1],bounds[:,0]) + np.outer(m*[1],bounds[:,1]-bounds[:,0])\
+#           *LatinHyperCube(m,d)
 
 Nmax      = 50 # Maximum number of function evaluations per restart
 nrestart  = 6 # number of restarts

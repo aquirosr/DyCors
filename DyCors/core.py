@@ -60,13 +60,13 @@ class DyCorsMinimize:
 
         if self.method=='RBF-Expo':
             self.surrogateFunc = self.surrogateRBF_Expo
-            self.evalFunc      = self.evalRBF_Expo
+            self.evalSurr      = self.evalRBF_Expo
         elif self.method=='RBF-Matern':
             self.surrogateFunc = self.surrogateRBF_Matern
-            self.evalFunc      = self.evalRBF_Matern
+            self.evalSurr      = self.evalRBF_Matern
         elif self.method=='GRBF':
             self.surrogateFunc = self.surrogateGRBF
-            self.evalFunc      = self.evalGRBF
+            self.evalSurr      = self.evalGRBF
 
         if self.method=='GRBF':
             self.grad = True
@@ -169,12 +169,12 @@ class DyCorsMinimize:
         # self.s = self.la.solve(A, F, assume_a='sym') # solution
         self.s = self.la.solve(A, F) # solution
 
-    def evalRBF_Expo(self):
+    def evalRBF_Expo(self, yk):
         # evaluate the surrogate surface at {y}
         #   self.x: RBF-points
         #   self.s: coefficient vector of surrogate surface
         #   self.yk: trial points
-        y = np.array(self.yk)
+        y = np.array(yk)
         m = y.shape[0]
 
         # RBF-matrix (evaluated at {y})
@@ -206,12 +206,12 @@ class DyCorsMinimize:
         # self.s = self.la.solve(A, F, assume_a='sym') # solution
         self.s = self.la.solve(A, F) # solution
 
-    def evalRBF_Matern(self):
+    def evalRBF_Matern(self, yk):
         # evaluate the surrogate surface at {y}
         #   self.x: RBF-points
         #   self.s: coefficient vector of surrogate surface
         #   self.yk: trial points
-        y = np.array(self.yk)
+        y = np.array(yk)
         m = y.shape[0]
 
         # RBF-matrix (evaluated at {y})
@@ -242,33 +242,30 @@ class DyCorsMinimize:
         # derivative function value
         F[n:n*(self.d+1)] = self.df 
         
-        # creation of matrix Phi_d (first derivatives of the kernel) : potential error here 
+        # creation of matrix Phi_d (first derivatives of the kernel)
         Phi_d = np.zeros((n,n*self.d))
         for i in range(n):
             for j in range(n):
                 for k in range(self.d):
-                    Phi_d[i,j*self.d+k] = -2*Phi[i,j]*(self.x[i,k]-self.x[j,k])/(2*self.l**2)
+                    Phi_d[i,j*self.d+k] = -2/(2*self.l**2)*(self.x[i,k]-self.x[j,k])*Phi[i,j]
         
-        #creation of matrix Phi_dd (second deruvatives of exponential kernel ) : potential error here
+        #creation of matrix Phi_dd (second deruvatives of exponential kernel )
         Phi_dd = np.zeros((n*self.d,n*self.d))
         
         for i in range(n):
             for k in range(self.d):
                 for j in range(n):
                     for l in range (self.d):
-                        if i==j:
-                            Phi_dd[i*self.d+k,j*self.d+l] = 0
-                        else:
-                            Phi_dd[i*self.d+k,j*self.d+l] = -2*Phi_d[i,j*self.d+l]*(self.x[i,k]-self.x[j,k])/(2*self.l**2)\
-                                - (2*Phi[i,j]/(2*self.l**2) if k==l else 0)
+                        Phi_dd[i*self.d+k,j*self.d+l] = -2*Phi_d[i,j*self.d+l]*(self.x[i,k]-self.x[j,k])/(2*self.l**2)\
+                            - (2*Phi[i,j]/(2*self.l**2) if k==l else 0)
                             
-        A = np.block([[Phi,-Phi_d],[np.transpose(Phi_d),Phi_dd]])        
+        A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
         
         # self.s = self.la.solve(A, F, assume_a='sym')  # solution
         self.s = self.la.solve(A, F)
 
-    def evalGRBF(self): 
-        y = np.array(self.yk)
+    def evalGRBF(self, yk): 
+        y = np.array(yk)
         m = y.shape[0] # number of points
         n = self.x.shape[0] # number of sample points
         
@@ -277,7 +274,7 @@ class DyCorsMinimize:
             + np.sum(self.x**2, axis=1)[:,np.newaxis]
         Phi = np.exp(-R.T/(2*self.l**2))
         
-        # New part of matrix d_Phi  (gradient info of kernel) : most likely place where error is 
+        # New part of matrix d_Phi  (gradient info of kernel) 
         d_Phi = np.zeros((m,n*self.d))
         
         for i in range(m):
@@ -285,7 +282,7 @@ class DyCorsMinimize:
                 for k in range(self.d):
                     d_Phi[i,j*self.d+k] = -2*Phi[i,j]*(y[i,k]-self.x[j,k])/(2*self.l**2)
 
-        A = np.block([[Phi,-d_Phi]])
+        A = np.block([[Phi,d_Phi]])
         return np.dot(A,self.s)
 
     def initialize(self):
@@ -319,7 +316,7 @@ class DyCorsMinimize:
 
     def selectNewPt(self):
         n = self.x.shape[0]
-        s = self.evalFunc() # estimate function value
+        s = self.evalSurr(self.yk) # estimate function value
 
         # compute RBF-score
         s1, s2 = s.min(), s.max()
