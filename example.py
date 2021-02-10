@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from DyCors import minimize, LatinHyperCube
+from DyCors import minimize, SLatinHyperCube, RLatinHyperCube
+
+eps = np.finfo(np.float64).eps
 
 def Rastrigin(x):
     f = 10*len(x) + sum(x*x - 10*np.cos(2*np.pi*x))
@@ -19,18 +21,22 @@ x0 = np.outer(m*[1],bounds[:,0]) + np.outer(m*[1],bounds[:,1]-bounds[:,0])\
           *np.random.rand(m,d)
 
 # x0 = np.outer(m*[1],bounds[:,0]) + np.outer(m*[1],bounds[:,1]-bounds[:,0])\
-#           *LatinHyperCube(m,d)
+#           *SLatinHyperCube(m,d)
+
+# x0 = np.outer(m*[1],bounds[:,0]) + np.outer(m*[1],bounds[:,1]-bounds[:,0])\
+#           *RLatinHyperCube(m,d)
 
 Nmax      = 50 # Maximum number of function evaluations per restart
 nrestart  = 6 # number of restarts
-sigma     = np.array([0.2]*d) # initial standard deviation for trial points
+sig0      = np.array([0.2]*d) # initial standard deviation for trial points
+sigm      = np.array([eps]*d) # minimum standard deviation for trial points
 Ts        = 3 
 Tf        = 5
 solver    = "scipy"
 l         = 0.5
 nu        = 5/2
 options   = {}
-options   = {"Nmax":Nmax, "nrestart":nrestart, "sigma":sigma, "Ts":Ts, "Tf":Tf,\
+options   = {"Nmax":Nmax, "nrestart":nrestart, "sig0":sig0, "sigm":sigm, "Ts":Ts, "Tf":Tf,\
     "solver":solver, "l":l, "nu":nu, "warnings":False}
 
 solf = minimize(fun=Rastrigin, x0=x0, method='GRBF', jac=df_Rastrigin,\

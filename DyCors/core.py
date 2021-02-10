@@ -6,8 +6,10 @@ from scipy.special import gamma, kv
 from scipy.optimize import OptimizeResult
 import warnings
 
-DEFAULT_OPTIONS = {"Nmax":50, "nrestart":6, "sigma":0.2, "Ts":3, "Tf":5, "solver":"scipy",\
-        "l":np.sqrt(0.5), "nu":5/2, "warnings":True}
+EPS = np.finfo(np.float64).eps
+
+DEFAULT_OPTIONS = {"Nmax":50, "nrestart":6, "sig0":0.2, "sigm":1e3*EPS, "Ts":3, "Tf":5,\
+                    "solver":"scipy", "l":np.sqrt(0.5), "nu":5/2, "warnings":True}
 METHODS = ['RBF-Expo', 'RBF-Matern', 'GRBF']
 
 def minimize(fun, x0, method='RBF-Expo', jac=None, bounds=None, tol=None, options=None, verbose=True):
@@ -86,10 +88,11 @@ class DyCorsMinimize:
         self.ic          = 0 # counter
         self.k           = min(100*self.d, 500) # numer of trial points
         if self.bounds is not None:
-            self.sigm    = self.options["sigma"]*(self.bU - self.bL) # standard deviation for new point generation
+            self.sigm    = self.options["sigm"]*np.ones((self.d,)) # minimum standard deviation
+            self.sig     = self.options["sig0"]*(self.bU - self.bL) # initial standard deviation
         else:
-            self.sigm    = self.options["sigma"]*np.ones((self.d,))
-        self.sig         = self.sigm
+            self.sigm    = self.options["sigm"]*np.ones((self.d,)) # minimum standard deviation
+            self.sig     = self.options["sig0"]*np.ones((self.d,)) # initial standard deviation
         self.Ts, self.Tf = self.options["Ts"], max(self.d, self.options["Tf"])
         self.nrestart    = self.options["nrestart"] # number of restarts
         self.l           = self.options["l"] # internal parameter of the kernel
@@ -98,7 +101,7 @@ class DyCorsMinimize:
         self.initialize() # compute starting points
         
         self.iB          = np.argmin(self.f) # find best solution
-        self.xB, self.fB = self.x[self.iB,:], [self.f[self.iB]]
+        self.xB, self.fB = self.x[self.iB,:], np.asarray([self.f[self.iB]])
         self.fBs         = np.zeros((self.nrestart+1,), dtype=np.float64)
         self.fBs[0]      = self.fB[0]
         self.converged   = False
@@ -389,8 +392,9 @@ class DyCorsMinimize:
 
         # reset the bounds and counters
         if self.bounds is not None:
-            self.sigm = self.options["sigma"]*(self.bU - self.bL)
+            self.sigm = self.options["sigm"]*np.ones((self.d,))
+            self.sig = self.options["sig0"]*(self.bU - self.bL)
         else:
-            self.sigm = self.options["sigma"]*np.ones((self.d,))
-        self.sig = self.sigm
+            self.sigm = self.options["sigm"]*np.ones((self.d,))
+            self.sig = self.options["sig0"]*np.ones((self.d,))
         self.ic, self.Cs, self.Cf = 0, 0, 0

@@ -1,17 +1,18 @@
 import numpy as np
 
-def SLatinHyperCube(m,d):
+def RLatinHyperCube(m,d):
     # Latin hypercube sampling
     #   m: number of sample points
     #   d: dimension
 
-    delta = np.ones(d)/m
-    X     = np.zeros((m,d))
-    for j in range(d):
-        for i in range(m):
-            X[i,j] = (2*i+1)/2*delta[j]
-    P = np.zeros((m,d),dtype=int)
+    bounds = np.zeros((m+1,d,))
+    for i in range(d):
+        bounds[:,i] = np.linspace(0,1,m+1)
 
+    X = np.random.rand(m,d)
+    X = bounds[:-1,:] + X*(bounds[1:,:]-bounds[:-1,:])
+
+    P = np.zeros((m,d),dtype=int)
     P[:,0] = np.arange(m)
     if m%2 == 0:
         k      = m//2
@@ -33,15 +34,13 @@ def SLatinHyperCube(m,d):
             IPts[i,j] = X[P[i,j],j]
     return IPts
 
-
-
 if __name__ == "__main__":
     print('This is test for SLHDstandard')
-    dim = 3
-    m = 2*(dim+1)
+    dim = 2
+    m = 5
     print('dim is ',dim)
     print('m is ',m)
     print('set seed to 5')
     np.random.seed(5)
     for i in range(3):
-        print(LatinHyperCube(m,dim))
+        print(LatinHyperCube(m, dim))
