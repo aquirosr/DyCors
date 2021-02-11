@@ -29,15 +29,15 @@ x0 = np.outer(m*[1],bounds[:,0]) + np.outer(m*[1],bounds[:,1]-bounds[:,0])\
 Nmax      = 50 # Maximum number of function evaluations per restart
 nrestart  = 6 # number of restarts
 sig0      = np.array([0.2]*d) # initial standard deviation for trial points
-sigm      = np.array([eps]*d) # minimum standard deviation for trial points
+sigm      = np.array([1e3*eps]*d) # minimum standard deviation for trial points
 Ts        = 3 
 Tf        = 5
 solver    = "scipy"
-l         = 0.5
+l         = 0.5*np.ones((d,))
 nu        = 5/2
 options   = {}
 options   = {"Nmax":Nmax, "nrestart":nrestart, "sig0":sig0, "sigm":sigm, "Ts":Ts, "Tf":Tf,\
-    "solver":solver, "l":l, "nu":nu, "warnings":False}
+            "solver":solver, "l":l, "nu":nu, "optim_ip":False, "warnings":False}
 
 solf = minimize(fun=Rastrigin, x0=x0, method='GRBF', jac=df_Rastrigin,\
     bounds=bounds, tol=None, options=options, verbose=True)

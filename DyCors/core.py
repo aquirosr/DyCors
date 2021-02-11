@@ -3,13 +3,13 @@ import numpy as np
 import numpy.linalg as nla
 import scipy.linalg as sla
 from scipy.special import gamma, kv
-from scipy.optimize import OptimizeResult
+from scipy.optimize import OptimizeResult, differential_evolution
 import warnings
 
 EPS = np.finfo(np.float64).eps
 
 DEFAULT_OPTIONS = {"Nmax":50, "nrestart":6, "sig0":0.2, "sigm":1e3*EPS, "Ts":3, "Tf":5,\
-                    "solver":"scipy", "l":np.sqrt(0.5), "nu":5/2, "warnings":True}
+                    "solver":"scipy", "l":np.sqrt(0.5), "nu":5/2, "optim_ip":False, "warnings":True}
 METHODS = ['RBF-Expo', 'RBF-Matern', 'GRBF']
 
 def minimize(fun, x0, method='RBF-Expo', jac=None, bounds=None, tol=None, options=None, verbose=True):
@@ -86,7 +86,8 @@ class DyCorsMinimize:
         self.Nmax        = self.options["Nmax"] # maximum number of function evaluations per restart
         self.n0, self.Np = self.m, self.Nmax - self.m
         self.ic          = 0 # counter
-        self.k           = min(100*self.d, 500) # numer of trial points
+        self.fevals      = 0 # function evaluations
+        self.k           = min(100*self.d, 500) # number of trial points
         if self.bounds is not None:
             self.sigm    = self.options["sigm"]*np.ones((self.d,)) # minimum standard deviation
             self.sig     = self.options["sig0"]*(self.bU - self.bL) # initial standard deviation
@@ -95,8 +96,8 @@ class DyCorsMinimize:
             self.sig     = self.options["sig0"]*np.ones((self.d,)) # initial standard deviation
         self.Ts, self.Tf = self.options["Ts"], max(self.d, self.options["Tf"])
         self.nrestart    = self.options["nrestart"] # number of restarts
-        self.l           = self.options["l"] # internal parameter of the kernel
-        self.nu          = self.options["nu"] # order of the Bessel function
+        self.l           = self.options["l"]*np.ones((self.d,)) # starting kernel width
+        self.nu          = self.options["nu"] # starting order of the Bessel function
 
         self.initialize() # compute starting points
         
@@ -122,8 +123,9 @@ class DyCorsMinimize:
                     self.update()
 
                     self.ic += 1
-                    if (self.ic%5 == 0 and self.verbose):
-                        print('  fevals = %d | fmin = %.2e'%(self.Np*(kk)+self.ic+self.m, self.fB[0]))
+                    self.fevals = self.Np*(kk)+self.ic+self.m
+                    if (self.fevals%5 == 0 and self.verbose):
+                        print('  fevals = %d | fmin = %.2e'%(self.fevals, self.fB[0]))
 
                 self.fBs[kk+1] = self.fB[0]
                 if self.tol is not None:
@@ -148,8 +150,8 @@ class DyCorsMinimize:
 
         return OptimizeResult(fun=self.fB,
                           jac=np.apply_along_axis(self.jac, 1, [self.xB]) if self.grad else None,
-                          nfev=self.Np*(kk+1)+self.m,
-                          njev=self.Np*(kk+1)+self.m if self.grad else None,
+                          nfev=self.fevals,
+                          njev=self.fevals if self.grad else None,
                           nit=kk+1, status=warnflag, message=task_str,
                           x=self.xB, success=(warnflag==0), hess_inv=None)
 
@@ -159,9 +161,10 @@ class DyCorsMinimize:
         n = self.x.shape[0]
 
         # RBF-matrix
-        R   = -2*np.dot(self.x, self.x.T) + np.sum(self.x**2, axis=1)\
-            + np.sum((self.x.T)**2, axis=0)[:,np.newaxis]
-        Phi = np.exp(-R/(2*self.l**2))      # RBF-part
+        R   = -2*np.dot(self.x/self.l, self.x.T/self.l[:,np.newaxis]) + np.sum(self.x**2/self.l**2, axis=1)\
+            + np.sum(self.x.T**2/self.l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
+        Phi = np.exp(-R/2)      # RBF-part
+
         P   = np.hstack((np.ones((n,1)), self.x)) # polynomial part
         Z   = np.zeros((self.d+1,self.d+1)) # zero matrix
         A   = np.block([[Phi,P],[P.T,Z]])   # patched together
@@ -181,9 +184,10 @@ class DyCorsMinimize:
         m = y.shape[0]
 
         # RBF-matrix (evaluated at {y})
-        R   = -2*np.dot(self.x, y.T) + np.sum(y**2, axis=1)\
-            + np.sum(self.x**2, axis=1)[:,np.newaxis]
-        Phi = np.exp(-R.T/(2*self.l**2))    # RBF-part
+        R   = -2*np.dot(self.x/self.l, y.T/self.l[:,np.newaxis]) + np.sum(y**2/self.l**2, axis=1)\
+            + np.sum(self.x**2/self.l**2, axis=1)[:,np.newaxis]
+        Phi = np.exp(-R.T/2)    # RBF-part
+
         P   = np.hstack((np.ones((m,1)),y)) # polynomial part
         A   = np.block([Phi,P])             # patched together
         return np.dot(A, self.s)             # evaluation
@@ -194,10 +198,10 @@ class DyCorsMinimize:
         n = self.x.shape[0]
 
         # RBF-matrix
-        R   = -2*np.dot(self.x, self.x.T) + np.sum(self.x**2, axis=1)\
-            + np.sum((self.x.T)**2, axis=0)[:,np.newaxis]
-        Phi = 2**(1-self.nu)/gamma(self.nu)*(np.sqrt(2*self.nu*R)/self.l)**self.nu\
-            * kv(self.nu, np.sqrt(2*self.nu*R)/self.l) # RBF-part
+        R   = -2*np.dot(self.x/self.l, self.x.T/self.l[:,np.newaxis]) + np.sum(self.x**2/self.l**2, axis=1)\
+            + np.sum(self.x.T**2/self.l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
+        Phi = 2**(1-self.nu)/gamma(self.nu)*(np.sqrt(2*self.nu*R))**self.nu\
+            * kv(self.nu, np.sqrt(2*self.nu*R)) # RBF-part
         np.nan_to_num(Phi, copy=False, nan=1.0)        # NaN values (R=0) are 1.0 if you take the limit
         P   = np.hstack((np.ones((n,1)), self.x))      # polynomial part
         Z   = np.zeros((self.d+1,self.d+1))            # zero matrix
@@ -218,10 +222,10 @@ class DyCorsMinimize:
         m = y.shape[0]
 
         # RBF-matrix (evaluated at {y})
-        R   = -2*np.dot(self.x, y.T) + np.sum(y**2, axis=1)\
-            + np.sum(self.x**2, axis=1)[:,np.newaxis]
-        Phi = 2**(1-self.nu)/gamma(self.nu)*(np.sqrt(2*self.nu*R.T)/self.l)**self.nu\
-            * kv(self.nu, np.sqrt(2*self.nu*R.T)/self.l) # RBF-part
+        R   = -2*np.dot(self.x/self.l, y.T/self.l[:,np.newaxis]) + np.sum(y**2/self.l**2, axis=1)\
+            + np.sum(self.x**2/self.l**2, axis=1)[:,np.newaxis]
+        Phi = 2**(1-self.nu)/gamma(self.nu)*(np.sqrt(2*self.nu*R.T))**self.nu\
+            * kv(self.nu, np.sqrt(2*self.nu*R.T)) # RBF-part
         np.nan_to_num(Phi, copy=False, nan=1.0)        # NaN values (R=0) are 1.0 if you take the limit
         P   = np.hstack((np.ones((m,1)),y))            # polynomial part
         A   = np.block([Phi,P])                        # patched together
@@ -232,9 +236,9 @@ class DyCorsMinimize:
         n = self.x.shape[0]
 
         # RBF-matrix
-        R = -2*np.dot(self.x, self.x.T) + np.sum(self.x**2, axis=1)\
-            + np.sum((self.x.T)**2, axis=0)[:,np.newaxis]
-        Phi = np.exp(-R/(2*self.l**2))
+        R   = -2*np.dot(self.x/self.l, self.x.T/self.l[:,np.newaxis]) + np.sum(self.x**2/self.l**2, axis=1)\
+            + np.sum(self.x.T**2/self.l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
+        Phi = np.exp(-R/2)
 
         # right-hand side
         F = np.zeros(n*(self.d+1))
@@ -250,17 +254,17 @@ class DyCorsMinimize:
         for i in range(n):
             for j in range(n):
                 for k in range(self.d):
-                    Phi_d[i,j*self.d+k] = -2/(2*self.l**2)*(self.x[i,k]-self.x[j,k])*Phi[i,j]
+                    Phi_d[i,j*self.d+k] = -2/(2*self.l[k]**2)*(self.x[i,k]-self.x[j,k])*Phi[i,j]
         
-        #creation of matrix Phi_dd (second deruvatives of exponential kernel )
+        #creation of matrix Phi_dd (second derivatives of exponential kernel )
         Phi_dd = np.zeros((n*self.d,n*self.d))
         
         for i in range(n):
             for k in range(self.d):
                 for j in range(n):
                     for l in range (self.d):
-                        Phi_dd[i*self.d+k,j*self.d+l] = -2*Phi_d[i,j*self.d+l]*(self.x[i,k]-self.x[j,k])/(2*self.l**2)\
-                            - (2*Phi[i,j]/(2*self.l**2) if k==l else 0)
+                        Phi_dd[i*self.d+k,j*self.d+l] = -2*Phi_d[i,j*self.d+l]*(self.x[i,k]-self.x[j,k])/(2*self.l[k]**2)\
+                            - (2*Phi[i,j]/(2*self.l[k]**2) if k==l else 0)
                             
         A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
         
@@ -273,9 +277,9 @@ class DyCorsMinimize:
         n = self.x.shape[0] # number of sample points
         
         # RBF part of problem to solve
-        R   = -2*np.dot(self.x, y.T) + np.sum(y**2, axis=1)\
-            + np.sum(self.x**2, axis=1)[:,np.newaxis]
-        Phi = np.exp(-R.T/(2*self.l**2))
+        R   = -2*np.dot(self.x/self.l, y.T/self.l[:,np.newaxis]) + np.sum(y**2/self.l**2, axis=1)\
+            + np.sum(self.x**2/self.l**2, axis=1)[:,np.newaxis]
+        Phi = np.exp(-R.T/2)
         
         # New part of matrix d_Phi  (gradient info of kernel) 
         d_Phi = np.zeros((m,n*self.d))
@@ -283,7 +287,7 @@ class DyCorsMinimize:
         for i in range(m):
             for j in range(n):
                 for k in range(self.d):
-                    d_Phi[i,j*self.d+k] = -2*Phi[i,j]*(y[i,k]-self.x[j,k])/(2*self.l**2)
+                    d_Phi[i,j*self.d+k] = -2*Phi[i,j]*(y[i,k]-self.x[j,k])/(2*self.l[k]**2)
 
         A = np.block([[Phi,d_Phi]])
         return np.dot(A,self.s)
@@ -375,6 +379,86 @@ class DyCorsMinimize:
         self.f  = np.concatenate((self.f, self.fnew))
         if self.grad:
             self.df  = np.concatenate((self.df, self.dfnew))
+        
+        # update internal parameters
+        if self.fevals%10==0 and self.ic>20:
+            self.update_internal_params()
+
+    def update_internal_params(self):
+        if self.method=='RBF-Expo' or self.method=='GRBF':
+            def error(l):
+                n = self.x.shape[0]
+
+                R   = -2*np.dot(self.x/l, self.x.T/l[:,np.newaxis]) + np.sum(self.x**2/l**2, axis=1)\
+                    + np.sum(self.x.T**2/l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
+                Phi = np.exp(-R/2)
+
+                if self.method=='RBF-Expo':
+                    H_inv = sla.inv(Phi)
+                    H_inv2 = H_inv@H_inv
+
+                    return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)))
+
+                elif self.method=='GRBF':
+                    Phi_d = np.zeros((n,n*self.d))
+                    for i in range(n):
+                        for j in range(n):
+                            for k in range(self.d):
+                                Phi_d[i,j*self.d+k] = -2/(2*l[k]**2)*(self.x[i,k]-self.x[j,k])*Phi[i,j]
+                    
+                    Phi_dd = np.zeros((n*self.d,n*self.d))
+                    
+                    for i in range(n):
+                        for k in range(self.d):
+                            for j in range(n):
+                                for ll in range (self.d):
+                                    Phi_dd[i*self.d+k,j*self.d+ll] = -2*Phi_d[i,j*self.d+ll]*(self.x[i,k]-self.x[j,k])/(2*l[k]**2)\
+                                        - (2*Phi[i,j]/(2*l[k]**2) if k==ll else 0)
+                                        
+                    A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
+
+                    H_inv = sla.inv(A)
+                    H_inv2 = H_inv@H_inv
+
+                    f = np.zeros(n*(self.d+1))
+                    f[:n] = self.f
+                    f[n:n*(self.d+1)] = self.df 
+
+                    return nla.norm(f.T@H_inv2@f/(n*np.diag(H_inv2)), ord=1)
+
+        elif self.method=='RBF-Matern':
+            def error(lnu):
+                l  = lnu[:-1]
+                nu = lnu[-1]
+                
+                n = self.x.shape[0]
+
+                R   = -2*np.dot(self.x/l, self.x.T/l[:,np.newaxis]) + np.sum(self.x**2/l**2, axis=1)\
+                    + np.sum(self.x.T**2/l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
+                Phi = 2**(1-nu)/gamma(nu)*(np.sqrt(2*nu*R))**nu\
+                    * kv(nu, np.sqrt(2*nu*R))
+                np.nan_to_num(Phi, copy=False, nan=1.0)
+
+                H_inv = sla.inv(Phi)
+                H_inv2 = H_inv@H_inv
+
+                return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)), ord=1)
+
+        if self.method=='RBF-Expo' or self.method=='GRBF':
+            try:
+                sol = differential_evolution(func=error, bounds=(((1e-3,1e1),)*self.d), maxiter=100)
+                if sol["success"]:
+                    self.l = sol["x"]
+            except np.linalg.LinAlgError:
+                pass
+        elif self.method=='RBF-Matern':
+            try:
+                sol = differential_evolution(func=error, bounds=(((1e-3,1e1),)*(self.d+1)), maxiter=100)
+                if sol["success"]:
+                    self.l = sol["x"][:-1]
+                    self.nu = sol["x"][-1]
+            except np.linalg.LinAlgError:
+                pass
 
     def restart(self):
         n    = self.x.shape[0]
