@@ -398,7 +398,7 @@ class DyCorsMinimize:
                     H_inv = sla.inv(Phi)
                     H_inv2 = H_inv@H_inv
 
-                    return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)))
+                    return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)), ord=1)
 
                 elif self.method=='GRBF':
                     Phi_d = np.zeros((n,n*self.d))
