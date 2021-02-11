@@ -98,6 +98,7 @@ class DyCorsMinimize:
         self.nrestart    = self.options["nrestart"] # number of restarts
         self.l           = self.options["l"]*np.ones((self.d,)) # starting kernel width
         self.nu          = self.options["nu"] # starting order of the Bessel function
+        self.optim_ip    = self.options["optim_ip"] # Optimize internal parameters?
 
         self.initialize() # compute starting points
         
@@ -381,7 +382,7 @@ class DyCorsMinimize:
             self.df  = np.concatenate((self.df, self.dfnew))
         
         # update internal parameters
-        if self.fevals%10==0 and self.ic>20:
+        if self.optim_ip and self.fevals%10==0 and self.ic>20:
             self.update_internal_params()
 
     def update_internal_params(self):
