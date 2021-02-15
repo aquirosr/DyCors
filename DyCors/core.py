@@ -12,7 +12,7 @@ DEFAULT_OPTIONS = {"Nmax":50, "nrestart":6, "sig0":0.2, "sigm":1e3*EPS, "Ts":3, 
                     "solver":"scipy", "l":np.sqrt(0.5), "nu":5/2, "optim_ip":False, "warnings":True}
 METHODS = ['RBF-Expo', 'RBF-Matern', 'GRBF']
 
-def minimize(fun, x0, method='RBF-Expo', jac=None, bounds=None, tol=None, options=None, verbose=True):
+def minimize(fun, x0, args=(), method='RBF-Expo', jac=None, bounds=None, tol=None, options=None, verbose=True):
     # check options are ok
     if not callable(fun):
         raise TypeError('fun is not callable')
@@ -46,13 +46,14 @@ def minimize(fun, x0, method='RBF-Expo', jac=None, bounds=None, tol=None, option
         warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     # run the optimization
-    DyCorsMin = DyCorsMinimize(fun, x0, method, jac, bounds, tol, options, verbose)
+    DyCorsMin = DyCorsMinimize(fun, x0, args, method, jac, bounds, tol, options, verbose)
     return DyCorsMin()
 
 class DyCorsMinimize:
-    def __init__(self, fun, x0, method, jac, bounds, tol, options, verbose):
+    def __init__(self, fun, x0, args, method, jac, bounds, tol, options, verbose):
         self.fun = fun
         self.x0 = x0
+        self.args = args
         self.method = method
         self.jac = jac
         self.bounds = bounds
@@ -86,7 +87,6 @@ class DyCorsMinimize:
         self.Nmax        = self.options["Nmax"] # maximum number of function evaluations per restart
         self.n0, self.Np = self.m, self.Nmax - self.m
         self.ic          = 0 # counter
-        self.fevals      = 0 # function evaluations
         self.k           = min(100*self.d, 500) # number of trial points
         if self.bounds is not None:
             self.sigm    = self.options["sigm"]*np.ones((self.d,)) # minimum standard deviation
@@ -101,6 +101,7 @@ class DyCorsMinimize:
         self.optim_ip    = self.options["optim_ip"] # Optimize internal parameters?
 
         self.initialize() # compute starting points
+        self.fevals = self.m # function evaluations
         
         self.iB          = np.argmin(self.f) # find best solution
         self.xB, self.fB = self.x[self.iB,:], np.asarray([self.f[self.iB]])
@@ -118,9 +119,9 @@ class DyCorsMinimize:
 
                     self.trialPoints() # trial points
                     self.selectNewPt()
-                    self.fnew = np.apply_along_axis(self.fun, 1, [self.xnew]) # f()
+                    self.fnew = np.apply_along_axis(self.fun, 1, [self.xnew], *self.args) # f()
                     if self.grad:
-                        self.dfnew = np.apply_along_axis(self.jac, 1, [self.xnew]).flatten() #df()
+                        self.dfnew = np.apply_along_axis(self.jac, 1, [self.xnew], *self.args).flatten() #df()
                     self.update()
 
                     self.ic += 1
@@ -150,7 +151,7 @@ class DyCorsMinimize:
             warnflag = 2
 
         return OptimizeResult(fun=self.fB,
-                          jac=np.apply_along_axis(self.jac, 1, [self.xB]) if self.grad else None,
+                          jac=np.apply_along_axis(self.jac, 1, [self.xB], *self.args) if self.grad else None,
                           nfev=self.fevals,
                           njev=self.fevals if self.grad else None,
                           nit=kk+1, status=warnflag, message=task_str,
@@ -302,9 +303,9 @@ class DyCorsMinimize:
             self.x = self.x0.copy()
 
         # evaluate initial points
-        self.f = np.apply_along_axis(self.fun, 1, self.x) #f()
+        self.f = np.apply_along_axis(self.fun, 1, self.x, *self.args) #f()
         if self.grad:
-            self.df = np.apply_along_axis(self.jac, 1, self.x).flatten() #df()
+            self.df = np.apply_along_axis(self.jac, 1, self.x, *self.args).flatten() #df()
         self.Cs, self.Cf = 0, 0     # counter: success, failure
 
     def trialPoints(self):
