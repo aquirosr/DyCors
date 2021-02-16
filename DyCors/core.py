@@ -2,7 +2,7 @@ from math import log
 import numpy as np
 import numpy.linalg as nla
 import scipy.linalg as sla
-from scipy.special import gamma, kv
+from scipy.special import factorial
 from scipy.optimize import OptimizeResult, differential_evolution
 import warnings
 
@@ -10,7 +10,7 @@ EPS = np.finfo(np.float64).eps
 
 DEFAULT_OPTIONS = {"Nmax":50, "nrestart":6, "sig0":0.2, "sigm":1e3*EPS, "Ts":3, "Tf":5,\
                     "solver":"scipy", "l":np.sqrt(0.5), "nu":5/2, "optim_ip":False, "warnings":True}
-METHODS = ['RBF-Expo', 'RBF-Matern', 'GRBF']
+METHODS = ['RBF-Expo', 'RBF-Matern', 'GRBF-Expo', 'GRBF-Matern']
 
 def minimize(fun, x0, args=(), method='RBF-Expo', jac=None, bounds=None, tol=None, options=None, verbose=True):
     # check options are ok
@@ -67,11 +67,14 @@ class DyCorsMinimize:
         elif self.method=='RBF-Matern':
             self.surrogateFunc = self.surrogateRBF_Matern
             self.evalSurr      = self.evalRBF_Matern
-        elif self.method=='GRBF':
-            self.surrogateFunc = self.surrogateGRBF
-            self.evalSurr      = self.evalGRBF
+        elif self.method=='GRBF-Expo':
+            self.surrogateFunc = self.surrogateGRBF_Expo
+            self.evalSurr      = self.evalGRBF_Expo
+        elif self.method=='GRBF-Matern':
+            self.surrogateFunc = self.surrogateGRBF_Matern
+            self.evalSurr      = self.evalGRBF_Matern
 
-        if self.method=='GRBF':
+        if self.method=='GRBF-Expo' or self.method=='GRBF-Matern':
             self.grad = True
         else:
             self.grad = False
@@ -195,16 +198,23 @@ class DyCorsMinimize:
         return np.dot(A, self.s)             # evaluation
 
     def surrogateRBF_Matern(self):
-        # build a surrogate surface using cubic RBF's + linear polynomial
+        # Half integer simplification of Matérn Kernel
         #   (self.x,self.f): high-dimensional points and associated costs f(x)
+        p = round(self.nu-1/2)
         n = self.x.shape[0]
 
         # RBF-matrix
         R   = -2*np.dot(self.x/self.l, self.x.T/self.l[:,np.newaxis]) + np.sum(self.x**2/self.l**2, axis=1)\
             + np.sum(self.x.T**2/self.l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
-        Phi = 2**(1-self.nu)/gamma(self.nu)*(np.sqrt(2*self.nu*R))**self.nu\
-            * kv(self.nu, np.sqrt(2*self.nu*R)) # RBF-part
-        np.nan_to_num(Phi, copy=False, nan=1.0)        # NaN values (R=0) are 1.0 if you take the limit
+        R[R<=0.0] = EPS
+
+        Phi = factorial(p)/factorial(2*p)*np.exp(-np.sqrt((2*p+1)*R))
+        tmp = np.zeros_like(Phi)
+        for i in range(p+1):
+            tmp += factorial(p+i)/(factorial(i)*factorial(p-i))\
+                * (2*np.sqrt((2*p+1)*R))**(p-i)
+        Phi *= tmp
+
         P   = np.hstack((np.ones((n,1)), self.x))      # polynomial part
         Z   = np.zeros((self.d+1,self.d+1))            # zero matrix
         A   = np.block([[Phi,P],[P.T,Z]])              # patched together
@@ -216,25 +226,33 @@ class DyCorsMinimize:
         self.s = self.la.solve(A, F) # solution
 
     def evalRBF_Matern(self, yk):
+        # Half integer simplification of Matérn Kernel
         # evaluate the surrogate surface at {y}
         #   self.x: RBF-points
         #   self.s: coefficient vector of surrogate surface
         #   self.yk: trial points
+        p = round(self.nu-1/2)
+
         y = np.array(yk)
         m = y.shape[0]
 
         # RBF-matrix (evaluated at {y})
         R   = -2*np.dot(self.x/self.l, y.T/self.l[:,np.newaxis]) + np.sum(y**2/self.l**2, axis=1)\
             + np.sum(self.x**2/self.l**2, axis=1)[:,np.newaxis]
-        Phi = 2**(1-self.nu)/gamma(self.nu)*(np.sqrt(2*self.nu*R.T))**self.nu\
-            * kv(self.nu, np.sqrt(2*self.nu*R.T)) # RBF-part
-        np.nan_to_num(Phi, copy=False, nan=1.0)        # NaN values (R=0) are 1.0 if you take the limit
+        R[R<=0.0] = EPS
+
+        Phi = factorial(p)/factorial(2*p)*np.exp(-np.sqrt((2*p+1)*R.T))
+        tmp = np.zeros_like(Phi)
+        for i in range(p+1):
+            tmp += factorial(p+i)/(factorial(i)*factorial(p-i))\
+                * (2*np.sqrt((2*p+1)*R.T))**(p-i)
+        Phi *= tmp
+
         P   = np.hstack((np.ones((m,1)),y))            # polynomial part
         A   = np.block([Phi,P])                        # patched together
         return np.dot(A, self.s)                        # evaluation
 
-    def surrogateGRBF(self):
-        # build a surrogate surface using cubic RBF's
+    def surrogateGRBF_Expo(self):
         n = self.x.shape[0]
 
         # RBF-matrix
@@ -273,7 +291,7 @@ class DyCorsMinimize:
         # self.s = self.la.solve(A, F, assume_a='sym')  # solution
         self.s = self.la.solve(A, F)
 
-    def evalGRBF(self, yk): 
+    def evalGRBF_Expo(self, yk): 
         y = np.array(yk)
         m = y.shape[0] # number of points
         n = self.x.shape[0] # number of sample points
@@ -290,6 +308,110 @@ class DyCorsMinimize:
             for j in range(n):
                 for k in range(self.d):
                     d_Phi[i,j*self.d+k] = -2*Phi[i,j]*(y[i,k]-self.x[j,k])/(2*self.l[k]**2)
+
+        A = np.block([[Phi,d_Phi]])
+        return np.dot(A,self.s)
+
+    def surrogateGRBF_Matern(self):
+        # Half integer simplification of Matérn Kernel
+        p = round(self.nu-1/2)
+
+        n = self.x.shape[0]
+
+        # RBF-matrix
+        R   = -2*np.dot(self.x/self.l, self.x.T/self.l[:,np.newaxis]) + np.sum(self.x**2/self.l**2, axis=1)\
+            + np.sum(self.x.T**2/self.l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
+        R[R<=0.0] = EPS # R=0.0 is indeterminate
+        
+        Phi = factorial(p)/factorial(2*p)*np.exp(-np.sqrt((2*p+1)*R))
+        tmp = np.zeros_like(Phi)
+        for i in range(p+1):
+            tmp += factorial(p+i)/(factorial(i)*factorial(p-i))\
+                * (2*np.sqrt((2*p+1)*R))**(p-i)
+        Phi *= tmp
+
+        # right-hand side
+        F = np.zeros(n*(self.d+1))
+
+        # function value
+        F[:n] = self.f
+
+        # derivative function value
+        F[n:n*(self.d+1)] = self.df 
+
+        # temporary matrices
+        tmp1 = np.zeros_like(Phi)
+        tmp2 = np.zeros_like(Phi)
+        for ii in range(p):
+            tmp1 += factorial(p+ii)/(factorial(ii)*factorial(p-ii))\
+                * (p-ii)*(2*np.sqrt((2*p+1)*R))**(p-ii-1)*2*np.sqrt(2*p+1)
+            if ii<p-1:
+                tmp2 += factorial(p+ii)/(factorial(ii)*factorial(p-ii))\
+                    * (p-ii)*(p-ii-1)*(2*np.sqrt((2*p+1)*R))**(p-ii-2)*(2*np.sqrt(2*p+1))**2
+
+        fp_f2p_er = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R))
+        
+        # creation of matrix Phi_d (first derivatives of the kernel)
+        Phi_d = np.zeros((n,n*self.d))
+        for i in range(n):
+            for j in range(n):
+                for k in range(self.d):
+                    Phi_d[i,j*self.d+k] = (Phi[i,j] * (-np.sqrt(2*p+1))\
+                        + factorial(p)/factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R[i,j]))*tmp1[i,j])\
+                        * (self.x[i,k]-self.x[j,k]) / np.sqrt(R[i,j])/self.l[k]**2
+        
+        #creation of matrix Phi_dd (second derivatives of exponential kernel )
+        Phi_dd = np.zeros((n*self.d,n*self.d))
+        for i in range(n):
+            for k in range(self.d):
+                for j in range(n):
+                    for l in range(self.d):
+                        Phi_dd[i*self.d+k,j*self.d+l] = (Phi[i,j] * (-np.sqrt(2*p+1))**2\
+                            + 2 * fp_f2p_er[i,j] * (-np.sqrt(2*p+1)) * tmp1[i,j] + fp_f2p_er[i,j] * tmp2[i,j])\
+                            * (self.x[i,l]-self.x[j,l]) / np.sqrt(R[i,j])/self.l[l]**2\
+                            * (self.x[i,k]-self.x[j,k]) / np.sqrt(R[i,j])/self.l[k]**2\
+                            + (Phi[i,j] * (-np.sqrt(2*p+1)) + fp_f2p_er[i,j] * tmp1[i,j])\
+                            * ((np.sqrt(R[i,j]*self.l[k]**4) if k==l else 0) - (self.x[i,k]-self.x[j,k])\
+                            * (self.x[i,l]-self.x[j,l]) / np.sqrt(R[i,j])/self.l[l]**2*self.l[k]**2)\
+                            / (np.sqrt(R[i,j])*self.l[k]**2)**2
+        
+        A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
+        # self.s = self.la.solve(A, F, assume_a='sym')  # solution
+        self.s = self.la.solve(A, F)
+
+    def evalGRBF_Matern(self, yk):
+        # Half integer simplification of Matérn Kernel
+        p = round(self.nu-1/2)
+
+        y = np.array(yk)
+        m = y.shape[0] # number of points
+        n = self.x.shape[0] # number of sample points
+        
+        # RBF part of problem to solve
+        R   = -2*np.dot(self.x/self.l, y.T/self.l[:,np.newaxis]) + np.sum(y**2/self.l**2, axis=1)\
+            + np.sum(self.x**2/self.l**2, axis=1)[:,np.newaxis]
+        R[R<=0.0] = EPS # R=0.0 is indeterminate
+
+        Phi = factorial(p)/factorial(2*p)*np.exp(-np.sqrt((2*p+1)*R.T))
+        tmp = np.zeros_like(Phi)
+        for i in range(p+1):
+            tmp += factorial(p+i)/(factorial(i)*factorial(p-i))\
+                * (2*np.sqrt((2*p+1)*R.T))**(p-i)
+        Phi *= tmp
+
+        tmp = np.zeros_like(Phi)
+        for ii in range(p):
+            tmp += factorial(p+ii)/(factorial(ii)*factorial(p-ii))\
+                * (p-ii)*(2*np.sqrt((2*p+1)*R.T))**(p-ii-1)*2*np.sqrt(2*p+1)
+
+        # New part of matrix d_Phi  (gradient info of kernel) 
+        d_Phi = np.zeros((m,n*self.d))
+        for i in range(m):
+            for j in range(n):
+                for k in range(self.d):
+                    d_Phi[i,j*self.d+k] = (Phi[i,j] * (-np.sqrt(2*p+1))\
+                        + factorial(p)/factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R.T[i,j])) * tmp[i,j])\
+                        * (y[i,k]-self.x[j,k]) / np.sqrt(R.T[i,j]) / self.l[k]**2
 
         A = np.block([[Phi,d_Phi]])
         return np.dot(A,self.s)
@@ -387,7 +509,7 @@ class DyCorsMinimize:
             self.update_internal_params()
 
     def update_internal_params(self):
-        if self.method=='RBF-Expo' or self.method=='GRBF':
+        if self.method=='RBF-Expo' or self.method=='GRBF-Expo':
             def error(l):
                 n = self.x.shape[0]
 
@@ -401,7 +523,7 @@ class DyCorsMinimize:
 
                     return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)), ord=1)
 
-                elif self.method=='GRBF':
+                elif self.method=='GRBF-Expo':
                     Phi_d = np.zeros((n,n*self.d))
                     for i in range(n):
                         for j in range(n):
@@ -428,32 +550,87 @@ class DyCorsMinimize:
 
                     return nla.norm(f.T@H_inv2@f/(n*np.diag(H_inv2)), ord=1)
 
-        elif self.method=='RBF-Matern':
+        elif self.method=='RBF-Matern' or self.method=='GRBF-Matern':
             def error(lnu):
                 l  = lnu[:-1]
                 nu = lnu[-1]
+                p = round(nu-1/2)
                 
                 n = self.x.shape[0]
 
                 R   = -2*np.dot(self.x/l, self.x.T/l[:,np.newaxis]) + np.sum(self.x**2/l**2, axis=1)\
                     + np.sum(self.x.T**2/l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
-                Phi = 2**(1-nu)/gamma(nu)*(np.sqrt(2*nu*R))**nu\
-                    * kv(nu, np.sqrt(2*nu*R))
-                np.nan_to_num(Phi, copy=False, nan=1.0)
+                R[R==0.0] = EPS # R=0.0 is indeterminate
+                
+                Phi = factorial(p)/factorial(2*p)*ºnp.exp(-np.sqrt((2*p+1)*R.T))
+                tmp = np.zeros_like(Phi)
+                for i in range(p+1):
+                    tmp += factorial(p+i)/(factorial(i)*factorial(p-i))\
+                        * (2*np.sqrt((2*p+1)*R.T))**(p-i)
+                Phi *= tmp
 
-                H_inv = sla.inv(Phi)
-                H_inv2 = H_inv@H_inv
+                if self.method=='RBF-Matern':
+                    H_inv = sla.inv(Phi)
+                    H_inv2 = H_inv@H_inv
 
-                return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)), ord=1)
+                    return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)), ord=1)
 
-        if self.method=='RBF-Expo' or self.method=='GRBF':
+                elif self.method=='GRBF-Matern':
+                    # temporary matrices
+                    tmp1 = np.zeros_like(Phi)
+                    tmp2 = np.zeros_like(Phi)
+                    for ii in range(p):
+                        tmp1 += factorial(p+ii)/(factorial(ii)*factorial(p-ii))\
+                            * (p-ii)*(2*np.sqrt((2*p+1)*R))**(p-ii-1)*2*np.sqrt(2*p+1)
+                        if ii<p-1:
+                            tmp2 += factorial(p+ii)/(factorial(ii)*factorial(p-ii))\
+                                * (p-ii)*(p-ii-1)*(2*np.sqrt((2*p+1)*R))**(p-ii-2)*(2*np.sqrt(2*p+1))**2
+
+                    fp_f2p_er = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R))
+
+                    Phi_d = np.zeros((n,n*self.d))
+                    for i in range(n):
+                        for j in range(n):
+                            for k in range(self.d):
+                                Phi_d[i,j*self.d+k] = (Phi[i,j]*(-np.sqrt(2*p+1))\
+                                    + factorial(p)/factorial(2*p)*np.exp(-np.sqrt((2*p+1)*R[i,j]))*tmp1[i,j])\
+                                    * (self.x[i,k]-self.x[j,k])/np.sqrt(R[i,j])/l[k]**2
+                    
+                    #creation of matrix Phi_dd (second derivatives of exponential kernel )
+                    Phi_dd = np.zeros((n*self.d,n*self.d))
+                    for i in range(n):
+                        for k in range(self.d):
+                            for j in range(n):
+                                for ll in range (self.d):
+                                    Phi_dd[i*self.d+k,j*self.d+ll] = (Phi[i,j] * (-np.sqrt(2*p+1))**2\
+                                        + 2 * fp_f2p_er[i,j] * (-np.sqrt(2*p+1)) * tmp1[i,j] + fp_f2p_er[i,j] * tmp2[i,j])\
+                                        * (self.x[i,ll]-self.x[j,ll]) / np.sqrt(R[i,j])/l[ll]**2\
+                                        * (self.x[i,k]-self.x[j,k]) / np.sqrt(R[i,j])/l[k]**2\
+                                        + (Phi[i,j] * (-np.sqrt(2*p+1)) + fp_f2p_er[i,j] * tmp1[i,j])\
+                                        * ((np.sqrt(R[i,j]*l[k]**4) if k==ll else 0) - (self.x[i,k]-self.x[j,k])\
+                                        * (self.x[i,ll]-self.x[j,ll]) / np.sqrt(R[i,j])/l[ll]**2*l[k]**2)\
+                                        / (np.sqrt(R[i,j])*l[k]**2)**2
+                                        
+                                        
+                    A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
+
+                    H_inv = sla.inv(A)
+                    H_inv2 = H_inv@H_inv
+
+                    f = np.zeros(n*(self.d+1))
+                    f[:n] = self.f
+                    f[n:n*(self.d+1)] = self.df 
+
+                    return nla.norm(f.T@H_inv2@f/(n*np.diag(H_inv2)), ord=1)
+
+        if self.method=='RBF-Expo' or self.method=='GRBF-Expo':
             try:
                 sol = differential_evolution(func=error, bounds=(((1e-3,1e1),)*self.d), maxiter=100)
                 if sol["success"]:
                     self.l = sol["x"]
             except np.linalg.LinAlgError:
                 pass
-        elif self.method=='RBF-Matern':
+        elif self.method=='RBF-Matern' or self.method=='GRBF-Matern':
             try:
                 sol = differential_evolution(func=error, bounds=(((1e-3,1e1),)*(self.d+1)), maxiter=100)
                 if sol["success"]:

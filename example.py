@@ -39,7 +39,7 @@ options   = {}
 options   = {"Nmax":Nmax, "nrestart":nrestart, "sig0":sig0, "sigm":sigm, "Ts":Ts, "Tf":Tf,\
             "solver":solver, "l":l, "nu":nu, "optim_ip":False, "warnings":False}
 
-solf = minimize(fun=Rastrigin, x0=x0, method='GRBF', jac=df_Rastrigin,\
+solf = minimize(fun=Rastrigin, x0=x0, method='GRBF-Expo', jac=df_Rastrigin,\
     bounds=bounds, tol=None, options=options, verbose=True)
 
 print(solf)
