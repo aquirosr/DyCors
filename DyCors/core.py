@@ -170,9 +170,9 @@ class DyCorsMinimize:
             + np.sum(self.x.T**2/self.l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
         Phi = np.exp(-R/2)      # RBF-part
 
-        P   = np.hstack((np.ones((n,1)), self.x)) # polynomial part
-        Z   = np.zeros((self.d+1,self.d+1)) # zero matrix
-        A   = np.block([[Phi,P],[P.T,Z]])   # patched together
+        P = np.hstack((np.ones((n,1)), self.x)) # polynomial part
+        Z = np.zeros((self.d+1,self.d+1)) # zero matrix
+        A = np.block([[Phi,P],[P.T,Z]])   # patched together
 
         # right-hand side
         F     = np.zeros(n+self.d+1)
@@ -193,18 +193,18 @@ class DyCorsMinimize:
             + np.sum(self.x**2/self.l**2, axis=1)[:,np.newaxis]
         Phi = np.exp(-R.T/2)    # RBF-part
 
-        P   = np.hstack((np.ones((m,1)),y)) # polynomial part
-        A   = np.block([Phi,P])             # patched together
+        P = np.hstack((np.ones((m,1)),y)) # polynomial part
+        A = np.block([Phi,P])             # patched together
         return np.dot(A, self.s)             # evaluation
 
     def surrogateRBF_Matern(self):
         # Half integer simplification of Matérn Kernel
         #   (self.x,self.f): high-dimensional points and associated costs f(x)
-        p = round(self.nu-1/2)
+        p = int(round(self.nu-1/2)+1e-8)
         n = self.x.shape[0]
 
         # RBF-matrix
-        R   = -2*np.dot(self.x/self.l, self.x.T/self.l[:,np.newaxis]) + np.sum(self.x**2/self.l**2, axis=1)\
+        R = -2*np.dot(self.x/self.l, self.x.T/self.l[:,np.newaxis]) + np.sum(self.x**2/self.l**2, axis=1)\
             + np.sum(self.x.T**2/self.l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
         R[R<=0.0] = EPS
 
@@ -215,9 +215,9 @@ class DyCorsMinimize:
                 * (2*np.sqrt((2*p+1)*R))**(p-i)
         Phi *= tmp
 
-        P   = np.hstack((np.ones((n,1)), self.x))      # polynomial part
-        Z   = np.zeros((self.d+1,self.d+1))            # zero matrix
-        A   = np.block([[Phi,P],[P.T,Z]])              # patched together
+        P = np.hstack((np.ones((n,1)), self.x))      # polynomial part
+        Z = np.zeros((self.d+1,self.d+1))            # zero matrix
+        A = np.block([[Phi,P],[P.T,Z]])              # patched together
 
         # right-hand side
         F     = np.zeros(n+self.d+1)
@@ -231,13 +231,13 @@ class DyCorsMinimize:
         #   self.x: RBF-points
         #   self.s: coefficient vector of surrogate surface
         #   self.yk: trial points
-        p = round(self.nu-1/2)
+        p = int(round(self.nu-1/2)+1e-8)
 
         y = np.array(yk)
         m = y.shape[0]
 
         # RBF-matrix (evaluated at {y})
-        R   = -2*np.dot(self.x/self.l, y.T/self.l[:,np.newaxis]) + np.sum(y**2/self.l**2, axis=1)\
+        R = -2*np.dot(self.x/self.l, y.T/self.l[:,np.newaxis]) + np.sum(y**2/self.l**2, axis=1)\
             + np.sum(self.x**2/self.l**2, axis=1)[:,np.newaxis]
         R[R<=0.0] = EPS
 
@@ -248,8 +248,8 @@ class DyCorsMinimize:
                 * (2*np.sqrt((2*p+1)*R.T))**(p-i)
         Phi *= tmp
 
-        P   = np.hstack((np.ones((m,1)),y))            # polynomial part
-        A   = np.block([Phi,P])                        # patched together
+        P = np.hstack((np.ones((m,1)),y))            # polynomial part
+        A = np.block([Phi,P])                        # patched together
         return np.dot(A, self.s)                        # evaluation
 
     def surrogateGRBF_Expo(self):
@@ -258,7 +258,24 @@ class DyCorsMinimize:
         # RBF-matrix
         R   = -2*np.dot(self.x/self.l, self.x.T/self.l[:,np.newaxis]) + np.sum(self.x**2/self.l**2, axis=1)\
             + np.sum(self.x.T**2/self.l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
-        Phi = np.exp(-R/2)
+        Phi = np.exp(-R/2) 
+        
+        # First derivative
+        _Phi_d = np.zeros((n,n,self.d))
+        _Phi_d = -2*Phi[...,np.newaxis] * (self.x[:,np.newaxis,:] - self.x[np.newaxis,:,:])\
+            / (2*self.l[np.newaxis,np.newaxis,:]**2)
+        Phi_d = _Phi_d.reshape((n,n*self.d))
+
+        # Second derivative
+        Phi_dd = np.zeros((n,self.d,n,self.d))
+        Phi_dd = - 2*_Phi_d[:,np.newaxis,:,:]\
+            * (self.x[:,:,np.newaxis,np.newaxis] - self.x.T[np.newaxis,:,:,np.newaxis])\
+            / (2*self.l[np.newaxis,:,np.newaxis,np.newaxis]**2)\
+            - np.diag(np.ones(self.d))[np.newaxis,:,np.newaxis,:]\
+            * 2*Phi[:,np.newaxis,:,np.newaxis] / (2*self.l[np.newaxis,:,np.newaxis,np.newaxis]**2)
+        Phi_dd = Phi_dd.reshape((n*self.d,n*self.d))
+
+        A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
 
         # right-hand side
         F = np.zeros(n*(self.d+1))
@@ -267,26 +284,7 @@ class DyCorsMinimize:
         F[:n] = self.f
 
         # derivative function value
-        F[n:n*(self.d+1)] = self.df 
-        
-        # creation of matrix Phi_d (first derivatives of the kernel)
-        Phi_d = np.zeros((n,n*self.d))
-        for i in range(n):
-            for j in range(n):
-                for k in range(self.d):
-                    Phi_d[i,j*self.d+k] = -2/(2*self.l[k]**2)*(self.x[i,k]-self.x[j,k])*Phi[i,j]
-        
-        #creation of matrix Phi_dd (second derivatives of exponential kernel )
-        Phi_dd = np.zeros((n*self.d,n*self.d))
-        
-        for i in range(n):
-            for k in range(self.d):
-                for j in range(n):
-                    for l in range (self.d):
-                        Phi_dd[i*self.d+k,j*self.d+l] = -2*Phi_d[i,j*self.d+l]*(self.x[i,k]-self.x[j,k])/(2*self.l[k]**2)\
-                            - (2*Phi[i,j]/(2*self.l[k]**2) if k==l else 0)
-                            
-        A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
+        F[n:n*(self.d+1)] = self.df
         
         # self.s = self.la.solve(A, F, assume_a='sym')  # solution
         self.s = self.la.solve(A, F)
@@ -301,34 +299,74 @@ class DyCorsMinimize:
             + np.sum(self.x**2/self.l**2, axis=1)[:,np.newaxis]
         Phi = np.exp(-R.T/2)
         
-        # New part of matrix d_Phi  (gradient info of kernel) 
-        d_Phi = np.zeros((m,n*self.d))
-        
-        for i in range(m):
-            for j in range(n):
-                for k in range(self.d):
-                    d_Phi[i,j*self.d+k] = -2*Phi[i,j]*(y[i,k]-self.x[j,k])/(2*self.l[k]**2)
+        # First derivative 
+        d_Phi = np.zeros((m,n,self.d))
+        d_Phi = -2*Phi[...,np.newaxis] * (y[:,np.newaxis,:] - self.x[np.newaxis,:,:])\
+            / (2*self.l[np.newaxis,np.newaxis,:]**2)
+        d_Phi = d_Phi.reshape((m,n*self.d))
 
         A = np.block([[Phi,d_Phi]])
         return np.dot(A,self.s)
 
     def surrogateGRBF_Matern(self):
         # Half integer simplification of Matérn Kernel
-        p = round(self.nu-1/2)
+        p = int(round(self.nu-1/2)+1e-8)
 
         n = self.x.shape[0]
 
         # RBF-matrix
-        R   = -2*np.dot(self.x/self.l, self.x.T/self.l[:,np.newaxis]) + np.sum(self.x**2/self.l**2, axis=1)\
+        R = -2*np.dot(self.x/self.l, self.x.T/self.l[:,np.newaxis]) + np.sum(self.x**2/self.l**2, axis=1)\
             + np.sum(self.x.T**2/self.l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
         R[R<=0.0] = EPS # R=0.0 is indeterminate
         
-        Phi = factorial(p)/factorial(2*p)*np.exp(-np.sqrt((2*p+1)*R))
-        tmp = np.zeros_like(Phi)
+        # temporary matrices
+        tmp0 = np.zeros_like(R)
+        tmp1 = np.zeros_like(R)
+        tmp2 = np.zeros_like(R)
         for i in range(p+1):
-            tmp += factorial(p+i)/(factorial(i)*factorial(p-i))\
+            tmp0 += factorial(p+i) / (factorial(i) * factorial(p-i))\
                 * (2*np.sqrt((2*p+1)*R))**(p-i)
-        Phi *= tmp
+            if i<p:
+                tmp1 += factorial(p+i) / (factorial(i) * factorial(p-i))\
+                   * (p-i) * (2*np.sqrt((2*p+1)*R))**(p-i-1) * 2*np.sqrt(2*p+1)
+            if i<p-1:
+                tmp2 += factorial(p+i) / (factorial(i) * factorial(p-i))\
+                    * (p-i) * (p-i-1) * (2*np.sqrt((2*p+1)*R))**(p-i-2) * (2*np.sqrt(2*p+1))**2
+
+        fp_f2p_er = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R))
+
+        Phi = fp_f2p_er * tmp0
+
+        # First derivative
+        Phi_d = np.zeros((n,n,self.d))
+        Phi_d = (Phi[:,:,np.newaxis] * (-np.sqrt(2*p+1))\
+                + fp_f2p_er[:,:,np.newaxis] * tmp1[:,:,np.newaxis])\
+            * (self.x[:,np.newaxis,:] - self.x[np.newaxis,:,:])\
+            / np.sqrt(R[:,:,np.newaxis]) / self.l[np.newaxis,np.newaxis,:]**2
+        Phi_d = Phi_d.reshape((n,n*self.d))
+
+        # Second derivative
+        Phi_dd = np.zeros((n,self.d,n,self.d))
+        Phi_dd = (Phi[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1))**2\
+                + 2 * fp_f2p_er[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1)) * tmp1[:,np.newaxis,:,np.newaxis]\
+                + fp_f2p_er[:,np.newaxis,:,np.newaxis] * tmp2[:,np.newaxis,:,np.newaxis])\
+            * (self.x[:,np.newaxis,np.newaxis,:] - self.x[np.newaxis,np.newaxis,:,:])\
+            / np.sqrt(R[:,np.newaxis,:,np.newaxis]) / self.l[np.newaxis,np.newaxis,np.newaxis,:]**2\
+            * (self.x[:,:,np.newaxis,np.newaxis] - self.x.T[np.newaxis,:,:,np.newaxis])\
+            / np.sqrt(R[:,np.newaxis,:,np.newaxis]) / self.l[np.newaxis,:,np.newaxis,np.newaxis]**2\
+            + (Phi[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1))\
+                + fp_f2p_er[:,np.newaxis,:,np.newaxis] * tmp1[:,np.newaxis,:,np.newaxis])\
+            * (np.diag(np.ones(self.d))[np.newaxis,:,np.newaxis,:]\
+                * (np.sqrt(R[:,np.newaxis,:,np.newaxis] * self.l[np.newaxis,:,np.newaxis,np.newaxis]**4))\
+                - (self.x[:,:,np.newaxis,np.newaxis] - self.x.T[np.newaxis,:,:,np.newaxis])\
+                * (self.x[:,np.newaxis,np.newaxis,:] - self.x[np.newaxis,np.newaxis,:,:])\
+                / np.sqrt(R[:,np.newaxis,:,np.newaxis]) / self.l[np.newaxis,np.newaxis,np.newaxis,:]**2\
+                * self.l[np.newaxis,:,np.newaxis,np.newaxis]**2)\
+            / (np.sqrt(R[:,np.newaxis,:,np.newaxis])\
+                * self.l[np.newaxis,:,np.newaxis,np.newaxis]**2)**2
+        Phi_dd = Phi_dd.reshape((n*self.d,n*self.d))
+
+        A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
 
         # right-hand side
         F = np.zeros(n*(self.d+1))
@@ -339,49 +377,12 @@ class DyCorsMinimize:
         # derivative function value
         F[n:n*(self.d+1)] = self.df 
 
-        # temporary matrices
-        tmp1 = np.zeros_like(Phi)
-        tmp2 = np.zeros_like(Phi)
-        for ii in range(p):
-            tmp1 += factorial(p+ii)/(factorial(ii)*factorial(p-ii))\
-                * (p-ii)*(2*np.sqrt((2*p+1)*R))**(p-ii-1)*2*np.sqrt(2*p+1)
-            if ii<p-1:
-                tmp2 += factorial(p+ii)/(factorial(ii)*factorial(p-ii))\
-                    * (p-ii)*(p-ii-1)*(2*np.sqrt((2*p+1)*R))**(p-ii-2)*(2*np.sqrt(2*p+1))**2
-
-        fp_f2p_er = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R))
-        
-        # creation of matrix Phi_d (first derivatives of the kernel)
-        Phi_d = np.zeros((n,n*self.d))
-        for i in range(n):
-            for j in range(n):
-                for k in range(self.d):
-                    Phi_d[i,j*self.d+k] = (Phi[i,j] * (-np.sqrt(2*p+1))\
-                        + factorial(p)/factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R[i,j]))*tmp1[i,j])\
-                        * (self.x[i,k]-self.x[j,k]) / np.sqrt(R[i,j])/self.l[k]**2
-        
-        #creation of matrix Phi_dd (second derivatives of exponential kernel )
-        Phi_dd = np.zeros((n*self.d,n*self.d))
-        for i in range(n):
-            for k in range(self.d):
-                for j in range(n):
-                    for l in range(self.d):
-                        Phi_dd[i*self.d+k,j*self.d+l] = (Phi[i,j] * (-np.sqrt(2*p+1))**2\
-                            + 2 * fp_f2p_er[i,j] * (-np.sqrt(2*p+1)) * tmp1[i,j] + fp_f2p_er[i,j] * tmp2[i,j])\
-                            * (self.x[i,l]-self.x[j,l]) / np.sqrt(R[i,j])/self.l[l]**2\
-                            * (self.x[i,k]-self.x[j,k]) / np.sqrt(R[i,j])/self.l[k]**2\
-                            + (Phi[i,j] * (-np.sqrt(2*p+1)) + fp_f2p_er[i,j] * tmp1[i,j])\
-                            * ((np.sqrt(R[i,j]*self.l[k]**4) if k==l else 0) - (self.x[i,k]-self.x[j,k])\
-                            * (self.x[i,l]-self.x[j,l]) / np.sqrt(R[i,j])/self.l[l]**2*self.l[k]**2)\
-                            / (np.sqrt(R[i,j])*self.l[k]**2)**2
-        
-        A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
         # self.s = self.la.solve(A, F, assume_a='sym')  # solution
         self.s = self.la.solve(A, F)
 
     def evalGRBF_Matern(self, yk):
         # Half integer simplification of Matérn Kernel
-        p = round(self.nu-1/2)
+        p = int(round(self.nu-1/2)+1e-8)
 
         y = np.array(yk)
         m = y.shape[0] # number of points
@@ -392,26 +393,27 @@ class DyCorsMinimize:
             + np.sum(self.x**2/self.l**2, axis=1)[:,np.newaxis]
         R[R<=0.0] = EPS # R=0.0 is indeterminate
 
-        Phi = factorial(p)/factorial(2*p)*np.exp(-np.sqrt((2*p+1)*R.T))
-        tmp = np.zeros_like(Phi)
+        # temporary matrices
+        tmp0 = np.zeros_like(R.T)
+        tmp1 = np.zeros_like(R.T)
         for i in range(p+1):
-            tmp += factorial(p+i)/(factorial(i)*factorial(p-i))\
+            tmp0 += factorial(p+i)/(factorial(i)*factorial(p-i))\
                 * (2*np.sqrt((2*p+1)*R.T))**(p-i)
-        Phi *= tmp
+            if i<p:
+                tmp1 += factorial(p+i) / (factorial(i) * factorial(p-i))\
+                    * (p-i) * (2*np.sqrt((2*p+1)*R.T))**(p-i-1) * 2*np.sqrt(2*p+1)
 
-        tmp = np.zeros_like(Phi)
-        for ii in range(p):
-            tmp += factorial(p+ii)/(factorial(ii)*factorial(p-ii))\
-                * (p-ii)*(2*np.sqrt((2*p+1)*R.T))**(p-ii-1)*2*np.sqrt(2*p+1)
+        fp_f2p_er = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R.T))
 
-        # New part of matrix d_Phi  (gradient info of kernel) 
-        d_Phi = np.zeros((m,n*self.d))
-        for i in range(m):
-            for j in range(n):
-                for k in range(self.d):
-                    d_Phi[i,j*self.d+k] = (Phi[i,j] * (-np.sqrt(2*p+1))\
-                        + factorial(p)/factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R.T[i,j])) * tmp[i,j])\
-                        * (y[i,k]-self.x[j,k]) / np.sqrt(R.T[i,j]) / self.l[k]**2
+        Phi = fp_f2p_er * tmp0
+
+        # First derivative             
+        d_Phi = np.zeros((m,n,self.d))
+        d_Phi = (Phi[:,:,np.newaxis] * (-np.sqrt(2*p+1))\
+            + fp_f2p_er[:,:,np.newaxis] * tmp1[:,:,np.newaxis])\
+            * (y[:,np.newaxis,:]-self.x[np.newaxis,:,:])\
+            / np.sqrt(R.T[:,:,np.newaxis]) / self.l[np.newaxis,np.newaxis,:]**2
+        d_Phi = d_Phi.reshape((m,n*self.d))
 
         A = np.block([[Phi,d_Phi]])
         return np.dot(A,self.s)
@@ -524,21 +526,21 @@ class DyCorsMinimize:
                     return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)), ord=1)
 
                 elif self.method=='GRBF-Expo':
-                    Phi_d = np.zeros((n,n*self.d))
-                    for i in range(n):
-                        for j in range(n):
-                            for k in range(self.d):
-                                Phi_d[i,j*self.d+k] = -2/(2*l[k]**2)*(self.x[i,k]-self.x[j,k])*Phi[i,j]
-                    
-                    Phi_dd = np.zeros((n*self.d,n*self.d))
-                    
-                    for i in range(n):
-                        for k in range(self.d):
-                            for j in range(n):
-                                for ll in range (self.d):
-                                    Phi_dd[i*self.d+k,j*self.d+ll] = -2*Phi_d[i,j*self.d+ll]*(self.x[i,k]-self.x[j,k])/(2*l[k]**2)\
-                                        - (2*Phi[i,j]/(2*l[k]**2) if k==ll else 0)
-                                        
+                    # First derivative
+                    _Phi_d = np.zeros((n,n,self.d))
+                    _Phi_d = -2*Phi[...,np.newaxis] * (self.x[:,np.newaxis,:] - self.x[np.newaxis,:,:])\
+                        / (2*l[np.newaxis,np.newaxis,:]**2)
+                    Phi_d = _Phi_d.reshape((n,n*self.d))
+
+                    # Second derivative
+                    Phi_dd = np.zeros((n,self.d,n,self.d))
+                    Phi_dd = - 2*_Phi_d[:,np.newaxis,:,:]\
+                        * (self.x[:,:,np.newaxis,np.newaxis] - self.x.T[np.newaxis,:,:,np.newaxis])\
+                        / (2*l[np.newaxis,:,np.newaxis,np.newaxis]**2)\
+                        - np.diag(np.ones(self.d))[np.newaxis,:,np.newaxis,:]\
+                        * 2*Phi[:,np.newaxis,:,np.newaxis] / (2*l[np.newaxis,:,np.newaxis,np.newaxis]**2)
+                    Phi_dd = Phi_dd.reshape((n*self.d,n*self.d))
+
                     A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
 
                     H_inv = sla.inv(A)
@@ -554,19 +556,19 @@ class DyCorsMinimize:
             def error(lnu):
                 l  = lnu[:-1]
                 nu = lnu[-1]
-                p = round(nu-1/2)
+                p = int(round(nu-1/2)+1e-8)
                 
                 n = self.x.shape[0]
 
                 R   = -2*np.dot(self.x/l, self.x.T/l[:,np.newaxis]) + np.sum(self.x**2/l**2, axis=1)\
                     + np.sum(self.x.T**2/l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
-                R[R==0.0] = EPS # R=0.0 is indeterminate
+                R[R<=0.0] = EPS # R=0.0 is indeterminate
                 
-                Phi = factorial(p)/factorial(2*p)*ºnp.exp(-np.sqrt((2*p+1)*R.T))
+                Phi = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R))
                 tmp = np.zeros_like(Phi)
                 for i in range(p+1):
-                    tmp += factorial(p+i)/(factorial(i)*factorial(p-i))\
-                        * (2*np.sqrt((2*p+1)*R.T))**(p-i)
+                    tmp += factorial(p+i) / (factorial(i) * factorial(p-i))\
+                        * (2*np.sqrt((2*p+1)*R))**(p-i)
                 Phi *= tmp
 
                 if self.method=='RBF-Matern':
@@ -577,41 +579,46 @@ class DyCorsMinimize:
 
                 elif self.method=='GRBF-Matern':
                     # temporary matrices
-                    tmp1 = np.zeros_like(Phi)
-                    tmp2 = np.zeros_like(Phi)
-                    for ii in range(p):
-                        tmp1 += factorial(p+ii)/(factorial(ii)*factorial(p-ii))\
-                            * (p-ii)*(2*np.sqrt((2*p+1)*R))**(p-ii-1)*2*np.sqrt(2*p+1)
-                        if ii<p-1:
-                            tmp2 += factorial(p+ii)/(factorial(ii)*factorial(p-ii))\
-                                * (p-ii)*(p-ii-1)*(2*np.sqrt((2*p+1)*R))**(p-ii-2)*(2*np.sqrt(2*p+1))**2
+                    tmp1 = np.zeros_like(R)
+                    tmp2 = np.zeros_like(R)
+                    for i in range(p):
+                        tmp1 += factorial(p+i) / (factorial(i) * factorial(p-i))\
+                            * (p-i) * (2*np.sqrt((2*p+1)*R))**(p-i-1) * 2*np.sqrt(2*p+1)
+                        if i<p-1:
+                            tmp2 += factorial(p+i) / (factorial(i) * factorial(p-i))\
+                                * (p-i) * (p-i-1) * (2*np.sqrt((2*p+1)*R))**(p-i-2) * (2*np.sqrt(2*p+1))**2
 
                     fp_f2p_er = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R))
 
-                    Phi_d = np.zeros((n,n*self.d))
-                    for i in range(n):
-                        for j in range(n):
-                            for k in range(self.d):
-                                Phi_d[i,j*self.d+k] = (Phi[i,j]*(-np.sqrt(2*p+1))\
-                                    + factorial(p)/factorial(2*p)*np.exp(-np.sqrt((2*p+1)*R[i,j]))*tmp1[i,j])\
-                                    * (self.x[i,k]-self.x[j,k])/np.sqrt(R[i,j])/l[k]**2
+                    # First derivative
+                    Phi_d = np.zeros((n,n,self.d))
+                    Phi_d = (Phi[:,:,np.newaxis] * (-np.sqrt(2*p+1))\
+                            + fp_f2p_er[:,:,np.newaxis] * tmp1[:,:,np.newaxis])\
+                        * (self.x[:,np.newaxis,:] - self.x[np.newaxis,:,:])\
+                        / np.sqrt(R[:,:,np.newaxis]) / l[np.newaxis,np.newaxis,:]**2
+                    Phi_d = Phi_d.reshape((n,n*self.d))
+
+                    # Second derivative
+                    Phi_dd = np.zeros((n,self.d,n,self.d))
+                    Phi_dd = (Phi[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1))**2\
+                            + 2 * fp_f2p_er[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1)) * tmp1[:,np.newaxis,:,np.newaxis]\
+                            + fp_f2p_er[:,np.newaxis,:,np.newaxis] * tmp2[:,np.newaxis,:,np.newaxis])\
+                        * (self.x[:,np.newaxis,np.newaxis,:] - self.x[np.newaxis,np.newaxis,:,:])\
+                        / np.sqrt(R[:,np.newaxis,:,np.newaxis]) / l[np.newaxis,np.newaxis,np.newaxis,:]**2\
+                        * (self.x[:,:,np.newaxis,np.newaxis] - self.x.T[np.newaxis,:,:,np.newaxis])\
+                        / np.sqrt(R[:,np.newaxis,:,np.newaxis]) / l[np.newaxis,:,np.newaxis,np.newaxis]**2\
+                        + (Phi[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1))\
+                            + fp_f2p_er[:,np.newaxis,:,np.newaxis] * tmp1[:,np.newaxis,:,np.newaxis])\
+                        * (np.diag(np.ones(self.d))[np.newaxis,:,np.newaxis,:]\
+                            * (np.sqrt(R[:,np.newaxis,:,np.newaxis] * l[np.newaxis,:,np.newaxis,np.newaxis]**4))\
+                            - (self.x[:,:,np.newaxis,np.newaxis] - self.x.T[np.newaxis,:,:,np.newaxis])\
+                            * (self.x[:,np.newaxis,np.newaxis,:] - self.x[np.newaxis,np.newaxis,:,:])\
+                            / np.sqrt(R[:,np.newaxis,:,np.newaxis]) / l[np.newaxis,np.newaxis,np.newaxis,:]**2\
+                            * l[np.newaxis,:,np.newaxis,np.newaxis]**2)\
+                        / (np.sqrt(R[:,np.newaxis,:,np.newaxis])\
+                            * l[np.newaxis,:,np.newaxis,np.newaxis]**2)**2
+                    Phi_dd = Phi_dd.reshape((n*self.d,n*self.d))                    
                     
-                    #creation of matrix Phi_dd (second derivatives of exponential kernel )
-                    Phi_dd = np.zeros((n*self.d,n*self.d))
-                    for i in range(n):
-                        for k in range(self.d):
-                            for j in range(n):
-                                for ll in range (self.d):
-                                    Phi_dd[i*self.d+k,j*self.d+ll] = (Phi[i,j] * (-np.sqrt(2*p+1))**2\
-                                        + 2 * fp_f2p_er[i,j] * (-np.sqrt(2*p+1)) * tmp1[i,j] + fp_f2p_er[i,j] * tmp2[i,j])\
-                                        * (self.x[i,ll]-self.x[j,ll]) / np.sqrt(R[i,j])/l[ll]**2\
-                                        * (self.x[i,k]-self.x[j,k]) / np.sqrt(R[i,j])/l[k]**2\
-                                        + (Phi[i,j] * (-np.sqrt(2*p+1)) + fp_f2p_er[i,j] * tmp1[i,j])\
-                                        * ((np.sqrt(R[i,j]*l[k]**4) if k==ll else 0) - (self.x[i,k]-self.x[j,k])\
-                                        * (self.x[i,ll]-self.x[j,ll]) / np.sqrt(R[i,j])/l[ll]**2*l[k]**2)\
-                                        / (np.sqrt(R[i,j])*l[k]**2)**2
-                                        
-                                        
                     A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
 
                     H_inv = sla.inv(A)
@@ -624,16 +631,18 @@ class DyCorsMinimize:
                     return nla.norm(f.T@H_inv2@f/(n*np.diag(H_inv2)), ord=1)
 
         if self.method=='RBF-Expo' or self.method=='GRBF-Expo':
+            error0 = error(self.l)
             try:
                 sol = differential_evolution(func=error, bounds=(((1e-3,1e1),)*self.d), maxiter=100)
-                if sol["success"]:
+                if sol["fun"]<error0:
                     self.l = sol["x"]
             except np.linalg.LinAlgError:
                 pass
         elif self.method=='RBF-Matern' or self.method=='GRBF-Matern':
+            error0 = error(np.concatenate((self.l,[self.nu])))
             try:
-                sol = differential_evolution(func=error, bounds=(((1e-3,1e1),)*(self.d+1)), maxiter=100)
-                if sol["success"]:
+                sol = differential_evolution(func=error, bounds=(((1e-3,1e1),)*self.d+((0.5,2e1),)), maxiter=100)
+                if sol["fun"]<error0:
                     self.l = sol["x"][:-1]
                     self.nu = sol["x"][-1]
             except np.linalg.LinAlgError:
