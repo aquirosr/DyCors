@@ -490,8 +490,10 @@ class DyCorsMinimize:
         if (self.fnew<self.fB):
             self.xB, self.fB = self.xnew, self.fnew
             self.Cs += 1
+            self.Cf  = 0
         else:
             self.Cf += 1
+            self.Cs  = 0
 
         if (self.Cs>=self.Ts):
             self.sig *= 2
@@ -550,7 +552,7 @@ class DyCorsMinimize:
                     f[:n] = self.f
                     f[n:n*(self.d+1)] = self.df 
 
-                    return nla.norm(f.T@H_inv2@f/(n*np.diag(H_inv2)), ord=1)
+                    return nla.norm(f.T@H_inv2@f/(n*(self.d+1)*np.diag(H_inv2)), ord=1)
 
         elif self.method=='RBF-Matern' or self.method=='GRBF-Matern':
             def error(lnu):
@@ -628,12 +630,12 @@ class DyCorsMinimize:
                     f[:n] = self.f
                     f[n:n*(self.d+1)] = self.df 
 
-                    return nla.norm(f.T@H_inv2@f/(n*np.diag(H_inv2)), ord=1)
+                    return nla.norm(f.T@H_inv2@f/(n*(self.d+1)*np.diag(H_inv2)), ord=1)
 
         if self.method=='RBF-Expo' or self.method=='GRBF-Expo':
             error0 = error(self.l)
             try:
-                sol = differential_evolution(func=error, bounds=(((1e-3,1e1),)*self.d), maxiter=100)
+                sol = differential_evolution(func=error, bounds=(((1e-2,2e0),)*self.d), strategy='rand2bin', maxiter=100)
                 if sol["fun"]<error0:
                     self.l = sol["x"]
             except np.linalg.LinAlgError:
@@ -641,7 +643,7 @@ class DyCorsMinimize:
         elif self.method=='RBF-Matern' or self.method=='GRBF-Matern':
             error0 = error(np.concatenate((self.l,[self.nu])))
             try:
-                sol = differential_evolution(func=error, bounds=(((1e-3,1e1),)*self.d+((0.5,2e1),)), maxiter=100)
+                sol = differential_evolution(func=error, bounds=(((1e-2,2e0),)*self.d+((0.5,2e1),)), strategy='rand2bin', maxiter=100)
                 if sol["fun"]<error0:
                     self.l = sol["x"][:-1]
                     self.nu = sol["x"][-1]
