@@ -4,15 +4,127 @@ import numpy.linalg as nla
 import scipy.linalg as sla
 from scipy.special import factorial
 from scipy.optimize import OptimizeResult, differential_evolution
+import multiprocessing
 import warnings
+
+from dask_jobqueue import SLURMCluster
+from dask.distributed import Client
 
 EPS = np.finfo(np.float64).eps
 
 DEFAULT_OPTIONS = {"Nmax":50, "nrestart":6, "sig0":0.2, "sigm":1e3*EPS, "Ts":3, "Tf":5,\
-                    "solver":"scipy", "l":np.sqrt(0.5), "nu":5/2, "optim_ip":False, "warnings":True}
+                    "l":np.sqrt(0.5), "nu":5/2, "optim_ip":False, "warnings":True}
 METHODS = ['RBF-Expo', 'RBF-Matern', 'GRBF-Expo', 'GRBF-Matern']
 
-def minimize(fun, x0, args=(), method='RBF-Expo', jac=None, bounds=None, tol=None, options=None, verbose=True):
+NCORES = multiprocessing.cpu_count()
+PAR_DEFAULT_OPTIONS = {'SLURM':False, 'cores_per_feval':1, 'par_fevals':NCORES, 'memory':'1GB',\
+                        'walltime':'00:10:00', 'queue':'regular'}
+
+def minimize(fun, x0, args=(), method='RBF-Expo', jac=None, bounds=None, tol=None,\
+    options=None, parallel=False, par_options=None, verbose=True):
+    """Minimization of scalar function of one or more variables using DyCors algorithm.
+
+    Parameters
+    ----------
+    fun : callable
+        The objective function to be minimized.
+
+            ``fun(x, *args) -> float``
+
+        where ``x`` is an 1-D array with shape (d,) and ``args``
+        is a tuple of the fixed parameters needed to completely
+        specify the function.
+    x0 : ndarray, shape (m,d,)
+        Starting sampling points. m is the number of sampling points
+        and d is the number of dimensions.
+    args : tuple, optional
+        Extra arguments passed to the objective function and its
+        derivatives (`fun` and `jac` functions).
+    method : str, optional
+        Type of algorithm. Should be:
+
+            - 'RBF-Expo'   : derivative-free with exponential kernel
+            - 'RBF-Matern' : derivative-free with Matérn kernel
+            - 'GRBF-Expo'  : gradient-enhanced with exponential kernel
+            - 'GRBF-Matern': gradient-enhanced with Matérn kernel
+        
+        The default method is 'RBF-Expo'.
+    jac : callable, optional
+        It should return the gradient of `fun`.
+
+            ``jac(x, *args) -> array_like, shape (d,)``
+
+        where ``x`` is an 1-D array with shape (d,) and ``args``
+        is a tuple of the fixed parameters needed to completely
+        specify the function.
+        Only necessary for 'GRBF-Expo' and 'GRBF-Matern' methods.
+    bounds : ndarray, shape (d,2,), optional
+        Bounds on variables. If not provided, the default is not to
+        use any bounds on variables.
+    tol : float, optional
+        Tolerance for termination. If not provided, optimization ends
+        when all the iterations are completed.
+    options : dict, optional
+        A dictionary of solver options:
+
+            Nmax : int
+                Maximum number of function evaluations per restart in serial.
+            nrestart : int
+                Number of restarts.
+            sig0 : float
+                Initial standard deviation to create new trial points.
+            sigm : float
+                Minimum standard deviation to create new trial points.
+            Ts : int
+                Number of consecutive successful function evaluations before
+                increasing the standard deviation to create new trial points.
+            Tf : int
+                Number of consecutive unsuccessful function evaluations before
+                decreasing the standard deviation to create new trial points.
+            l : float
+                Kernel internal parameter. Kernel width.
+            nu : float (half integer)
+                Matérn kernel internal parameter. Order of the Bessel Function.
+            optim_ip : boolean
+                Whether or not to use optimization of internal parameters.
+            warnings : boolean
+                Whether or not to print solver warnings.
+        
+    parallel: boolean, optional
+        Whether or not to use parallel function evaluations. The default is
+        to run in serial.
+    par_options : dict, optional
+        A dictionary of options to set the task manager:
+
+            SLURM : boolean
+                Whether or not the computations are carried out by SLURM.
+                To use with supercomputers.
+            cores_per_feval : int
+                Number of cores to use in each function evaluation.
+            par_fevals : int
+                Number of function evaluations to run in parallel.
+            memory : str
+                Requested memory for each function evaluation. To use only
+                if SLURM is set to True.
+            walltime : str
+                Requested wall time for each function evaluation. To use only
+                if SLURM is set to True.
+            queue : str
+                Name of the partition. To use only is SLURM is set to True.
+
+    verbose : boolean, optional
+        Whether or not to print information of the solver iterations.
+
+    Returns
+    -------
+    res : OptimizeResult
+        The optimization result represented as a ``OptimizeResult`` object.
+        Important attributes are: ``x`` the solution array, ``success`` a
+        Boolean flag indicating if the optimizer exited successfully and
+        ``message`` which describes the cause of the termination.
+    
+    """
+
     # check options are ok
     if not callable(fun):
         raise TypeError('fun is not callable')
@@ -35,22 +147,31 @@ def minimize(fun, x0, args=(), method='RBF-Expo', jac=None, bounds=None, tol=Non
         for key in DEFAULT_OPTIONS:
             if key not in options.keys():
                 options[key] = DEFAULT_OPTIONS[key]
-    
-    solvers = ['numpy', 'scipy']
-    if options["solver"] not in solvers:
-        raise ValueError('invalid solver %s,\n  valid options are %s'%(options["solver"], solvers))
+
+    if parallel:
+        if par_options is None:
+            par_options = PAR_DEFAULT_OPTIONS
+        else:
+            for key in PAR_DEFAULT_OPTIONS:
+                if key not in par_options.keys():
+                    par_options[key] = PAR_DEFAULT_OPTIONS[key]
+    else:
+        par_options = None
 
     # ignore annoying warnings
     if not options["warnings"]:
         warnings.filterwarnings("ignore", category=sla.LinAlgWarning)
         warnings.filterwarnings("ignore", category=RuntimeWarning)
+        warnings.filterwarnings("ignore", category=UserWarning)
 
     # run the optimization
-    DyCorsMin = DyCorsMinimize(fun, x0, args, method, jac, bounds, tol, options, verbose)
+    DyCorsMin = DyCorsMinimize(fun, x0, args, method, jac, bounds, tol, options, parallel,\
+        par_options, verbose)
     return DyCorsMin()
 
 class DyCorsMinimize:
-    def __init__(self, fun, x0, args, method, jac, bounds, tol, options, verbose):
+    def __init__(self, fun, x0, args, method, jac, bounds, tol, options, parallel,\
+        par_options, verbose):
         self.fun = fun
         self.x0 = x0
         self.args = args
@@ -59,6 +180,8 @@ class DyCorsMinimize:
         self.bounds = bounds
         self.tol = tol
         self.options = options
+        self.parallel = parallel
+        self.par_options = par_options
         self.verbose = verbose
 
         if self.method=='RBF-Expo':
@@ -79,10 +202,21 @@ class DyCorsMinimize:
         else:
             self.grad = False
 
-        if options["solver"]=='numpy':
-            self.la = nla
-        elif options["solver"]=='scipy':
-            self.la = sla
+        self.la = sla
+
+        # Start parallel objects
+        if self.parallel:
+            self.SLURM = self.par_options['SLURM']
+            self.cores = self.par_options['cores_per_feval']
+            self.procs = self.par_options['par_fevals']
+            
+            if self.SLURM:
+                self.memory = self.par_options['memory']
+                self.wt     = self.par_options['walltime']
+                self.queue  = self.par_options['queue']
+        else:
+            self.cores = 1
+            self.procs = 1
 
         self.m, self.d   = self.x0.shape # size of initial population, dimensionality
         if self.bounds is not None:
@@ -113,22 +247,50 @@ class DyCorsMinimize:
         self.converged   = False
 
     def __call__(self):
+        # First, start Client
+        if self.parallel and self.SLURM:
+            cluster = SLURMCluster(n_workers=self.procs, cores=self.cores, processes=1,\
+                                        memory=self.memory, walltime=self.wt, queue=self.queue)
+            client = Client(cluster)
+        else:
+            client = Client(n_workers=self.procs, threads_per_worker=self.cores,\
+                            processes=False)
+        
         try:
             for kk in range(self.nrestart):
                 if self.verbose:
                     print('nits = %d'%(kk+1))
                 while (self.ic < self.Np):
-                    self.surrogateFunc() # fit response surface model
+                    # fit response surface model
+                    self.surrogateFunc()
 
-                    self.trialPoints() # trial points
-                    self.selectNewPt()
-                    self.fnew = np.apply_along_axis(self.fun, 1, [self.xnew], *self.args) # f()
+                    # generate trial points and select the bests
+                    self.trialPoints()
+                    self.selectNewPts()
+
+                    # submit parallel fevals
+                    futf = client.map(self.par_fun, [self.fun for k in range(self.procs)],\
+                        self.xnew) # f()
                     if self.grad:
-                        self.dfnew = np.apply_along_axis(self.jac, 1, [self.xnew], *self.args).flatten() #df()
-                    self.update()
+                        futdf = client.map(self.par_fun, [self.jac for k in range(self.procs)],\
+                            self.xnew) # df()
+                    
+                    # gather data
+                    self.fnew = []
+                    for k in futf:
+                        self.fnew.append(k.result()[0])
+                    self.fnew = np.asarray(self.fnew)
 
+                    if self.grad:
+                        self.dfnew = []
+                        for k in futdf:
+                            self.dfnew.append(k.result()[:])
+                        self.dfnew = np.asarray(self.dfnew).flatten()
+
+                    self.update()
+                    
                     self.ic += 1
-                    self.fevals = self.Np*(kk)+self.ic+self.m
+                    self.fevals = self.Np*(kk)*self.procs+self.ic*self.procs+self.m
                     if (self.fevals%5 == 0 and self.verbose):
                         print('  fevals = %d | fmin = %.2e'%(self.fevals, self.fB[0]))
 
@@ -139,8 +301,9 @@ class DyCorsMinimize:
                     task_str = 'CONVERGED'
                     warnflag = 0
                     break
-
-                self.restart() # restart optimization
+                
+                # restart optimization
+                self.restart()
 
             if not self.converged:
                 task_str = 'STOP: TOTAL NO. of ITERATIONS REACHED LIMIT'
@@ -153,12 +316,15 @@ class DyCorsMinimize:
             task_str = 'STOP: SINGULAR MATRIX'
             warnflag = 2
 
-        return OptimizeResult(fun=self.fB,
+        return OptimizeResult(fun=self.fB[0],
                           jac=np.apply_along_axis(self.jac, 1, [self.xB], *self.args) if self.grad else None,
                           nfev=self.fevals,
                           njev=self.fevals if self.grad else None,
                           nit=kk+1, status=warnflag, message=task_str,
                           x=self.xB, success=(warnflag==0), hess_inv=None)
+
+    def par_fun(self, fun, xnew):
+        return np.apply_along_axis(fun, 1, [xnew], *self.args)
 
     def surrogateRBF_Expo(self):
         # build a surrogate surface using cubic RBF's + linear polynomial
@@ -447,7 +613,7 @@ class DyCorsMinimize:
         else:
             self.yk = yk.copy()
 
-    def selectNewPt(self):
+    def selectNewPts(self):
         n = self.x.shape[0]
         s = self.evalSurr(self.yk) # estimate function value
 
@@ -471,15 +637,20 @@ class DyCorsMinimize:
         wR, wD = G[nnn], 1 - G[nnn]
         V      = wR*VR + wD*VD # full weight
 
-        # select the next point (avoid singular RBF matrix)
-        iB, iP = np.argsort(V), 0
-        xnew  = self.yk[iB[iP],:]
-        while (xnew.tolist() in self.x.tolist()):
-            iP  +=1
-            if iP>=iB.shape[0]:
-                break
-            xnew = self.yk[iB[iP],:]
-        self.xnew = xnew
+        # select the next points (avoid singular RBF matrix)
+        iB, iP, iX = np.argsort(V), 0, 0
+
+        self.xnew = []
+        while len(self.xnew)<self.procs:
+            xnew  = self.yk[iB[iP+iX],:]
+            while (xnew.tolist() in self.x.tolist()) or (xnew.tolist() in self.xnew):
+                iP  +=1
+                if iP>=iB.shape[0]:
+                    break
+                xnew = self.yk[iB[iP],:]
+            
+            iX += 1
+            self.xnew.append(xnew.tolist())
 
     def checkConvergence(self, fBs):
         if np.abs(fBs[-1] - fBs[-2])/fBs[-2]<=self.tol:
@@ -487,13 +658,14 @@ class DyCorsMinimize:
 
     def update(self):
         # update counters
-        if (self.fnew<self.fB):
-            self.xB, self.fB = self.xnew, self.fnew
-            self.Cs += 1
-            self.Cf  = 0
-        else:
-            self.Cf += 1
-            self.Cs  = 0
+        for i in range(self.procs):
+            if (self.fnew[i]<self.fB):
+                self.xB, self.fB = self.xnew[i], [self.fnew[i]]
+                self.Cs += 1
+                self.Cf  = 0
+            else:
+                self.Cf += 1
+                self.Cs  = 0
 
         if (self.Cs>=self.Ts):
             self.sig *= 2
@@ -503,11 +675,11 @@ class DyCorsMinimize:
             self.Cf  = 0
 
         # update information
-        self.x  = np.vstack((self.x, self.xnew[np.newaxis,:]))
+        self.x  = np.vstack((self.x, self.xnew))
         self.f  = np.concatenate((self.f, self.fnew))
         if self.grad:
             self.df  = np.concatenate((self.df, self.dfnew))
-        
+
         # update internal parameters
         if self.optim_ip and self.fevals%10==0 and self.ic>20:
             self.update_internal_params()
