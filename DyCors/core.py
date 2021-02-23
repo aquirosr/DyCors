@@ -204,7 +204,7 @@ class DyCorsMinimize:
 
         self.la = sla
 
-        # Start parallel objects
+        # Set parallel variables
         if self.parallel:
             self.SLURM = self.par_options['SLURM']
             self.cores = self.par_options['cores_per_feval']
@@ -315,6 +315,8 @@ class DyCorsMinimize:
         except np.linalg.LinAlgError:
             task_str = 'STOP: SINGULAR MATRIX'
             warnflag = 2
+
+        client.close()
 
         return OptimizeResult(fun=self.fB[0],
                           jac=np.apply_along_axis(self.jac, 1, [self.xB], *self.args) if self.grad else None,
@@ -658,14 +660,17 @@ class DyCorsMinimize:
 
     def update(self):
         # update counters
+        Cs = 0
         for i in range(self.procs):
             if (self.fnew[i]<self.fB):
                 self.xB, self.fB = self.xnew[i], [self.fnew[i]]
-                self.Cs += 1
-                self.Cf  = 0
-            else:
-                self.Cf += 1
-                self.Cs  = 0
+                Cs += 1
+        if Cs>0:
+            self.Cs += 1
+            self.Cf  = 0
+        else:
+            self.Cf += 1
+            self.Cs  = 0
 
         if (self.Cs>=self.Ts):
             self.sig *= 2
@@ -675,10 +680,10 @@ class DyCorsMinimize:
             self.Cf  = 0
 
         # update information
-        self.x  = np.vstack((self.x, self.xnew))
-        self.f  = np.concatenate((self.f, self.fnew))
+        self.x = np.vstack((self.x, self.xnew))
+        self.f = np.concatenate((self.f, self.fnew))
         if self.grad:
-            self.df  = np.concatenate((self.df, self.dfnew))
+            self.df = np.concatenate((self.df, self.dfnew))
 
         # update internal parameters
         if self.optim_ip and self.fevals%10==0 and self.ic>20:
