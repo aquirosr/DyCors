@@ -247,7 +247,7 @@ class DyCorsMinimize:
         self.converged   = False
 
     def __call__(self):
-        # First, start Client
+        # First, set up Client
         if self.parallel and self.SLURM:
             cluster = SLURMCluster(n_workers=self.procs, cores=self.cores, processes=1,\
                                         memory=self.memory, walltime=self.wt, queue=self.queue)
@@ -276,16 +276,12 @@ class DyCorsMinimize:
                             self.xnew) # df()
                     
                     # gather data
-                    self.fnew = []
-                    for k in futf:
-                        self.fnew.append(k.result()[0])
-                    self.fnew = np.asarray(self.fnew)
+                    fnew = client.gather(futf)
+                    self.fnew = np.asarray([k[0] for k in fnew] )
 
                     if self.grad:
-                        self.dfnew = []
-                        for k in futdf:
-                            self.dfnew.append(k.result()[:])
-                        self.dfnew = np.asarray(self.dfnew).flatten()
+                        dfnew = client.gather(futdf)
+                        self.dfnew = np.asarray(dfnew).flatten()
 
                     self.update()
                     
@@ -587,6 +583,15 @@ class DyCorsMinimize:
         return np.dot(A,self.s)
 
     def initialize(self):
+        # set up client
+        if self.parallel and self.SLURM:
+            cluster = SLURMCluster(n_workers=self.procs, cores=self.cores, processes=1,\
+                                        memory=self.memory, walltime=self.wt, queue=self.queue)
+            client = Client(cluster)
+        else:
+            client = Client(n_workers=self.procs, threads_per_worker=self.cores,\
+                            processes=False)
+
         if self.bounds is not None:
             bL = self.bL*np.ones_like(self.x0)
             bU = self.bU*np.ones_like(self.x0)
@@ -595,9 +600,20 @@ class DyCorsMinimize:
             self.x = self.x0.copy()
 
         # evaluate initial points
-        self.f = np.apply_along_axis(self.fun, 1, self.x, *self.args) #f()
+        futf = client.map(self.par_fun, [self.fun for k in range(self.m)],\
+            self.x) # f()
         if self.grad:
-            self.df = np.apply_along_axis(self.jac, 1, self.x, *self.args).flatten() #df()
+            futdf = client.map(self.par_fun, [self.jac for k in range(self.m)],\
+                self.x) # df()
+
+        # gather data
+        f = client.gather(futf)
+        self.f = np.asarray([k[0] for k in f] )
+
+        if self.grad:
+            df = client.gather(futdf)
+            self.df = np.asarray(df).flatten()
+
         self.Cs, self.Cf = 0, 0     # counter: success, failure
 
     def trialPoints(self):
