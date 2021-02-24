@@ -615,6 +615,8 @@ class DyCorsMinimize:
             self.df = np.asarray(df).flatten()
 
         self.Cs, self.Cf = 0, 0     # counter: success, failure
+        
+        client.close()
 
     def trialPoints(self):
         p  = min(20/self.d, 1)*(1-log(self.ic+1)/log(self.Np)) # probability for coordinates
@@ -919,11 +921,12 @@ class DyCorsMinimize:
 
                     return nla.norm(f.T@H_inv2@f/(n*(self.d+1)*np.diag(H_inv2)), ord=1)
 
+        from scipy.optimize import NonlinearConstraint
         nlc = NonlinearConstraint(constr_f, 0, 0.1/EPS)
         if self.method=='RBF-Expo' or self.method=='GRBF-Expo':
             error0 = error(self.l)
             try:
-                sol = differential_evolution(func=error, bounds=(((1e-2,2e0),)*self.d),\
+                sol = differential_evolution(func=error, bounds=(((1e-5,1e1),)*self.d),\
                     constraints=(nlc), strategy='rand2bin', maxiter=100)
                 if sol["fun"]<error0:
                     self.l = sol["x"]
@@ -932,7 +935,7 @@ class DyCorsMinimize:
         elif self.method=='RBF-Matern' or self.method=='GRBF-Matern':
             error0 = error(np.concatenate((self.l,[self.nu])))
             try:
-                sol = differential_evolution(func=error, bounds=(((1e-2,2e0),)*self.d+((0.5,2e1),)),\
+                sol = differential_evolution(func=error, bounds=(((1e-5,1e1),)*self.d+((0.5,5e1),)),\
                     constraints=(nlc), strategy='rand2bin', maxiter=100)
                 if sol["fun"]<error0:
                     self.l = sol["x"][:-1]
