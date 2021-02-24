@@ -3,7 +3,7 @@ import numpy as np
 import numpy.linalg as nla
 import scipy.linalg as sla
 from scipy.special import factorial
-from scipy.optimize import OptimizeResult, differential_evolution
+from scipy.optimize import OptimizeResult, differential_evolution, NonlinearConstraint
 import multiprocessing
 import warnings
 
@@ -706,6 +706,100 @@ class DyCorsMinimize:
             self.update_internal_params()
 
     def update_internal_params(self):
+        def constr_f(ip):
+            if self.method=='RBF-Expo' or self.method=='GRBF-Expo':
+                l = ip
+                n = self.x.shape[0]
+
+                R   = -2*np.dot(self.x/l, self.x.T/l[:,np.newaxis]) + np.sum(self.x**2/l**2, axis=1)\
+                    + np.sum(self.x.T**2/l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
+                Phi = np.exp(-R/2)
+                
+                if self.method=='RBF-Expo':
+                    return nla.cond(Phi)
+                elif self.method=='GRBF-Expo':
+                    _Phi_d = np.zeros((n,n,self.d))
+                    _Phi_d = -2*Phi[...,np.newaxis] * (self.x[:,np.newaxis,:] - self.x[np.newaxis,:,:])\
+                        / (2*l[np.newaxis,np.newaxis,:]**2)
+                    Phi_d = _Phi_d.reshape((n,n*self.d))
+
+                    # Second derivative
+                    Phi_dd = np.zeros((n,self.d,n,self.d))
+                    Phi_dd = - 2*_Phi_d[:,np.newaxis,:,:]\
+                        * (self.x[:,:,np.newaxis,np.newaxis] - self.x.T[np.newaxis,:,:,np.newaxis])\
+                        / (2*l[np.newaxis,:,np.newaxis,np.newaxis]**2)\
+                        - np.diag(np.ones(self.d))[np.newaxis,:,np.newaxis,:]\
+                        * 2*Phi[:,np.newaxis,:,np.newaxis] / (2*l[np.newaxis,:,np.newaxis,np.newaxis]**2)
+                    Phi_dd = Phi_dd.reshape((n*self.d,n*self.d))
+
+                    A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
+                    
+                    return nla.cond(A)
+            elif self.method=='RBF-Matern' or self.method=='GRBF-Matern':
+                l  = ip[:-1]
+                nu = ip[-1]
+                p = int(round(nu-1/2)+1e-8)
+                
+                n = self.x.shape[0]
+
+                R   = -2*np.dot(self.x/l, self.x.T/l[:,np.newaxis]) + np.sum(self.x**2/l**2, axis=1)\
+                    + np.sum(self.x.T**2/l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
+                R[R<=0.0] = EPS # R=0.0 is indeterminate
+                
+                Phi = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R))
+                tmp = np.zeros_like(Phi)
+                for i in range(p+1):
+                    tmp += factorial(p+i) / (factorial(i) * factorial(p-i))\
+                        * (2*np.sqrt((2*p+1)*R))**(p-i)
+                Phi *= tmp
+                
+                if self.method=='RBF-Matern':
+                    return nla.cond(Phi)
+                elif self.method=='GRBF-Matern':
+                    # temporary matrices
+                    tmp1 = np.zeros_like(R)
+                    tmp2 = np.zeros_like(R)
+                    for i in range(p):
+                        tmp1 += factorial(p+i) / (factorial(i) * factorial(p-i))\
+                            * (p-i) * (2*np.sqrt((2*p+1)*R))**(p-i-1) * 2*np.sqrt(2*p+1)
+                        if i<p-1:
+                            tmp2 += factorial(p+i) / (factorial(i) * factorial(p-i))\
+                                * (p-i) * (p-i-1) * (2*np.sqrt((2*p+1)*R))**(p-i-2) * (2*np.sqrt(2*p+1))**2
+
+                    fp_f2p_er = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R))
+
+                    # First derivative
+                    Phi_d = np.zeros((n,n,self.d))
+                    Phi_d = (Phi[:,:,np.newaxis] * (-np.sqrt(2*p+1))\
+                            + fp_f2p_er[:,:,np.newaxis] * tmp1[:,:,np.newaxis])\
+                        * (self.x[:,np.newaxis,:] - self.x[np.newaxis,:,:])\
+                        / np.sqrt(R[:,:,np.newaxis]) / l[np.newaxis,np.newaxis,:]**2
+                    Phi_d = Phi_d.reshape((n,n*self.d))
+
+                    # Second derivative
+                    Phi_dd = np.zeros((n,self.d,n,self.d))
+                    Phi_dd = (Phi[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1))**2\
+                            + 2 * fp_f2p_er[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1)) * tmp1[:,np.newaxis,:,np.newaxis]\
+                            + fp_f2p_er[:,np.newaxis,:,np.newaxis] * tmp2[:,np.newaxis,:,np.newaxis])\
+                        * (self.x[:,np.newaxis,np.newaxis,:] - self.x[np.newaxis,np.newaxis,:,:])\
+                        / np.sqrt(R[:,np.newaxis,:,np.newaxis]) / l[np.newaxis,np.newaxis,np.newaxis,:]**2\
+                        * (self.x[:,:,np.newaxis,np.newaxis] - self.x.T[np.newaxis,:,:,np.newaxis])\
+                        / np.sqrt(R[:,np.newaxis,:,np.newaxis]) / l[np.newaxis,:,np.newaxis,np.newaxis]**2\
+                        + (Phi[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1))\
+                            + fp_f2p_er[:,np.newaxis,:,np.newaxis] * tmp1[:,np.newaxis,:,np.newaxis])\
+                        * (np.diag(np.ones(self.d))[np.newaxis,:,np.newaxis,:]\
+                            * (np.sqrt(R[:,np.newaxis,:,np.newaxis] * l[np.newaxis,:,np.newaxis,np.newaxis]**4))\
+                            - (self.x[:,:,np.newaxis,np.newaxis] - self.x.T[np.newaxis,:,:,np.newaxis])\
+                            * (self.x[:,np.newaxis,np.newaxis,:] - self.x[np.newaxis,np.newaxis,:,:])\
+                            / np.sqrt(R[:,np.newaxis,:,np.newaxis]) / l[np.newaxis,np.newaxis,np.newaxis,:]**2\
+                            * l[np.newaxis,:,np.newaxis,np.newaxis]**2)\
+                        / (np.sqrt(R[:,np.newaxis,:,np.newaxis])\
+                            * l[np.newaxis,:,np.newaxis,np.newaxis]**2)**2
+                    Phi_dd = Phi_dd.reshape((n*self.d,n*self.d))                    
+                    
+                    A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
+                    return nla.cond(A)
+        
         if self.method=='RBF-Expo' or self.method=='GRBF-Expo':
             def error(l):
                 n = self.x.shape[0]
@@ -825,10 +919,12 @@ class DyCorsMinimize:
 
                     return nla.norm(f.T@H_inv2@f/(n*(self.d+1)*np.diag(H_inv2)), ord=1)
 
+        nlc = NonlinearConstraint(constr_f, 0, 0.1/EPS)
         if self.method=='RBF-Expo' or self.method=='GRBF-Expo':
             error0 = error(self.l)
             try:
-                sol = differential_evolution(func=error, bounds=(((1e-2,2e0),)*self.d), strategy='rand2bin', maxiter=100)
+                sol = differential_evolution(func=error, bounds=(((1e-2,2e0),)*self.d),\
+                    constraints=(nlc), strategy='rand2bin', maxiter=100)
                 if sol["fun"]<error0:
                     self.l = sol["x"]
             except np.linalg.LinAlgError:
@@ -836,7 +932,8 @@ class DyCorsMinimize:
         elif self.method=='RBF-Matern' or self.method=='GRBF-Matern':
             error0 = error(np.concatenate((self.l,[self.nu])))
             try:
-                sol = differential_evolution(func=error, bounds=(((1e-2,2e0),)*self.d+((0.5,2e1),)), strategy='rand2bin', maxiter=100)
+                sol = differential_evolution(func=error, bounds=(((1e-2,2e0),)*self.d+((0.5,2e1),)),\
+                    constraints=(nlc), strategy='rand2bin', maxiter=100)
                 if sol["fun"]<error0:
                     self.l = sol["x"][:-1]
                     self.nu = sol["x"][-1]
