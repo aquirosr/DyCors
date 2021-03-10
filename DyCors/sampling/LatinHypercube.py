@@ -1,7 +1,7 @@
 import numpy as np
 
-def SLatinHyperCube(m,d):
-    """Symmetric Latin Hypercube.
+def LatinHyperCube(m,d):
+    """Non-symmetric Latin Hypercube.
     
     Parameters
     ----------
@@ -19,20 +19,9 @@ def SLatinHyperCube(m,d):
             
     P = np.zeros((m,d),dtype=int)
     P[:,0] = np.arange(m)
-    if m%2 == 0:
-        k      = m//2
-    else:
-        k      = (m-1)//2
-        P[k,:] = (k)*np.ones((1,d))
-
+    
     for j in range(1,d):
-        P[0:k,j] = np.random.permutation(np.arange(k))
-        for i in range(k):
-            if np.random.random() < 0.5:
-                P[m-1-i,j] = m-1-P[i,j]
-            else:
-                P[m-1-i,j] = P[i,j]
-                P[i,j]     = m-1-P[i,j]
+        P[:,j] = np.random.permutation(np.arange(m))
     
     IPts = np.zeros((m,d))
     for j in range(d):
@@ -41,7 +30,7 @@ def SLatinHyperCube(m,d):
     return IPts
 
 if __name__ == "__main__":
-    print('This is test for SLHDstandard')
+    print('This is test for LHDstandard')
     dim = 2
     m = 5
     print('dim is ',dim)
@@ -49,4 +38,4 @@ if __name__ == "__main__":
     print('set seed to 5')
     np.random.seed(5)
     for i in range(3):
-        print(SLatinHyperCube(m,dim))
+        print(LatinHyperCube(m,dim))

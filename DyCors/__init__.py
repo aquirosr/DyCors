@@ -7,5 +7,5 @@ from .kernels import surrogateGRBF_Matern, evalGRBF_Matern
 
 from .result import ResultDyCors
 
-from .sampling import SLatinHyperCube
-from .sampling import RLatinHyperCube
+from .sampling import LatinHyperCube, RLatinHyperCube
+from .sampling import SLatinHyperCube, RSLatinHyperCube

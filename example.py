@@ -29,7 +29,6 @@ sig0     = np.array([0.2]*d)
 sigm     = np.array([0.2/2**6]*d)
 Ts       = 3
 Tf       = 5
-gr_thold = 5e-2
 l        = 0.5*np.ones((d,))
 nu       = 5/2
 nits_loo = 40

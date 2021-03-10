@@ -1,9 +1,15 @@
 import numpy as np
 
 def RLatinHyperCube(m,d):
-    # Latin hypercube sampling
-    #   m: number of sample points
-    #   d: dimension
+    """Non-symmetric random Latin Hypercube.
+    
+    Parameters
+    ----------
+    m : int
+        Number of sampling points.
+    d : int
+        Number of dimensions.
+    """
 
     bounds = np.zeros((m+1,d,))
     for i in range(d):
@@ -14,20 +20,10 @@ def RLatinHyperCube(m,d):
 
     P = np.zeros((m,d),dtype=int)
     P[:,0] = np.arange(m)
-    if m%2 == 0:
-        k      = m//2
-    else:
-        k      = (m-1)//2
-        P[k,:] = (k)*np.ones((1,d))
 
     for j in range(1,d):
-        P[0:k,j] = np.random.permutation(np.arange(k))
-        for i in range(k):
-            if np.random.random() < 0.5:
-                P[m-1-i,j] = m-1-P[i,j]
-            else:
-                P[m-1-i,j] = P[i,j]
-                P[i,j]     = m-1-P[i,j]
+        P[:,j] = np.random.permutation(np.arange(m))
+    
     IPts = np.zeros((m,d))
     for j in range(d):
         for i in range(m):
@@ -35,7 +31,7 @@ def RLatinHyperCube(m,d):
     return IPts
 
 if __name__ == "__main__":
-    print('This is test for SLHDstandard')
+    print('This is test for LHDstandard')
     dim = 2
     m = 5
     print('dim is ',dim)
@@ -43,4 +39,4 @@ if __name__ == "__main__":
     print('set seed to 5')
     np.random.seed(5)
     for i in range(3):
-        print(LatinHyperCube(m, dim))
+        print(RLatinHyperCube(m, dim))
