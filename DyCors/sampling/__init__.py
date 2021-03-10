@@ -1,0 +1,2 @@
+from .SymLatinHypercube import SLatinHyperCube
+from .RandLatinHypercube import RLatinHyperCube

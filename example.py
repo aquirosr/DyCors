@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 
 from DyCors import *
 
-eps = np.finfo(np.float64).eps
-
 def Rastrigin(x):
     f = 10*len(x) + sum(x*x - 10*np.cos(2*np.pi*x))
     return f
@@ -26,24 +24,28 @@ x0 = np.outer(m*[1],bounds[:,0]) + np.outer(m*[1],bounds[:,1]-bounds[:,0])\
 # x0 = np.outer(m*[1],bounds[:,0]) + np.outer(m*[1],bounds[:,1]-bounds[:,0])\
 #           *RLatinHyperCube(m,d)
 
-Nmax     = 50
-nrestart = 6
+Nmax     = 250
 sig0     = np.array([0.2]*d)
-sigm     = np.array([1e3*eps]*d)
+sigm     = np.array([0.2/2**6]*d)
 Ts       = 3
 Tf       = 5
+gr_thold = 5e-2
 l        = 0.5*np.ones((d,))
 nu       = 5/2
-options  = {"Nmax":Nmax, "nrestart":nrestart, "sig0":sig0, "sigm":sigm, "Ts":Ts, "Tf":Tf,\
-            "l":l, "nu":nu, "optim_ip":False, "warnings":False}
+nits_loo = 40
+options  = {"Nmax":Nmax, "sig0":sig0, "sigm":sigm, "Ts":Ts, "Tf":Tf, "l":l, "nu":nu,
+            "optim_loo":False, "nits_loo":nits_loo, "warnings":False}
 parallel    = False
-par_options = {'SLURM':False, 'cores_per_feval':1, 'par_fevals':4, 'memory':'1GB',\
-                'walltime':'00:10:00', 'queue':'regular'}
+par_options = {'SLURM':False, 'cores_per_feval':1, 'par_fevals':4, 'memory':'1GB',
+               'walltime':'00:10:00', 'queue':'regular'}
 
-solf = minimize(fun=Rastrigin, x0=x0, args=(), method='RBF-Expo', jac=df_Rastrigin, bounds=bounds,\
-                tol=None, options=options, parallel=parallel, par_options=par_options, verbose=True)
+solf = minimize(fun=Rastrigin, x0=x0, args=(), method='GRBF-Expo', jac=df_Rastrigin, bounds=bounds,
+                options=options, parallel=parallel, par_options=par_options, verbose=True)
 
 print(solf)
 
 print('x_opt = ',solf["x"])
 print('f(x_opt) = %.8f'%solf["fun"])
+
+solf.plot()
+plt.show()
