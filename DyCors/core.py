@@ -418,7 +418,10 @@ class DyCorsMinimize:
         """
         n = self.x.shape[0]
         # estimate function value
-        s = self.evalSurr(self.x, self.s, self.yk, self.l)
+        if self.method=="RBF-Expo" or self.method=="GRBF-Expo":
+            s = self.evalSurr(self.x, self.s, self.yk, self.l)
+        elif self.method=="RBF-Matern" or self.method=="GRBF-Matern":
+            s = self.evalSurr(self.x, self.s, self.yk, self.l, self.nu)
 
         # compute RBF-score
         s1, s2 = s.min(), s.max()
@@ -434,7 +437,8 @@ class DyCorsMinimize:
         VD     = (d2-dis)/(d2-d1) if (abs(d2-d1)>1.e-8) else 1
 
         # combine the two scores
-        G      = [0.3,0.5,0.8,0.95] # weight rotation
+        # G      = [0.3,0.5,0.8,0.95] # weight rotation
+        G      = [0.95, 0.95, 0.99, 0.99]
         nn     = (self.ic+1)%4
         nnn    = nn - 1 if (nn!=0) else 3
         wR, wD = G[nnn], 1 - G[nnn]
