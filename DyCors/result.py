@@ -44,7 +44,7 @@ class ResultDyCors(OptimizeResult):
         
         self.hist = hist
         if self.hist is not None and m is not None:
-            self["hist"] = np.arange(m, nfev), self.hist[m:]
+            self["hist"] = np.arange(m, nfev+1), self.hist[m-1:]
         
     def __repr__(self):
         if self.scipy_dict.keys():
