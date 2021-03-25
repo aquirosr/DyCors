@@ -29,7 +29,7 @@ def surrogateRBF_Expo(x, f, l=None):
         l = np.ones(d)
     
     # RBF-matrix
-    R   = -2*np.dot(x/l, x.T/l[:,np.newaxis]) + np.sum(x**2/l**2, axis=1)\
+    R   = -2*np.dot(x/l, x.T/l[:,np.newaxis]) + np.sum(x**2/l**2, axis=1) \
         + np.sum(x.T**2/l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
     Phi = np.exp(-R/2)
 
@@ -70,7 +70,7 @@ def evalRBF_Expo(x, s, y, l=None):
         l = np.ones(d)
 
     # RBF-matrix
-    R   = -2*np.dot(x/l, y.T/l[:,np.newaxis]) + np.sum(y**2/l**2, axis=1)\
+    R   = -2*np.dot(x/l, y.T/l[:,np.newaxis]) + np.sum(y**2/l**2, axis=1) \
         + np.sum(x**2/l**2, axis=1)[:,np.newaxis]
     Phi = np.exp(-R.T/2)
 
@@ -111,7 +111,7 @@ def surrogateGRBF_Expo(x, f, df, l=None):
         l = np.ones(d)
 
     # RBF-matrix
-    R   = -2*np.dot(x/l, x.T/l[:,np.newaxis]) + np.sum(x**2/l**2, axis=1)\
+    R   = -2*np.dot(x/l, x.T/l[:,np.newaxis]) + np.sum(x**2/l**2, axis=1) \
         + np.sum(x.T**2/l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
     Phi = np.exp(-R/2) 
     
@@ -123,11 +123,12 @@ def surrogateGRBF_Expo(x, f, df, l=None):
 
     # Second derivative
     Phi_dd = np.zeros((m,d,m,d))
-    Phi_dd = - 2*_Phi_d[:,np.newaxis,:,:]\
-        * (x[:,:,np.newaxis,np.newaxis] - x.T[np.newaxis,:,:,np.newaxis])\
-        / (2*l[np.newaxis,:,np.newaxis,np.newaxis]**2)\
-        - np.diag(np.ones(d))[np.newaxis,:,np.newaxis,:]\
-        * 2*Phi[:,np.newaxis,:,np.newaxis] / (2*l[np.newaxis,:,np.newaxis,np.newaxis]**2)
+    Phi_dd = - 2*_Phi_d[:,np.newaxis,:,:] \
+        * (x[:,:,np.newaxis,np.newaxis] - x.T[np.newaxis,:,:,np.newaxis]) \
+        / (2*l[np.newaxis,:,np.newaxis,np.newaxis]**2) \
+        - np.diag(np.ones(d))[np.newaxis,:,np.newaxis,:] \
+        * 2*Phi[:,np.newaxis,:,np.newaxis] \
+        / (2*l[np.newaxis,:,np.newaxis,np.newaxis]**2)
     Phi_dd = Phi_dd.reshape((m*d,m*d))
 
     A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
@@ -170,13 +171,13 @@ def evalGRBF_Expo(x, s, y, l=None):
         l = np.ones(d)
     
     # RBF-matrix
-    R   = -2*np.dot(x/l, y.T/l[:,np.newaxis]) + np.sum(y**2/l**2, axis=1)\
+    R   = -2*np.dot(x/l, y.T/l[:,np.newaxis]) + np.sum(y**2/l**2, axis=1) \
         + np.sum(x**2/l**2, axis=1)[:,np.newaxis]
     Phi = np.exp(-R.T/2)
     
     # First derivative 
     d_Phi = np.zeros((n,m,d))
-    d_Phi = -2*Phi[...,np.newaxis] * (y[:,np.newaxis,:] - x[np.newaxis,:,:])\
+    d_Phi = -2*Phi[...,np.newaxis] * (y[:,np.newaxis,:] - x[np.newaxis,:,:]) \
         / (2*l[np.newaxis,np.newaxis,:]**2)
     d_Phi = d_Phi.reshape((n,m*d))
 

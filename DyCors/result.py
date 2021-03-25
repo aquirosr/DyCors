@@ -49,7 +49,7 @@ class ResultDyCors(OptimizeResult):
     def __repr__(self):
         if self.scipy_dict.keys():
             m = max(map(len, list(self.scipy_dict.keys()))) + 1
-            return '\n'.join([k.rjust(m) + ': ' + repr(v)
+            return "\n".join([k.rjust(m) + ": " + repr(v)
                               for k, v in sorted(self.scipy_dict.items())])
         else:
             return self.__class__.__name__ + "()"
@@ -73,8 +73,8 @@ class ResultDyCors(OptimizeResult):
             fig = plt.figure(figsize=figsize)
         
         plt.plot(self["hist"][0], self["hist"][1])
-        plt.xlabel('its', fontsize=fontsize)
-        plt.ylabel(r'$f(x)$', fontsize=fontsize)
+        plt.xlabel("its", fontsize=fontsize)
+        plt.ylabel(r"$f(x)$", fontsize=fontsize)
         plt.xticks(fontsize=fontsize)
         plt.yticks(fontsize=fontsize)
         

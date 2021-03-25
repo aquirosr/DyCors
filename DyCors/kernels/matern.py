@@ -16,7 +16,8 @@ def surrogateRBF_Matern(x, f, l=None, nu=None):
     f : ndarray, shape (m,)
         Array of function values at ``x``.
     l : ndarray, shape (d,), optional
-        Array with the values of the width internal parameter of the kernel.
+        Array with the values of the width internal parameter of the
+        kernel.
     nu : float, optional
         Order of Bessel function of the kernel.
         
@@ -39,14 +40,14 @@ def surrogateRBF_Matern(x, f, l=None, nu=None):
     p = int(round(nu-1/2)+1e-8)
 
     # RBF-matrix
-    R = -2*np.dot(x/l, x.T/l[:,np.newaxis]) + np.sum(x**2/l**2, axis=1)\
+    R = -2*np.dot(x/l, x.T/l[:,np.newaxis]) + np.sum(x**2/l**2, axis=1) \
         + np.sum(x.T**2/l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
     R[R<=0.0] = EPS
 
-    Phi = factorial(p)/factorial(2*p)*np.exp(-np.sqrt((2*p+1)*R))
+    Phi = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R))
     tmp = np.zeros_like(Phi)
     for i in range(p+1):
-        tmp += factorial(p+i)/(factorial(i)*factorial(p-i))\
+        tmp += factorial(p+i) / (factorial(i)*factorial(p-i)) \
             * (2*np.sqrt((2*p+1)*R))**(p-i)
     Phi *= tmp
 
@@ -93,14 +94,14 @@ def evalRBF_Matern(x, s, y, l=None, nu=None):
     p = int(round(nu-1/2)+1e-8)
 
     # RBF-matrix
-    R = -2*np.dot(x/l, y.T/l[:,np.newaxis]) + np.sum(y**2/l**2, axis=1)\
+    R = -2*np.dot(x/l, y.T/l[:,np.newaxis]) + np.sum(y**2/l**2, axis=1) \
         + np.sum(x**2/l**2, axis=1)[:,np.newaxis]
     R[R<=0.0] = EPS
 
-    Phi = factorial(p)/factorial(2*p)*np.exp(-np.sqrt((2*p+1)*R.T))
+    Phi = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R.T))
     tmp = np.zeros_like(Phi)
     for i in range(p+1):
-        tmp += factorial(p+i)/(factorial(i)*factorial(p-i))\
+        tmp += factorial(p+i) / (factorial(i)*factorial(p-i)) \
             * (2*np.sqrt((2*p+1)*R.T))**(p-i)
     Phi *= tmp
 
@@ -125,7 +126,8 @@ def surrogateGRBF_Matern(x, f, df, l=None, nu=None):
     df : ndarray, shape (m,d,)
         Array of function gradient values at ``x``.
     l : ndarray, shape (d,), optional
-        Array with the values of the width internal parameter of the kernel.
+        Array with the values of the width internal parameter of the
+        kernel.
     nu : float, optional
         Order of Bessel function of the kernel.
         
@@ -148,7 +150,7 @@ def surrogateGRBF_Matern(x, f, df, l=None, nu=None):
     p = int(round(nu-1/2)+1e-8)
 
     # RBF-matrix
-    R = -2*np.dot(x/l, x.T/l[:,np.newaxis]) + np.sum(x**2/l**2, axis=1)\
+    R = -2*np.dot(x/l, x.T/l[:,np.newaxis]) + np.sum(x**2/l**2, axis=1) \
         + np.sum(x.T**2/l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
     R[R<=0.0] = EPS # R=0.0 is indeterminate
     
@@ -157,14 +159,15 @@ def surrogateGRBF_Matern(x, f, df, l=None, nu=None):
     tmp1 = np.zeros_like(R)
     tmp2 = np.zeros_like(R)
     for i in range(p+1):
-        tmp0 += factorial(p+i) / (factorial(i) * factorial(p-i))\
+        tmp0 += factorial(p+i) / (factorial(i) * factorial(p-i)) \
             * (2*np.sqrt((2*p+1)*R))**(p-i)
         if i<p:
-            tmp1 += factorial(p+i) / (factorial(i) * factorial(p-i))\
+            tmp1 += factorial(p+i) / (factorial(i) * factorial(p-i)) \
                 * (p-i) * (2*np.sqrt((2*p+1)*R))**(p-i-1) * 2*np.sqrt(2*p+1)
         if i<p-1:
-            tmp2 += factorial(p+i) / (factorial(i) * factorial(p-i))\
-                * (p-i) * (p-i-1) * (2*np.sqrt((2*p+1)*R))**(p-i-2) * (2*np.sqrt(2*p+1))**2
+            tmp2 += factorial(p+i) / (factorial(i) * factorial(p-i)) \
+                * (p-i) * (p-i-1) * (2*np.sqrt((2*p+1)*R))**(p-i-2) \
+                * (2*np.sqrt(2*p+1))**2
 
     fp_f2p_er = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R))
 
@@ -172,30 +175,37 @@ def surrogateGRBF_Matern(x, f, df, l=None, nu=None):
 
     # First derivative
     Phi_d = np.zeros((m,m,d))
-    Phi_d = (Phi[:,:,np.newaxis] * (-np.sqrt(2*p+1))\
-            + fp_f2p_er[:,:,np.newaxis] * tmp1[:,:,np.newaxis])\
+    Phi_d = (Phi[:,:,np.newaxis] * (-np.sqrt(2*p+1)) \
+            + fp_f2p_er[:,:,np.newaxis] * tmp1[:,:,np.newaxis]) \
         * (x[:,np.newaxis,:] - x[np.newaxis,:,:])\
         / np.sqrt(R[:,:,np.newaxis]) / l[np.newaxis,np.newaxis,:]**2
     Phi_d = Phi_d.reshape((m,m*d))
 
     # Second derivative
     Phi_dd = np.zeros((m,d,m,d))
-    Phi_dd = (Phi[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1))**2\
-            + 2 * fp_f2p_er[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1)) * tmp1[:,np.newaxis,:,np.newaxis]\
-            + fp_f2p_er[:,np.newaxis,:,np.newaxis] * tmp2[:,np.newaxis,:,np.newaxis])\
-        * (x[:,np.newaxis,np.newaxis,:] - x[np.newaxis,np.newaxis,:,:])\
-        / np.sqrt(R[:,np.newaxis,:,np.newaxis]) / l[np.newaxis,np.newaxis,np.newaxis,:]**2\
-        * (x[:,:,np.newaxis,np.newaxis] - x.T[np.newaxis,:,:,np.newaxis])\
-        / np.sqrt(R[:,np.newaxis,:,np.newaxis]) / l[np.newaxis,:,np.newaxis,np.newaxis]**2\
-        + (Phi[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1))\
-            + fp_f2p_er[:,np.newaxis,:,np.newaxis] * tmp1[:,np.newaxis,:,np.newaxis])\
-        * (np.diag(np.ones(d))[np.newaxis,:,np.newaxis,:]\
-            * (np.sqrt(R[:,np.newaxis,:,np.newaxis] * l[np.newaxis,:,np.newaxis,np.newaxis]**4))\
+    Phi_dd = (Phi[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1))**2 \
+            + 2 * fp_f2p_er[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1)) \
+            * tmp1[:,np.newaxis,:,np.newaxis] \
+            + fp_f2p_er[:,np.newaxis,:,np.newaxis] \
+            * tmp2[:,np.newaxis,:,np.newaxis]) \
+        * (x[:,np.newaxis,np.newaxis,:] - x[np.newaxis,np.newaxis,:,:]) \
+        / np.sqrt(R[:,np.newaxis,:,np.newaxis]) \
+        / l[np.newaxis,np.newaxis,np.newaxis,:]**2 \
+        * (x[:,:,np.newaxis,np.newaxis] - x.T[np.newaxis,:,:,np.newaxis]) \
+        / np.sqrt(R[:,np.newaxis,:,np.newaxis]) \
+        / l[np.newaxis,:,np.newaxis,np.newaxis]**2 \
+        + (Phi[:,np.newaxis,:,np.newaxis] * (-np.sqrt(2*p+1)) \
+            + fp_f2p_er[:,np.newaxis,:,np.newaxis] \
+            * tmp1[:,np.newaxis,:,np.newaxis]) \
+        * (np.diag(np.ones(d))[np.newaxis,:,np.newaxis,:] \
+            * (np.sqrt(R[:,np.newaxis,:,np.newaxis] \
+                * l[np.newaxis,:,np.newaxis,np.newaxis]**4)) \
             - (x[:,:,np.newaxis,np.newaxis] - x.T[np.newaxis,:,:,np.newaxis])\
-            * (x[:,np.newaxis,np.newaxis,:] - x[np.newaxis,np.newaxis,:,:])\
-            / np.sqrt(R[:,np.newaxis,:,np.newaxis]) / l[np.newaxis,np.newaxis,np.newaxis,:]**2\
-            * l[np.newaxis,:,np.newaxis,np.newaxis]**2)\
-        / (np.sqrt(R[:,np.newaxis,:,np.newaxis])\
+            * (x[:,np.newaxis,np.newaxis,:] - x[np.newaxis,np.newaxis,:,:]) \
+            / np.sqrt(R[:,np.newaxis,:,np.newaxis]) \
+            / l[np.newaxis,np.newaxis,np.newaxis,:]**2 \
+            * l[np.newaxis,:,np.newaxis,np.newaxis]**2) \
+        / (np.sqrt(R[:,np.newaxis,:,np.newaxis]) \
             * l[np.newaxis,:,np.newaxis,np.newaxis]**2)**2
     Phi_dd = Phi_dd.reshape((m*d,m*d))
 
@@ -244,7 +254,7 @@ def evalGRBF_Matern(x, s, y, l=None, nu=None):
     p = int(round(nu-1/2)+1e-8)
 
     # RBF-matrix
-    R   = -2*np.dot(x/l, y.T/l[:,np.newaxis]) + np.sum(y**2/l**2, axis=1)\
+    R   = -2*np.dot(x/l, y.T/l[:,np.newaxis]) + np.sum(y**2/l**2, axis=1) \
         + np.sum(x**2/l**2, axis=1)[:,np.newaxis]
     R[R<=0.0] = EPS # R=0.0 is indeterminate
 
@@ -252,10 +262,10 @@ def evalGRBF_Matern(x, s, y, l=None, nu=None):
     tmp0 = np.zeros_like(R.T)
     tmp1 = np.zeros_like(R.T)
     for i in range(p+1):
-        tmp0 += factorial(p+i)/(factorial(i)*factorial(p-i))\
+        tmp0 += factorial(p+i) / (factorial(i)*factorial(p-i)) \
             * (2*np.sqrt((2*p+1)*R.T))**(p-i)
         if i<p:
-            tmp1 += factorial(p+i) / (factorial(i) * factorial(p-i))\
+            tmp1 += factorial(p+i) / (factorial(i) * factorial(p-i)) \
                 * (p-i) * (2*np.sqrt((2*p+1)*R.T))**(p-i-1) * 2*np.sqrt(2*p+1)
 
     fp_f2p_er = factorial(p) / factorial(2*p) * np.exp(-np.sqrt((2*p+1)*R.T))
@@ -264,9 +274,9 @@ def evalGRBF_Matern(x, s, y, l=None, nu=None):
 
     # First derivative             
     d_Phi = np.zeros((n,m,d))
-    d_Phi = (Phi[:,:,np.newaxis] * (-np.sqrt(2*p+1))\
-        + fp_f2p_er[:,:,np.newaxis] * tmp1[:,:,np.newaxis])\
-        * (y[:,np.newaxis,:]-x[np.newaxis,:,:])\
+    d_Phi = (Phi[:,:,np.newaxis] * (-np.sqrt(2*p+1)) \
+        + fp_f2p_er[:,:,np.newaxis] * tmp1[:,:,np.newaxis]) \
+        * (y[:,np.newaxis,:]-x[np.newaxis,:,:]) \
         / np.sqrt(R.T[:,:,np.newaxis]) / l[np.newaxis,np.newaxis,:]**2
     d_Phi = d_Phi.reshape((n,m*d))
 

@@ -19,17 +19,20 @@ from dask.distributed import Client
 EPS = np.finfo(np.float64).eps
 
 DEFAULT_OPTIONS = {"Nmax":250, "sig0":0.2, "sigm":0.2/2**6, "Ts":3, "Tf":5,
-                   "l":np.sqrt(0.5), "nu":5/2, "optim_loo":False, "nits_loo":40,
-                   "warnings":True}
-METHODS = ['RBF-Expo', 'RBF-Matern', 'GRBF-Expo', 'GRBF-Matern']
+                   "l":np.sqrt(0.5), "nu":5/2, "optim_loo":False,
+                   "nits_loo":40, "warnings":True}
+
+METHODS = ["RBF-Expo", "RBF-Matern", "GRBF-Expo", "GRBF-Matern"]
 
 NCORES = multiprocessing.cpu_count()
-PAR_DEFAULT_OPTIONS = {'SLURM':False, 'cores_per_feval':1, 'par_fevals':NCORES, 'memory':'1GB',
-                       'walltime':'00:10:00', 'queue':'regular'}
+PAR_DEFAULT_OPTIONS = {"SLURM":False, "cores_per_feval":1,
+                       "par_fevals":NCORES, "memory":"1GB",
+                       "walltime":"00:10:00", "queue":"regular"}
 
-def minimize(fun, x0, args=(), method='RBF-Expo', jac=None, bounds=None, 
+def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None, 
              options=None, parallel=False, par_options=None, verbose=True):
-    """Minimization of scalar function of one or more variables using DyCors algorithm.
+    """Minimization of scalar function of one or more variables using
+    DyCors algorithm.
 
     Parameters
     ----------
@@ -78,43 +81,49 @@ def minimize(fun, x0, args=(), method='RBF-Expo', jac=None, bounds=None,
             sigm : float or ndarray
                 Minimum standard deviation to create new trial points.
             Ts : int
-                Number of consecutive successful function evaluations before
-                increasing the standard deviation to create new trial points.
+                Number of consecutive successful function evaluations 
+                before increasing the standard deviation to create new
+                trial points.
             Tf : int
-                Number of consecutive unsuccessful function evaluations before
-                decreasing the standard deviation to create new trial points.
+                Number of consecutive unsuccessful function evaluations
+                before decreasing the standard deviation to create new
+                trial points.
             l : float or ndarray
                 Kernel internal parameter. Kernel width.
             nu : float (half integer)
-                Matérn kernel internal parameter. Order of the Bessel Function.
+                Matérn kernel internal parameter. Order of the Bessel
+                Function.
             optim_loo : boolean
-                Whether or not to use optimization of internal parameters.
+                Whether or not to use optimization of internal
+                parameters.
             nits_loo : int
-                Optimize internal parameters after every ``nits_loo`` iterations.
+                Optimize internal parameters after every ``nits_loo``
+                iterations.
             warnings : boolean
                 Whether or not to print solver warnings.
         
     parallel: boolean, optional
-        Whether or not to use parallel function evaluations. The default is
-        to run in serial.
+        Whether or not to use parallel function evaluations. The 
+        default is to run in serial.
     par_options : dict, optional
         A dictionary of options to set the task manager:
 
             SLURM : boolean
-                Whether or not the computations are carried out by SLURM.
-                To use with supercomputers.
+                Whether or not the computations are carried out by 
+                SLURM. To use with supercomputers.
             cores_per_feval : int
                 Number of cores to use in each function evaluation.
             par_fevals : int
                 Number of function evaluations to run in parallel.
             memory : str
-                Requested memory for each function evaluation. To use only
-                if SLURM is set to True.
+                Requested memory for each function evaluation. To use 
+                only if SLURM is set to True.
             walltime : str
-                Requested wall time for each function evaluation. To use only
-                if SLURM is set to True.
+                Requested wall time for each function evaluation. To 
+                use only if SLURM is set to True.
             queue : str
-                Name of the partition. To use only if SLURM is set to True.
+                Name of the partition. To use only if SLURM is set to 
+                True.
 
     verbose : boolean, optional
         Whether or not to print information of the solver iterations.
@@ -122,10 +131,11 @@ def minimize(fun, x0, args=(), method='RBF-Expo', jac=None, bounds=None,
     Returns
     -------
     res : ResultDyCors
-        The optimization result represented as a ``ResultDyCors`` object.
-        Important attributes are: ``x`` the solution array, ``success`` a
-        Boolean flag indicating if the optimizer exited successfully and
-        ``message`` which describes the cause of the termination.
+        The optimization result represented as a ``ResultDyCors`` 
+        object. Important attributes are: ``x`` the solution array,
+        ``success`` a Boolean flag indicating if the optimizer exited
+        successfully and ``message`` which describes the cause of the
+        termination.
         
     Notes
     -----
@@ -134,19 +144,20 @@ def minimize(fun, x0, args=(), method='RBF-Expo', jac=None, bounds=None,
 
     # check options are ok
     if not callable(fun):
-        raise TypeError('fun is not callable')
+        raise TypeError("fun is not callable")
 
     if x0.ndim!=2:
-        raise ValueError('dimensions of x0 are not 2')
+        raise ValueError("dimensions of x0 are not 2")
 
     if method not in METHODS:
-        raise ValueError('invalid method %s,\n  valid options are %s'%(method, METHODS))
-    elif method=='GRBF':
+        raise ValueError("invalid method %s,\n  valid options are %s"
+                         %(method, METHODS))
+    elif method.startswith("G"):
         if not callable(jac):
-            raise TypeError('jac is not callable')
+            raise TypeError("jac is not callable")
 
     if bounds is not None and x0.shape[1]!=bounds.shape[0]:
-        raise ValueError('dimension mismatch. Modify x0 or bounds')
+        raise ValueError("dimension mismatch. Modify x0 or bounds")
 
     if options is None:
         options = DEFAULT_OPTIONS
@@ -172,8 +183,8 @@ def minimize(fun, x0, args=(), method='RBF-Expo', jac=None, bounds=None,
         warnings.filterwarnings("ignore", category=UserWarning)
 
     # run the optimization
-    DyCorsMin = DyCorsMinimize(fun, x0, args, method, jac, bounds, options, parallel,
-                               par_options, verbose)
+    DyCorsMin = DyCorsMinimize(fun, x0, args, method, jac, bounds, options, 
+                               parallel, par_options, verbose)
     return DyCorsMin()
 
 class DyCorsMinimize:
@@ -190,20 +201,20 @@ class DyCorsMinimize:
         self.par_options = par_options
         self.verbose = verbose
 
-        if self.method=='RBF-Expo':
+        if self.method=="RBF-Expo":
             self.surrogateFunc = surrogateRBF_Expo
-            self.evalSurr      = evalRBF_Expo
-        elif self.method=='RBF-Matern':
+            self.evalSurr = evalRBF_Expo
+        elif self.method=="RBF-Matern":
             self.surrogateFunc = surrogateRBF_Matern
-            self.evalSurr      = evalRBF_Matern
-        elif self.method=='GRBF-Expo':
+            self.evalSurr = evalRBF_Matern
+        elif self.method=="GRBF-Expo":
             self.surrogateFunc = surrogateGRBF_Expo
-            self.evalSurr      = evalGRBF_Expo
-        elif self.method=='GRBF-Matern':
+            self.evalSurr = evalGRBF_Expo
+        elif self.method=="GRBF-Matern":
             self.surrogateFunc = surrogateGRBF_Matern
-            self.evalSurr      = evalGRBF_Matern
+            self.evalSurr = evalGRBF_Matern
 
-        if self.method=='GRBF-Expo' or self.method=='GRBF-Matern':
+        if self.method.startswith("G"):
             self.grad = True
         else:
             self.grad = False
@@ -212,64 +223,66 @@ class DyCorsMinimize:
 
         # Set parallel variables
         if self.parallel:
-            self.SLURM = self.par_options['SLURM']
-            self.cores = self.par_options['cores_per_feval']
-            self.procs = self.par_options['par_fevals']
+            self.SLURM = self.par_options["SLURM"]
+            self.cores = self.par_options["cores_per_feval"]
+            self.procs = self.par_options["par_fevals"]
             
             if self.SLURM:
-                self.memory = self.par_options['memory']
-                self.wt     = self.par_options['walltime']
-                self.queue  = self.par_options['queue']
+                self.memory = self.par_options["memory"]
+                self.wt = self.par_options["walltime"]
+                self.queue = self.par_options["queue"]
         else:
             self.cores = 1
             self.procs = 1
 
-        self.m, self.d   = self.x0.shape # size of initial population, dimensionality
+        self.m, self.d = self.x0.shape
         if self.bounds is not None:
-            self.bL, self.bU = self.bounds[:,0], self.bounds[:,1] # bounds
-        self.Nmax        = self.options["Nmax"] # maximum number of function evaluations per restart
+            self.bL, self.bU = self.bounds[:,0], self.bounds[:,1]
+        self.Nmax  = self.options["Nmax"]
         self.n0, self.Np = self.m, self.Nmax - self.m
-        self.ic          = 0 # counter
-        self.k           = min(100*self.d, 5000) # number of trial points
+        self.ic = 0 # counter
+        self.k = min(100*self.d, 5000) # number of trial points
         if self.bounds is not None:
-            self.sigm    = self.options["sigm"]*(self.bU - self.bL) # minimum standard deviation
-            self.sig     = self.options["sig0"]*(self.bU - self.bL) # initial standard deviation
+            self.sigm = self.options["sigm"]*(self.bU - self.bL)
+            self.sig = self.options["sig0"]*(self.bU - self.bL)
         else:
-            self.sigm    = self.options["sigm"]*np.ones((self.d,)) # minimum standard deviation
-            self.sig     = self.options["sig0"]*np.ones((self.d,)) # initial standard deviation
+            self.sigm = self.options["sigm"]*np.ones((self.d,))
+            self.sig  = self.options["sig0"]*np.ones((self.d,))
         self.Ts, self.Tf = self.options["Ts"], max(self.d, self.options["Tf"])
-        self.l           = self.options["l"]*np.ones((self.d,)) # starting kernel width
-        self.nu          = self.options["nu"] # starting order of the Bessel function
-        self.optim_loo   = self.options["optim_loo"] # Optimize internal parameters?
-        self.nits_loo    = self.options["nits_loo"] 
+        self.l = self.options["l"]*np.ones((self.d,))
+        self.nu = self.options["nu"]
+        self.optim_loo = self.options["optim_loo"]
+        self.nits_loo = self.options["nits_loo"]
 
+        # compute starting points
         self.fevals = 0
-        self.initialize() # compute starting points
+        self.initialize()
         
-        self.iB          = np.argmin(self.f) # find best solution
+        self.iB = np.argmin(self.f) # find best solution
         self.xB, self.fB = self.x[self.iB,:], np.asarray([self.f[self.iB]])
         if self.grad:
-            self.dfB     = self.df[self.iB*self.d:(self.iB+1)*self.d]
-        self.fBhist      = [self.fB[0] for i in range(self.m)]
-        self.fevals     += self.m
+            self.dfB = self.df[self.iB*self.d:(self.iB+1)*self.d]
+        self.fBhist = [self.fB[0] for i in range(self.m)]
+        self.fevals += self.m
         
     def __call__(self):
         """Perform optimization.
         """
         # First, set up Client
         if self.parallel and self.SLURM:
-            cluster = SLURMCluster(n_workers=self.procs, cores=self.cores, processes=1,
-                                   memory=self.memory, walltime=self.wt, queue=self.queue)
+            cluster = SLURMCluster(n_workers=self.procs, cores=self.cores,
+                                   processes=1, memory=self.memory, 
+                                   walltime=self.wt, queue=self.queue)
             client = Client(cluster)
         elif self.parallel and not self.SLURM:
-            client = Client(n_workers=self.procs, threads_per_worker=self.cores,
-                            processes=False)
+            client = Client(n_workers=self.procs, 
+                            threads_per_worker=self.cores, processes=False)
         
         try:
             nits = 1
 
             if self.verbose:
-                print('nits = %d'%(nits))
+                print("nits = %d"%(nits))
                 
             while (self.fevals < self.Nmax):
                 # update internal parameters
@@ -277,16 +290,17 @@ class DyCorsMinimize:
                     self.update_internal_params()
                     
                 # fit response surface model
-                if not self.grad:
-                    if self.method=="RBF-Expo":
-                        self.s,_,_ = self.surrogateFunc(self.x, self.f, self.l)
-                    elif self.method=="RBF-Matern":
-                        self.s,_,_ = self.surrogateFunc(self.x, self.f, self.l, self.nu)
-                else:
-                    if self.method=="GRBF-Expo":
-                        self.s,_,_ = self.surrogateFunc(self.x, self.f, self.df, self.l)
-                    elif self.method=="GRBF-Matern":
-                        self.s,_,_ = self.surrogateFunc(self.x, self.f, self.df, self.l, self.nu)
+                if self.method=="RBF-Expo":
+                    self.s,*_ = self.surrogateFunc(self.x, self.f, self.l)
+                elif self.method=="RBF-Matern":
+                    self.s,*_ = self.surrogateFunc(self.x, self.f, self.l,
+                                                   self.nu)
+                elif self.method=="GRBF-Expo":
+                    self.s,*_ = self.surrogateFunc(self.x, self.f, self.df,
+                                                   self.l)
+                elif self.method=="GRBF-Matern":
+                    self.s,*_ = self.surrogateFunc(self.x, self.f, self.df,
+                                                   self.l, self.nu)
                 
                 # generate trial points and select the bests
                 self.trialPoints()
@@ -294,44 +308,50 @@ class DyCorsMinimize:
 
                 if self.parallel:
                     # submit parallel fevals
-                    futf = client.map(self.par_fun, [self.fun for k in range(self.procs)],\
-                        self.xnew) # f()
+                    futf = client.map(self.par_fun, 
+                                      [self.fun for k in range(self.procs)],
+                                      self.xnew)
                     if self.grad:
-                        futdf = client.map(self.par_fun, [self.jac for k in range(self.procs)],\
-                            self.xnew) # df()
+                        futdf = client.map(self.par_fun, 
+                                           [self.jac for k in range(self.procs)],
+                                           self.xnew)
                     
                     # gather data
                     fnew = client.gather(futf)
-                    self.fnew = np.asarray([k[0] for k in fnew] )
+                    self.fnew = np.asarray([k[0] for k in fnew])
 
                     if self.grad:
                         dfnew = client.gather(futdf)
                         self.dfnew = np.asarray(dfnew).flatten()
                 else:
                     # run serial fevals
-                    self.fnew = np.apply_along_axis(self.fun, 1, self.xnew, *self.args) # f()
+                    self.fnew = np.apply_along_axis(self.fun, 1, self.xnew, 
+                                                    *self.args)
                     if self.grad:
-                        self.dfnew = np.apply_along_axis(self.jac, 1, self.xnew, *self.args).flatten() #df()
+                        self.dfnew = np.apply_along_axis(self.jac, 1, 
+                                                         self.xnew, 
+                                                         *self.args).flatten()
                 self.update()
 
                 self.ic += 1
                 self.fevals += 1
                 if (self.fevals%5 == 0 and self.verbose):
-                    print('  fevals = %d | fmin = %.2e'%(self.fevals, self.fB[0]))
+                    print("  fevals = %d | fmin = %.2e"%(self.fevals, 
+                                                         self.fB[0]))
                     
-                # restart optimization if algorithm converged to a local minimum
+                # restart if algorithm converged to a local minimum
                 if self.sig[0]<=self.sigm[0] and self.fevals<self.Nmax-self.m:
                     self.restart()
                     nits += 1
                     
                     if self.verbose:
-                        print('nits = %d'%(nits))
+                        print("nits = %d"%(nits))
 
-            task_str = 'STOP: TOTAL NO. of ITERATIONS REACHED LIMIT'
+            task_str = "STOP: TOTAL NO. of ITERATIONS REACHED LIMIT"
             warnflag = 0
 
         except np.linalg.LinAlgError:
-            task_str = 'STOP: SINGULAR MATRIX'
+            task_str = "STOP: SINGULAR MATRIX"
             warnflag = 2
 
         if self.parallel:
@@ -353,11 +373,13 @@ class DyCorsMinimize:
         """
         # set up client
         if self.parallel and self.SLURM:
-            cluster = SLURMCluster(n_workers=self.procs, cores=self.cores, processes=1,
-                                   memory=self.memory, walltime=self.wt, queue=self.queue)
+            cluster = SLURMCluster(n_workers=self.procs, cores=self.cores, 
+                                   processes=1, memory=self.memory, 
+                                   walltime=self.wt, queue=self.queue)
             client = Client(cluster)
         elif self.parallel and not self.SLURM:
-            client = Client(n_workers=self.procs, threads_per_worker=self.cores,\
+            client = Client(n_workers=self.procs, 
+                            threads_per_worker=self.cores,
                             processes=False)
 
         if self.bounds is not None:
@@ -371,10 +393,11 @@ class DyCorsMinimize:
         # evaluate initial points
         if self.parallel:
             futf = client.map(self.par_fun, [self.fun for k in range(self.m)],
-                              self.x) # f()
+                              self.x)
             if self.grad:
-                futdf = client.map(self.par_fun, [self.jac for k in range(self.m)],
-                                   self.x) # df()
+                futdf = client.map(self.par_fun, 
+                                   [self.jac for k in range(self.m)],
+                                   self.x)
 
             # gather data
             f = client.gather(futf)
@@ -384,9 +407,10 @@ class DyCorsMinimize:
                 df = client.gather(futdf)
                 self.df = np.asarray(df).flatten()
         else:
-            self.f = np.apply_along_axis(self.fun, 1, self.x, *self.args) #f()
+            self.f = np.apply_along_axis(self.fun, 1, self.x, *self.args)
             if self.grad:
-                self.df = np.apply_along_axis(self.jac, 1, self.x, *self.args).flatten() #df()
+                self.df = np.apply_along_axis(self.jac, 1, self.x, 
+                                              *self.args).flatten()
         
         # counter: success, failure
         self.Cs, self.Cf = 0, 0
@@ -397,13 +421,21 @@ class DyCorsMinimize:
     def trialPoints(self):
         """Generate trial points.
         """
-        p  = min(20/self.d, 1)*(1-log(self.ic+1)/log(self.Np)) # probability for coordinates
-        om = np.random.rand(self.d) # select coordinates to perturb
+        # probability for coordinates
+        p  = min(20/self.d, 1)*(1-log(self.ic+1)/log(self.Np))
+        
+        # select coordinates to perturb
+        om = np.random.rand(self.d)
         Ip = np.argwhere(om<=p).flatten()
         if (len(Ip)==0): Ip = np.random.randint(0, self.d)
-        M  = np.zeros((self.k,self.d),dtype=int) # mask
+        
+        # mask
+        M  = np.zeros((self.k,self.d),dtype=int)
         M[:,Ip] = 1
-        yk = np.outer(self.k*[1], self.xB) + M*np.random.normal(0, self.sig, (self.k,self.d)) # generate trial points
+        
+        # generate trial points
+        yk = np.outer(self.k*[1], self.xB) \
+            + M*np.random.normal(0, self.sig, (self.k,self.d))
         if self.bounds is not None:
             # enforce bounds
             bL = self.bL*np.ones_like(yk)
@@ -418,9 +450,9 @@ class DyCorsMinimize:
         """
         n = self.x.shape[0]
         # estimate function value
-        if self.method=="RBF-Expo" or self.method=="GRBF-Expo":
+        if self.method.endswith("Expo"):
             s = self.evalSurr(self.x, self.s, self.yk, self.l)
-        elif self.method=="RBF-Matern" or self.method=="GRBF-Matern":
+        elif self.method.endswith("Matern"):
             s = self.evalSurr(self.x, self.s, self.yk, self.l, self.nu)
 
         # compute RBF-score
@@ -450,7 +482,8 @@ class DyCorsMinimize:
         self.xnew = []
         while len(self.xnew)<self.procs:
             xnew  = self.yk[iB[iP+iX],:]
-            while (xnew.tolist() in self.x.tolist()) or (xnew.tolist() in self.xnew):
+            while ((xnew.tolist() in self.x.tolist()) 
+                   or (xnew.tolist() in self.xnew)):
                 iP  +=1
                 if iP>=iB.shape[0]:
                     break
@@ -503,14 +536,14 @@ class DyCorsMinimize:
         compute the LOO-Error.
         """
         def constr_f(ip):
-            if self.method=='RBF-Expo' or self.method=='GRBF-Expo':
+            if self.method.endswith("Expo"):
                 l = ip
                 
                 _,Phi,_ = surrogateRBF_Expo(self.x, self.f, l)
                 
                 return nla.cond(Phi)
                 
-            elif self.method=='RBF-Matern' or self.method=='GRBF-Matern':
+            elif self.method.endswith("Matern"):
                 l  = ip[:-1]
                 nu = ip[-1]
                 
@@ -518,7 +551,7 @@ class DyCorsMinimize:
                 
                 return nla.cond(Phi)
         
-        if self.method=='RBF-Expo' or self.method=='GRBF-Expo':
+        if self.method.endswith("Expo"):
             def error(l):
                 n = self.x.shape[0]
                 
@@ -526,9 +559,10 @@ class DyCorsMinimize:
                 H_inv = sla.inv(Phi)
                 H_inv2 = H_inv@H_inv
 
-                return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)), ord=1)
+                return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)),
+                                ord=1)
 
-        elif self.method=='RBF-Matern' or self.method=='GRBF-Matern':
+        elif self.method.endswith("Matern"):
             def error(lnu):
                 l  = lnu[:-1]
                 nu = lnu[-1]
@@ -539,52 +573,59 @@ class DyCorsMinimize:
                 H_inv = sla.inv(Phi)
                 H_inv2 = H_inv@H_inv
 
-                return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)), ord=1)
+                return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)),
+                                ord=1)
 
         from scipy.optimize import NonlinearConstraint
         nlc = NonlinearConstraint(constr_f, 0, 0.1/EPS)
         if self.verbose:
-            print('Updating internal params...')
-        if self.method=='RBF-Expo' or self.method=='GRBF-Expo':
+            print("Updating internal params...")
+        if self.method.endswith("Expo"):
             error0 = error(self.l)
             try:
-                sol = differential_evolution(func=error, bounds=(((1e-5,1e1),)*self.d),
-                                             constraints=(nlc), strategy='rand2bin', maxiter=100)
+                sol = differential_evolution(func=error,
+                                             bounds=(((1e-5,1e1),)*self.d),
+                                             constraints=(nlc),
+                                             strategy="rand2bin", maxiter=100)
                 if sol["fun"]<error0:
                     if self.verbose:
-                        print('Updated')
+                        print("Updated")
                     self.l = sol["x"]
                 else:
                     if self.verbose:
-                        print('Not updated')
+                        print("Not updated")
             except np.linalg.LinAlgError:
                 if self.verbose:
-                    print('Not updated')
-        elif self.method=='RBF-Matern' or self.method=='GRBF-Matern':
+                    print("Not updated")
+        elif self.method.endswith("Matern"):
             error0 = error(np.concatenate((self.l,[self.nu])))
             try:
-                sol = differential_evolution(func=error, bounds=(((1e-5,1e1),)*self.d+((0.5,5e1),)),
-                                             constraints=(nlc), strategy='rand2bin', maxiter=100)
+                sol = differential_evolution(func=error, 
+                                             bounds=(((1e-5,1e1),) * self.d 
+                                                     + ((0.5,5e1),)),
+                                             constraints=(nlc), 
+                                             strategy="rand2bin", maxiter=100)
                 if sol["fun"]<error0:
                     if self.verbose:
-                        print('Updated')
+                        print("Updated")
                     self.l = sol["x"][:-1]
                     self.nu = sol["x"][-1]
                 else:
                     if self.verbose:
-                        print('Not updated')
+                        print("Not updated")
             except np.linalg.LinAlgError:
                 if self.verbose:
-                    print('Not updated')
+                    print("Not updated")
                 
     def restart(self):
         """Restart DyCors. Keep just xB.
         """
-        x = np.outer((self.m-1)*[1],self.bounds[:,0])\
-            + np.outer((self.m-1)*[1], self.bounds[:,1]-self.bounds[:,0])\
-                *RLatinHyperCube((self.m-1),self.d)
+        x = np.outer((self.m-1)*[1],self.bounds[:,0]) \
+            + np.outer((self.m-1)*[1], self.bounds[:,1]-self.bounds[:,0]) \
+                * RLatinHyperCube((self.m-1),self.d)
                 
-        self.x0 = np.concatenate((np.asarray(self.xB)[np.newaxis,:], x), axis=0)
+        self.x0 = np.concatenate((np.asarray(self.xB)[np.newaxis,:], x),
+                                 axis=0)
 
         # reset the bounds and counters
         if self.bounds is not None:

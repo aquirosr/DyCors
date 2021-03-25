@@ -32,19 +32,20 @@ Tf       = 5
 l        = 0.5*np.ones((d,))
 nu       = 5/2
 nits_loo = 40
-options  = {"Nmax":Nmax, "sig0":sig0, "sigm":sigm, "Ts":Ts, "Tf":Tf, "l":l, "nu":nu,
-            "optim_loo":False, "nits_loo":nits_loo, "warnings":False}
+options  = {"Nmax":Nmax, "sig0":sig0, "sigm":sigm, "Ts":Ts, "Tf":Tf, "l":l,
+            "nu":nu, "optim_loo":False, "nits_loo":nits_loo, "warnings":False}
 parallel    = False
-par_options = {'SLURM':False, 'cores_per_feval':1, 'par_fevals':4, 'memory':'1GB',
-               'walltime':'00:10:00', 'queue':'regular'}
+par_options = {"SLURM":False, "cores_per_feval":1, "par_fevals":4, 
+               "memory":"1GB", "walltime":"00:10:00", "queue":"regular"}
 
-solf = minimize(fun=Rastrigin, x0=x0, args=(), method='GRBF-Expo', jac=df_Rastrigin, bounds=bounds,
-                options=options, parallel=parallel, par_options=par_options, verbose=True)
+solf = minimize(fun=Rastrigin, x0=x0, args=(), method="GRBF-Expo",
+                jac=df_Rastrigin, bounds=bounds, options=options,
+                parallel=parallel, par_options=par_options, verbose=True)
 
 print(solf)
 
-print('x_opt = ',solf["x"])
-print('f(x_opt) = %.8f'%solf["fun"])
+print("x_opt = ",solf["x"])
+print("f(x_opt) = %.8f"%solf["fun"])
 
 solf.plot()
 plt.show()
