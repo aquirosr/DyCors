@@ -13,6 +13,9 @@ def ERSLatinHyperCube(m, d):
     # optimum distance between sample points
     d_opt = m / m**(1/d)
 
+    # duplication factor
+    dup_factor = 8
+
     bounds = np.zeros((m+1,d,))
     for i in range(d):
         bounds[:,i] = np.linspace(0,1,m+1)
@@ -35,7 +38,7 @@ def ERSLatinHyperCube(m, d):
         P0.append(np.ones(d)*(m//2))
         P[0,:] = np.asarray(P0)
         
-        pts_left = m-1
+        nr_bins = m-1
         
         for j in range(d):
             rem_bins[j].remove(P[0,j])
@@ -45,24 +48,31 @@ def ERSLatinHyperCube(m, d):
         P[0,:] = np.asarray(P0)
         P[-1,:] = np.ones(d, dtype=int)*(m-1) - P[0,:]
         
-        pts_left = m-2
+        nr_bins = m-2
         
         for j in range(d):
             rem_bins[j].remove(P[0,j])
             rem_bins[j].remove(P[-1,j])
     
-    for i in range(pts_left//2):
-        # create array with all possible coordinates
-        coords = np.reshape( np.asarray(np.meshgrid(*[np.asarray(dimk)
-                                                      for dimk in rem_bins])),
-                            (d,len(rem_bins[0])**d,) )
+    for i in range(nr_bins//2):
+        # create array with all possible coordinates.
+        # If number of possibilities is too large,
+        # compute a subspace
+        if nr_bins**d<=(dup_factor-1)**(dup_factor-1):
+            coords = np.reshape( np.asarray(np.meshgrid(*[np.asarray(dimk)
+                                                        for dimk in rem_bins])),
+                                (d,nr_bins**d,) )
+        else:
+            coords = np.zeros((d,nr_bins*dup_factor,))
+            for j in range(d):
+                coords[j,:] = np.random.choice(rem_bins[j], size=nr_bins*dup_factor)
         
         # compute distances from all possible points to all selected points
         dist = np.concatenate( (np.linalg.norm(coords[np.newaxis,...]
                                                - P[:i+1,:,np.newaxis],
                                                axis=1),
                                 np.linalg.norm(coords[np.newaxis,...] 
-                                               - P[pts_left-i+1:,:,np.newaxis],
+                                               - P[nr_bins+i+1:,:,np.newaxis],
                                                axis=1)) )
         
         # compute the minimum distance for each possible bin
@@ -89,6 +99,8 @@ def ERSLatinHyperCube(m, d):
                 rem_bins[j].remove(P[-i-2,j])
             else:
                 rem_bins[j].remove(P[-i-1,j])
+                
+        nr_bins -= 2
 
     IPts = np.zeros((m,d))
     for j in range(d):
@@ -104,5 +116,5 @@ if __name__ == "__main__":
     print('m is ',m)
     print('set seed to 5')
     np.random.seed(5)
-    for i in range(1):
+    for i in range(3):
         print(ERSLatinHyperCube(m, dim))

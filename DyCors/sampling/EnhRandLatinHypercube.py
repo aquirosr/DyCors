@@ -12,6 +12,9 @@ def ERLatinHyperCube(m, d):
     """
     # optimum distance between sample points
     d_opt = m / m**(1/d)
+    
+    # duplication factor
+    dup_factor = 8
 
     bounds = np.zeros((m+1,d,))
     for i in range(d):
@@ -35,14 +38,22 @@ def ERLatinHyperCube(m, d):
     P[0,:] = np.asarray(P0)
     
     for i in range(m-1):
+        nr_bins = m-i-1
         # remove last bin from remaining bins
         for j in range(d):
             rem_bins[j].remove(P[i,j])
         
-        # create array with all possible coordinates
-        coords = np.reshape( np.asarray(np.meshgrid(*[np.asarray(dimk)
-                                                      for dimk in rem_bins])),
-                            (d,len(rem_bins[0])**d,) )
+        # create array with all possible coordinates.
+        # If number of possibilities is too large,
+        # compute a subspace
+        if nr_bins**d<=(dup_factor-1)**(dup_factor-1):
+            coords = np.reshape( np.asarray(np.meshgrid(*[np.asarray(dimk)
+                                                        for dimk in rem_bins])),
+                                (d,nr_bins**d,) )
+        else:
+            coords = np.zeros((d,nr_bins*dup_factor,))
+            for j in range(d):
+                coords[j,:] = np.random.choice(rem_bins[j], size=nr_bins*dup_factor)
         
         # compute distances from all possible points to all selected points
         dist = np.linalg.norm(coords[np.newaxis,...] - P[:i+1,:,np.newaxis], 
