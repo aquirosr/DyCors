@@ -263,9 +263,10 @@ class DyCorsMinimize:
         if self.grad:
             self.dfB = self.df[self.iB*self.d:(self.iB+1)*self.d]
         self.fBhist = [self.fB[0] for i in range(self.m)]
-        self.dfBhist = []
-        for i in range(self.m):
-            self.dfBhist.append(self.dfB)
+        if self.grad:
+            self.dfBhist = []
+            for i in range(self.m):
+                self.dfBhist.append(self.dfB)
         self.fevals += self.m
         
     def __call__(self):
@@ -367,7 +368,7 @@ class DyCorsMinimize:
                             nit=nits, status=warnflag, message=task_str,
                             x=np.asarray(self.xB), success=(warnflag==0),
                             m=self.m, hist=np.asarray(self.fBhist),
-                            dhist=np.asarray(self.dfBhist))
+                            dhist=np.asarray(self.dfBhist)if self.grad else None)
 
     def par_fun(self, fun, xnew):
         return np.apply_along_axis(fun, 1, [xnew], *self.args)
@@ -507,7 +508,8 @@ class DyCorsMinimize:
                     self.dfB = self.dfnew[i*self.d:(i+1)*self.d]
                 Cs += 1
         self.fBhist.append(self.fB[0])
-        self.dfBhist.append(self.dfB)
+        if self.grad:
+            self.dfBhist.append(self.dfB)
         if Cs>0:
             self.Cs += 1
             self.Cf  = 0
@@ -647,7 +649,8 @@ class DyCorsMinimize:
         if self.grad:
             self.dfB = self.df[self.iB*self.d:(self.iB+1)*self.d]
         self.fBhist.extend([self.fB[0] for i in range(self.m)])
-        for i in range(self.m):
-            self.dfBhist.append(self.dfB)
+        if self.grad:
+            for i in range(self.m):
+                self.dfBhist.append(self.dfB)
         self.fevals += self.m
         
