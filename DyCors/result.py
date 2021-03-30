@@ -29,6 +29,8 @@ class ResultDyCors(OptimizeResult):
         Numbe of initial sampling points
     hist : ndarray, optional
         Values of objective function at all iterations.
+    dhist : ndarray, optional
+        Values of gradient at all iterations.
         
     Methods
     ----------
@@ -36,7 +38,8 @@ class ResultDyCors(OptimizeResult):
         Plot evolution of minimum value.
     """
     def __init__(self, fun, jac, nfev, njev, nit, status,
-                 message, x, success, m=None, hist=None):
+                 message, x, success, m=None, hist=None,
+                 dhist=None):
         super().__init__({"fun":fun, "jac":jac, "nfev":nfev,
                           "njev":njev, "nit":nit, "status":status,
                           "message":message, "x":x, "success":success})
@@ -45,6 +48,7 @@ class ResultDyCors(OptimizeResult):
         self.hist = hist
         if self.hist is not None and m is not None:
             self["hist"] = np.arange(m, nfev+1), self.hist[m-1:]
+        self.dhist = dhist
         
     def __repr__(self):
         if self.scipy_dict.keys():

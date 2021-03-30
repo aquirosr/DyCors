@@ -263,6 +263,9 @@ class DyCorsMinimize:
         if self.grad:
             self.dfB = self.df[self.iB*self.d:(self.iB+1)*self.d]
         self.fBhist = [self.fB[0] for i in range(self.m)]
+        self.dfBhist = []
+        for i in range(self.m):
+            self.dfBhist.append(self.dfB)
         self.fevals += self.m
         
     def __call__(self):
@@ -363,7 +366,8 @@ class DyCorsMinimize:
                             njev=self.fevals if self.grad else None,
                             nit=nits, status=warnflag, message=task_str,
                             x=np.asarray(self.xB), success=(warnflag==0),
-                            m=self.m, hist=np.asarray(self.fBhist))
+                            m=self.m, hist=np.asarray(self.fBhist),
+                            dhist=np.asarray(self.dfBhist))
 
     def par_fun(self, fun, xnew):
         return np.apply_along_axis(fun, 1, [xnew], *self.args)
@@ -469,8 +473,7 @@ class DyCorsMinimize:
         VD     = (d2-dis)/(d2-d1) if (abs(d2-d1)>1.e-8) else 1
 
         # combine the two scores
-        # G      = [0.3,0.5,0.8,0.95] # weight rotation
-        G      = [0.95, 0.95, 0.99, 0.99]
+        G      = [0.3,0.5,0.8,0.95] # weight rotation
         nn     = (self.ic+1)%4
         nnn    = nn - 1 if (nn!=0) else 3
         wR, wD = G[nnn], 1 - G[nnn]
@@ -504,6 +507,7 @@ class DyCorsMinimize:
                     self.dfB = self.dfnew[i*self.d:(i+1)*self.d]
                 Cs += 1
         self.fBhist.append(self.fB[0])
+        self.dfBhist.append(self.dfB)
         if Cs>0:
             self.Cs += 1
             self.Cf  = 0
@@ -638,10 +642,12 @@ class DyCorsMinimize:
         
         self.initialize()
         
-        self.iB          = np.argmin(self.f) # find best solution
+        self.iB = np.argmin(self.f) # find best solution
         self.xB, self.fB = self.x[self.iB,:], np.asarray([self.f[self.iB]])
         if self.grad:
-            self.dfB     = self.df[self.iB*self.d:(self.iB+1)*self.d]
+            self.dfB = self.df[self.iB*self.d:(self.iB+1)*self.d]
         self.fBhist.extend([self.fB[0] for i in range(self.m)])
+        for i in range(self.m):
+            self.dfBhist.append(self.dfB)
         self.fevals += self.m
         
