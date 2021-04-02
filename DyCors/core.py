@@ -13,7 +13,7 @@ from .kernels import surrogateGRBF_Matern, evalGRBF_Matern
 from .kernels import surrogateRBF_Cubic, evalRBF_Cubic
 from .kernels import surrogateGRBF_Cubic, evalGRBF_Cubic
 from .result import ResultDyCors
-from .sampling import RLatinHyperCube
+from .sampling import ERLatinHyperCube
 
 from dask_jobqueue import SLURMCluster
 from dask.distributed import Client
@@ -335,7 +335,8 @@ class DyCorsMinimize:
                                       self.xnew)
                     if self.grad:
                         futdf = client.map(self.par_fun, 
-                                           [self.jac for k in range(self.procs)],
+                                           [self.jac
+                                            for k in range(self.procs)],
                                            self.xnew)
                     
                     # gather data
@@ -649,7 +650,7 @@ class DyCorsMinimize:
         """
         x = np.outer((self.m-1)*[1],self.bounds[:,0]) \
             + np.outer((self.m-1)*[1], self.bounds[:,1]-self.bounds[:,0]) \
-                * RLatinHyperCube((self.m-1),self.d)
+                * ERLatinHyperCube((self.m-1),self.d)
                 
         self.x0 = np.concatenate((np.asarray(self.xB)[np.newaxis,:], x),
                                  axis=0)
