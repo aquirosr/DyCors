@@ -46,7 +46,7 @@ def ERLatinHyperCube(m, d):
         # create array with all possible coordinates.
         # If number of possibilities is too large,
         # compute a subspace
-        if nr_bins**d<=(dup_factor-1)**(dup_factor-1):
+        if nr_bins**d<=(dup_factor-1)**(dup_factor-1) and d<=32:
             coords = np.reshape( np.asarray(np.meshgrid(*[np.asarray(dimk)
                                                         for dimk in rem_bins])),
                                 (d,nr_bins**d,) )

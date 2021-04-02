@@ -3,3 +3,6 @@ from .exponential import surrogateGRBF_Expo, evalGRBF_Expo
 
 from .matern import surrogateRBF_Matern, evalRBF_Matern
 from .matern import surrogateGRBF_Matern, evalGRBF_Matern
+
+from .cubic import surrogateRBF_Cubic, evalRBF_Cubic
+from .cubic import surrogateGRBF_Cubic, evalGRBF_Cubic

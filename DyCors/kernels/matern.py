@@ -53,6 +53,7 @@ def surrogateRBF_Matern(x, f, l=None, nu=None):
 
     # polynomial part
     P = np.hstack((np.ones((m,1)), x))
+    
     # zero matrix
     Z = np.zeros((d+1,d+1))
     A = np.block([[Phi,P],[P.T,Z]])

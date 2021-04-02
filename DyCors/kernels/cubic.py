@@ -1,8 +1,8 @@
 import numpy as np
 import scipy.linalg as la
 
-def surrogateRBF_Expo(x, f, l=None):
-    """Build RBF surrogate model using Exponential kernel.
+def surrogateRBF_Cubic(x, f):
+    """Build RBF surrogate model using Cubic kernel.
     
     Parameters
     ----------
@@ -11,8 +11,6 @@ def surrogateRBF_Expo(x, f, l=None):
         number of sampling points and d is the number of dimensions.
     f : ndarray, shape (m,)
         Array of function values at ``x``.
-    l : ndarray, shape (d,), optional
-        Array with the values of the internal parameter of the kernel.
         
     Returns
     -------
@@ -25,13 +23,10 @@ def surrogateRBF_Expo(x, f, l=None):
     """
     m,d = x.shape
     
-    if l is None:
-        l = np.ones(d)
-    
     # RBF-matrix
-    R   = -2*np.dot(x/l, x.T/l[:,np.newaxis]) + np.sum(x**2/l**2, axis=1) \
-        + np.sum(x.T**2/l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
-    Phi = np.exp(-R/2)
+    R = la.norm(x[...,np.newaxis] - x.T[np.newaxis,...], axis=1)
+    Phi = R**3
+    # print(Phi)
 
     # polynomial part
     P = np.hstack((np.ones((m,1)), x))
@@ -42,14 +37,14 @@ def surrogateRBF_Expo(x, f, l=None):
     
     # right-hand side
     F     = np.zeros(m+d+1)
-    F[:m] = f 
+    F[:m] = f
     
     # solution
-    s = la.solve(A, F) 
+    s = la.solve(A, F)
     
     return s, Phi, A
 
-def evalRBF_Expo(x, s, y, l=None):
+def evalRBF_Cubic(x, s, y):
     """Evaluate surrogate model at new point.
     
     Parameters
@@ -61,19 +56,13 @@ def evalRBF_Expo(x, s, y, l=None):
         RBF coefficients.
     y : ndarray, shape (n,d,)
         Array of points where we want to evaluate the surrogate model.
-    l : ndarray, shape (d,), optional
-        Array with the values of the internal parameter of the kernel.
     """
     y = np.array(y)
     n,d = y.shape
     
-    if l is None:
-        l = np.ones(d)
-
     # RBF-matrix
-    R   = -2*np.dot(x/l, y.T/l[:,np.newaxis]) + np.sum(y**2/l**2, axis=1) \
-        + np.sum(x**2/l**2, axis=1)[:,np.newaxis]
-    Phi = np.exp(-R.T/2)
+    R = la.norm(x[...,np.newaxis] - y.T[np.newaxis,...], axis=1)
+    Phi = R.T**3
 
     # polynomial part
     P = np.hstack((np.ones((n,1)),y))
@@ -82,8 +71,8 @@ def evalRBF_Expo(x, s, y, l=None):
     # evaluation
     return np.dot(A, s)
 
-def surrogateGRBF_Expo(x, f, df, l=None):
-    """Build GRBF surrogate model using Exponential kernel.
+def surrogateGRBF_Cubic(x, f, df):
+    """Build GRBF surrogate model using Cubic kernel.
     
     Parameters
     ----------
@@ -94,8 +83,6 @@ def surrogateGRBF_Expo(x, f, df, l=None):
         Array of function values at ``x``.
     df : ndarray, shape (m,d,)
         Array of function gradient values at ``x``.
-    l : ndarray, shape (d,), optional
-        Array with the values of the internal parameter of the kernel.
         
     Returns
     -------
@@ -107,30 +94,26 @@ def surrogateGRBF_Expo(x, f, df, l=None):
         GRBF matrix with gradient terms.
     """
     m,d = x.shape
-    
-    if l is None:
-        l = np.ones(d)
 
     # RBF-matrix
-    R   = -2*np.dot(x/l, x.T/l[:,np.newaxis]) + np.sum(x**2/l**2, axis=1) \
-        + np.sum(x.T**2/l[:,np.newaxis]**2, axis=0)[:,np.newaxis]
-    Phi = np.exp(-R/2) 
+    R = la.norm(x[...,np.newaxis] - x.T[np.newaxis,...], axis=1)
+    Phi = R**3
     
     # First derivative
     _Phi_d = np.zeros((m,m,d))
-    _Phi_d = -2*Phi[...,np.newaxis] * (x[:,np.newaxis,:] - x[np.newaxis,:,:])\
-        / (2*l[np.newaxis,np.newaxis,:]**2)
+    _Phi_d = 3 * R[...,np.newaxis] * (x[:,np.newaxis,:] - x[np.newaxis,:,:])
     Phi_d = _Phi_d.reshape((m,m*d))
 
     # Second derivative
     Phi_dd = np.zeros((m,d,m,d))
-    Phi_dd = - 2*_Phi_d[:,np.newaxis,:,:] \
-        * (x[:,:,np.newaxis,np.newaxis] - x.T[np.newaxis,:,:,np.newaxis]) \
-        / (2*l[np.newaxis,:,np.newaxis,np.newaxis]**2) \
-        - np.diag(np.ones(d))[np.newaxis,:,np.newaxis,:] \
-        * 2*Phi[:,np.newaxis,:,np.newaxis] \
-        / (2*l[np.newaxis,:,np.newaxis,np.newaxis]**2)
-    Phi_dd = Phi_dd.reshape((m*d,m*d))
+    Phi_dd = 3 * ( (x[:,np.newaxis,np.newaxis,:]
+                    - x[np.newaxis,np.newaxis,:,:])
+                  * (x[:,:,np.newaxis,np.newaxis]
+                     - x.T[np.newaxis,:,:,np.newaxis])
+                  / R[:,np.newaxis,:,np.newaxis]
+                  + np.diag(np.ones(d))[np.newaxis,:,np.newaxis,:]
+                  * R[:,np.newaxis,:,np.newaxis] )
+    Phi_dd = np.nan_to_num(Phi_dd).reshape((m*d,m*d))
 
     A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
 
@@ -148,7 +131,7 @@ def surrogateGRBF_Expo(x, f, df, l=None):
     
     return s, Phi, A
     
-def evalGRBF_Expo(x, s, y, l=None):
+def evalGRBF_Cubic(x, s, y):
     """Evaluate surrogate model at new point.
     
     Parameters
@@ -160,25 +143,19 @@ def evalGRBF_Expo(x, s, y, l=None):
         RBF coefficients.
     y : ndarray, shape (n,d,)
         Array of points where we want to evaluate the surrogate model.
-    l : ndarray, shape (d,), optional
-        Array with the values of the internal parameter of the kernel.
     """
     m = x.shape[0]
     y = np.array(y)
     n,d = y.shape
     
-    if l is None:
-        l = np.ones(d)
-    
     # RBF-matrix
-    R   = -2*np.dot(x/l, y.T/l[:,np.newaxis]) + np.sum(y**2/l**2, axis=1) \
-        + np.sum(x**2/l**2, axis=1)[:,np.newaxis]
-    Phi = np.exp(-R.T/2)
+    R = la.norm(x[...,np.newaxis] - y.T[np.newaxis,...], axis=1)
+    Phi = R.T**3
     
     # First derivative 
     d_Phi = np.zeros((n,m,d))
-    d_Phi = -2*Phi[...,np.newaxis] * (y[:,np.newaxis,:] - x[np.newaxis,:,:]) \
-        / (2*l[np.newaxis,np.newaxis,:]**2)
+    d_Phi = 3 * R.T[...,np.newaxis] * (y[:,np.newaxis,:] - x[np.newaxis,:,:])
+
     d_Phi = d_Phi.reshape((n,m*d))
 
     A = np.block([[Phi,d_Phi]])

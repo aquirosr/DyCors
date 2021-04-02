@@ -10,6 +10,8 @@ from .kernels import surrogateRBF_Expo, evalRBF_Expo
 from .kernels import surrogateGRBF_Expo, evalGRBF_Expo
 from .kernels import surrogateRBF_Matern, evalRBF_Matern
 from .kernels import surrogateGRBF_Matern, evalGRBF_Matern
+from .kernels import surrogateRBF_Cubic, evalRBF_Cubic
+from .kernels import surrogateGRBF_Cubic, evalGRBF_Cubic
 from .result import ResultDyCors
 from .sampling import RLatinHyperCube
 
@@ -22,7 +24,8 @@ DEFAULT_OPTIONS = {"Nmax":250, "sig0":0.2, "sigm":0.2/2**6, "Ts":3, "Tf":5,
                    "l":np.sqrt(0.5), "nu":5/2, "optim_loo":False,
                    "nits_loo":40, "warnings":True}
 
-METHODS = ["RBF-Expo", "RBF-Matern", "GRBF-Expo", "GRBF-Matern"]
+METHODS = ["RBF-Expo", "RBF-Matern", "RBF-Cubic",
+           "GRBF-Expo", "GRBF-Matern", "GRBF-Cubic"]
 
 NCORES = multiprocessing.cpu_count()
 PAR_DEFAULT_OPTIONS = {"SLURM":False, "cores_per_feval":1,
@@ -55,8 +58,10 @@ def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None,
 
             - 'RBF-Expo'   : derivative-free with exponential kernel
             - 'RBF-Matern' : derivative-free with Matérn kernel
+            - 'RBF-Cubic'  : derivative-free with cubic kernel
             - 'GRBF-Expo'  : gradient-enhanced with exponential kernel
             - 'GRBF-Matern': gradient-enhanced with Matérn kernel
+            - 'GRBF-Cubic' : gradient-enhanced with cubic kernel
         
         The default method is 'RBF-Expo'.
     jac : callable, optional
@@ -67,7 +72,8 @@ def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None,
         where ``x`` is an 1-D array with shape (d,) and ``args``
         is a tuple of the fixed parameters needed to completely
         specify the function.
-        Only necessary for 'GRBF-Expo' and 'GRBF-Matern' methods.
+        Only necessary for 'GRBF-Expo', 'GRBF-Matern' and
+        'GRBF-Cubic' methods.
     bounds : ndarray, shape (d,2,), optional
         Bounds on variables. If not provided, the default is not to
         use any bounds on variables.
@@ -207,12 +213,18 @@ class DyCorsMinimize:
         elif self.method=="RBF-Matern":
             self.surrogateFunc = surrogateRBF_Matern
             self.evalSurr = evalRBF_Matern
+        elif self.method=="RBF-Cubic":
+            self.surrogateFunc = surrogateRBF_Cubic
+            self.evalSurr = evalRBF_Cubic
         elif self.method=="GRBF-Expo":
             self.surrogateFunc = surrogateGRBF_Expo
             self.evalSurr = evalGRBF_Expo
         elif self.method=="GRBF-Matern":
             self.surrogateFunc = surrogateGRBF_Matern
             self.evalSurr = evalGRBF_Matern
+        elif self.method=="GRBF-Cubic":
+            self.surrogateFunc = surrogateGRBF_Cubic
+            self.evalSurr = evalGRBF_Cubic
 
         if self.method.startswith("G"):
             self.grad = True
@@ -252,6 +264,8 @@ class DyCorsMinimize:
         self.l = self.options["l"]*np.ones((self.d,))
         self.nu = self.options["nu"]
         self.optim_loo = self.options["optim_loo"]
+        if self.method.endswith("Cubic"):
+            self.optim_loo = False
         self.nits_loo = self.options["nits_loo"]
 
         # compute starting points
@@ -299,13 +313,17 @@ class DyCorsMinimize:
                 elif self.method=="RBF-Matern":
                     self.s,*_ = self.surrogateFunc(self.x, self.f, self.l,
                                                    self.nu)
+                elif self.method=="RBF-Cubic":
+                    self.s,*_ = self.surrogateFunc(self.x, self.f)
                 elif self.method=="GRBF-Expo":
                     self.s,*_ = self.surrogateFunc(self.x, self.f, self.df,
                                                    self.l)
                 elif self.method=="GRBF-Matern":
                     self.s,*_ = self.surrogateFunc(self.x, self.f, self.df,
                                                    self.l, self.nu)
-                
+                elif self.method=="GRBF-Cubic":
+                    self.s,*_ = self.surrogateFunc(self.x, self.f, self.df)
+                    
                 # generate trial points and select the bests
                 self.trialPoints()
                 self.selectNewPts()
@@ -368,7 +386,8 @@ class DyCorsMinimize:
                             nit=nits, status=warnflag, message=task_str,
                             x=np.asarray(self.xB), success=(warnflag==0),
                             m=self.m, hist=np.asarray(self.fBhist),
-                            dhist=np.asarray(self.dfBhist)if self.grad else None)
+                            dhist=(np.asarray(self.dfBhist)
+                                   if self.grad else None))
 
     def par_fun(self, fun, xnew):
         return np.apply_along_axis(fun, 1, [xnew], *self.args)
@@ -459,6 +478,8 @@ class DyCorsMinimize:
             s = self.evalSurr(self.x, self.s, self.yk, self.l)
         elif self.method.endswith("Matern"):
             s = self.evalSurr(self.x, self.s, self.yk, self.l, self.nu)
+        elif self.method.endswith("Cubic"):
+            s = self.evalSurr(self.x, self.s, self.yk)
 
         # compute RBF-score
         s1, s2 = s.min(), s.max()
