@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.optimize import OptimizeResult
+import scipy.linalg as la
 import matplotlib.pyplot as plt
+
 
 class ResultDyCors(OptimizeResult):
     """Represents the optimization result.
@@ -33,8 +35,8 @@ class ResultDyCors(OptimizeResult):
         Values of gradient at all iterations.
         
     Methods
-    ----------
-    plot(figsize=(), ylim=(), fontsize=10)
+    -------
+    plot(figsize=(), ylim_f=(), ylim_df=(), fontsize=10)
         Plot evolution of minimum value.
     """
     def __init__(self, fun, jac, nfev, njev, nit, status,
@@ -48,7 +50,10 @@ class ResultDyCors(OptimizeResult):
         self.hist = hist
         if self.hist is not None and m is not None:
             self["hist"] = np.arange(m, nfev+1), self.hist[m-1:]
+        
         self.dhist = dhist
+        if self.dhist is not None and m is not None:
+            self["dhist"] = np.arange(m, nfev+1), la.norm(self.dhist[m-1:,:], axis=-1)
         
     def __repr__(self):
         if self.scipy_dict.keys():
@@ -58,15 +63,17 @@ class ResultDyCors(OptimizeResult):
         else:
             return self.__class__.__name__ + "()"
     
-    def plot(self, figsize=(), ylim=(), fontsize=10):
+    def plot(self, figsize=(), ylim_f=(), ylim_df=(), fontsize=10):
         """Plot evolution of minimum value.
         
         Parameters
         ----------
         figsize : tuple, optional
             Size of the figure.
-        ylim : tuple, optional
-            y limits.
+        ylim_f : tuple, optional
+            y limits on the function history.
+        ylim_df : tuple, optional
+            y limits on the function history.
         fontsize : int, optional
             Font size.
         """
@@ -74,13 +81,27 @@ class ResultDyCors(OptimizeResult):
             return None
         
         if figsize:
-            fig = plt.figure(figsize=figsize)
+            fig, ax1 = plt.subplots(figsize=figsize)
+        else:
+            fig, ax1 = plt.subplots()
+
+        im1 = ax1.plot(self["hist"][0], self["hist"][1], "C0",
+                       label=r"$f(x)$")
+        ax1.set_xlabel("its", fontsize=fontsize)
+        ax1.set_ylabel(r"$f(x)$", fontsize=fontsize)
+        ax1.tick_params(axis='both', which='major', labelsize=fontsize)
+        if ylim_f:
+            ax1.set_ylim(*ylim_f)
         
-        plt.plot(self["hist"][0], self["hist"][1])
-        plt.xlabel("its", fontsize=fontsize)
-        plt.ylabel(r"$f(x)$", fontsize=fontsize)
-        plt.xticks(fontsize=fontsize)
-        plt.yticks(fontsize=fontsize)
-        
-        if ylim:
-            plt.ylim(*ylim)
+        if self.dhist is not None:
+            ax2 = ax1.twinx()
+            im2 = ax2.plot(self["dhist"][0], self["dhist"][1], "C1",
+                           label=r"$|\mathrm{d}f(x)|$")
+            ax2.set_ylabel(r"$|\mathrm{d}f(x)|$", fontsize=fontsize)
+            ax2.tick_params(axis='y', which='major', labelsize=fontsize)
+            if ylim_df:
+                ax2.set_ylim(*ylim_df)
+            
+            ims = im1 + im2
+            labels = [im.get_label() for im in ims]
+            ax1.legend(ims, labels, fontsize=fontsize)
