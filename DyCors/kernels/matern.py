@@ -68,7 +68,7 @@ def surrogateRBF_Matern(x, f, l=None, nu=None):
     return s, Phi, A
 
 def evalRBF_Matern(x, s, y, l=None, nu=None):
-    """Evaluate surrogate model at new point.
+    """Evaluate RBF Matérn kernel surrogate model at new points.
     
     Parameters
     ----------
@@ -83,6 +83,11 @@ def evalRBF_Matern(x, s, y, l=None, nu=None):
         Array with the values of the internal parameter of the kernel.
     nu : float, optional
         Order of Bessel function of the kernel.
+    
+    Returns
+    -------
+    f : ndarray, shape(n,)
+        Array of interpolated values.
     """
     y = np.array(y)
     n,d = y.shape
@@ -111,7 +116,9 @@ def evalRBF_Matern(x, s, y, l=None, nu=None):
     A = np.block([Phi,P])
     
     # evaluation
-    return np.dot(A, s)
+    f = np.dot(A,s)
+    
+    return f
 
 def surrogateGRBF_Matern(x, f, df, l=None, nu=None):
     """Build GRBF surrogate model using half integer
@@ -227,7 +234,7 @@ def surrogateGRBF_Matern(x, f, df, l=None, nu=None):
     return s, Phi, A
 
 def evalGRBF_Matern(x, s, y, l=None, nu=None):
-    """Evaluate surrogate model at new point.
+    """Evaluate GRBF Matérn kernel surrogate model at new points.
     
     Parameters
     ----------
@@ -242,6 +249,11 @@ def evalGRBF_Matern(x, s, y, l=None, nu=None):
         Array with the values of the internal parameter of the kernel.
     nu : float, optional
         Order of Bessel function of the kernel.
+    
+    Returns
+    -------
+    f : ndarray, shape(n,)
+        Array of interpolated values.
     """
     m = x.shape[0]
     y = np.array(y)
@@ -284,4 +296,6 @@ def evalGRBF_Matern(x, s, y, l=None, nu=None):
     A = np.block([[Phi,d_Phi]])
     
     # evaluation
-    return np.dot(A,s)
+    f = np.dot(A,s)
+    
+    return f

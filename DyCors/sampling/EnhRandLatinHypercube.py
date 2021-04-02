@@ -1,7 +1,9 @@
 import numpy as np
 
 def ERLatinHyperCube(m, d):
-    """Non-symmetric enhanced random Latin Hypercube.
+    """Non-symmetric enhanced random Latin Hypercube [1]_.
+    
+    Data is randomly sampled using a uniform distribution.
     
     Parameters
     ----------
@@ -9,6 +11,18 @@ def ERLatinHyperCube(m, d):
         Number of sampling points.
     d : int
         Number of dimensions.
+    
+    Returns
+    -------
+    IPts : ndarray, shape (m,d,)
+        Sampling data.
+    
+    References
+    ----------
+    .. [1] Beachkofski, B and R Grandhi. 2002. Improved Distributed
+        Hypercube Sampling. 43rd AIAA/ASME/ASCE/AHS/ASC Structures,
+        Structural Dynamics, and Materials Conference. Denver,
+        Colorado.
     """
     # optimum distance between sample points
     d_opt = m / m**(1/d)

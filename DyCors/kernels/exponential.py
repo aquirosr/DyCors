@@ -50,7 +50,7 @@ def surrogateRBF_Expo(x, f, l=None):
     return s, Phi, A
 
 def evalRBF_Expo(x, s, y, l=None):
-    """Evaluate surrogate model at new point.
+    """Evaluate RBF Exponential kernel surrogate model at new points.
     
     Parameters
     ----------
@@ -63,6 +63,11 @@ def evalRBF_Expo(x, s, y, l=None):
         Array of points where we want to evaluate the surrogate model.
     l : ndarray, shape (d,), optional
         Array with the values of the internal parameter of the kernel.
+    
+    Returns
+    -------
+    f : ndarray, shape(n,)
+        Array of interpolated values.
     """
     y = np.array(y)
     n,d = y.shape
@@ -80,7 +85,9 @@ def evalRBF_Expo(x, s, y, l=None):
     A = np.block([Phi,P])
     
     # evaluation
-    return np.dot(A, s)
+    f = np.dot(A, s)
+    
+    return f
 
 def surrogateGRBF_Expo(x, f, df, l=None):
     """Build GRBF surrogate model using Exponential kernel.
@@ -149,7 +156,7 @@ def surrogateGRBF_Expo(x, f, df, l=None):
     return s, Phi, A
     
 def evalGRBF_Expo(x, s, y, l=None):
-    """Evaluate surrogate model at new point.
+    """Evaluate GRBF Exponential kernel surrogate model at new points.
     
     Parameters
     ----------
@@ -162,6 +169,11 @@ def evalGRBF_Expo(x, s, y, l=None):
         Array of points where we want to evaluate the surrogate model.
     l : ndarray, shape (d,), optional
         Array with the values of the internal parameter of the kernel.
+    
+    Returns
+    -------
+    f : ndarray, shape(n,)
+        Array of interpolated values.
     """
     m = x.shape[0]
     y = np.array(y)
@@ -184,4 +196,6 @@ def evalGRBF_Expo(x, s, y, l=None):
     A = np.block([[Phi,d_Phi]])
     
     # evaluation
-    return np.dot(A,s)
+    f = np.dot(A,s)
+    
+    return f

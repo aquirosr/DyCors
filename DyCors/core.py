@@ -35,7 +35,7 @@ PAR_DEFAULT_OPTIONS = {"SLURM":False, "cores_per_feval":1,
 def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None, 
              options=None, parallel=False, par_options=None, verbose=True):
     """Minimization of scalar function of one or more variables using
-    DyCors algorithm.
+    DyCors algorithm [1]_.
 
     Parameters
     ----------
@@ -108,7 +108,7 @@ def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None,
             warnings : boolean
                 Whether or not to print solver warnings.
         
-    parallel: boolean, optional
+    parallel : boolean, optional
         Whether or not to use parallel function evaluations. The 
         default is to run in serial.
     par_options : dict, optional
@@ -141,11 +141,43 @@ def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None,
         object. Important attributes are: ``x`` the solution array,
         ``success`` a Boolean flag indicating if the optimizer exited
         successfully and ``message`` which describes the cause of the
-        termination.
+        termination. See :class:`ResultDyCors <.result.ResultDyCors>`
+        for a description of other attributes.
         
     Notes
     -----
     The parallel function evaluations feature needs further testing.
+    
+    References
+    ----------
+    .. [1] Regis, R G and C A Shoemaker. 2013. Combining radial basis
+        function surrogates and dynamic coordinate search in
+        high-dimensional expensive black-box optimization. Engineering
+        Optimization 45 (5): 529-555.
+    
+    Examples
+    --------
+    Let us consider the problem of minimizing the quadratic function.
+    
+    .. math:: 
+        f(x) = x^2
+    
+    >>> import numpy as np
+    >>> from DyCors import minimize
+    
+    We define the objective function, the initial sampling points and
+    the boundaries of the domain as follows:
+    
+    >>> fun = lambda x: x[0]**2
+    >>> x0 = np.array([-2.0, 2.0])[:,np.newaxis]
+    >>> bounds = np.array([-5.0, 5.0])[np.newaxis,:]
+    
+    Finally, we run the optimization and print the results:
+    
+    >>> res = minimize(fun, x0, bounds=bounds, verbose=False)
+    >>> print(res["x"], res["fun"])
+    [-5.10072782e-05] 2.601742429387877e-09
+
     """
 
     # check options are ok

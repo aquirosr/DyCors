@@ -3,11 +3,10 @@ from scipy.optimize import OptimizeResult
 import scipy.linalg as la
 import matplotlib.pyplot as plt
 
-
 class ResultDyCors(OptimizeResult):
     """Represents the optimization result.
     
-    Inherits from scipy.OptimizeResult. 
+    Inherits from `scipy.optimize.OptimizeResult`. 
     
     Attributes
     ----------
@@ -20,9 +19,9 @@ class ResultDyCors(OptimizeResult):
         `message` for details.
     message : str
         Description of the cause of the termination.
-    fun, jac: ndarray
+    fun, jac : ndarray
         Values of objective function and its Jacobian.
-    nfev, njev: int
+    nfev, njev : int
         Number of evaluations of the objective functions and of its
         Jacobian.
     nit : int
@@ -33,11 +32,6 @@ class ResultDyCors(OptimizeResult):
         Values of objective function at all iterations.
     dhist : ndarray, optional
         Values of gradient at all iterations.
-        
-    Methods
-    -------
-    plot(figsize=(), ylim_f=(), ylim_df=(), fontsize=10)
-        Plot evolution of minimum value.
     """
     def __init__(self, fun, jac, nfev, njev, nit, status,
                  message, x, success, m=None, hist=None,
@@ -64,7 +58,8 @@ class ResultDyCors(OptimizeResult):
             return self.__class__.__name__ + "()"
     
     def plot(self, figsize=(), ylim_f=(), ylim_df=(), fontsize=10):
-        """Plot evolution of minimum value.
+        """Plot evolution of minimum value and norm of the gradient
+        if used.
         
         Parameters
         ----------

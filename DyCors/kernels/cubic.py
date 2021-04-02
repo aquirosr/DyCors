@@ -45,7 +45,7 @@ def surrogateRBF_Cubic(x, f):
     return s, Phi, A
 
 def evalRBF_Cubic(x, s, y):
-    """Evaluate surrogate model at new point.
+    """Evaluate RBF Cubic kernel surrogate model at new points.
     
     Parameters
     ----------
@@ -56,6 +56,11 @@ def evalRBF_Cubic(x, s, y):
         RBF coefficients.
     y : ndarray, shape (n,d,)
         Array of points where we want to evaluate the surrogate model.
+    
+    Returns
+    -------
+    f : ndarray, shape(n,)
+        Array of interpolated values.
     """
     y = np.array(y)
     n,d = y.shape
@@ -69,7 +74,8 @@ def evalRBF_Cubic(x, s, y):
     A = np.block([Phi,P])
     
     # evaluation
-    return np.dot(A, s)
+    f = np.dot(A,s)
+    return f
 
 def surrogateGRBF_Cubic(x, f, df):
     """Build GRBF surrogate model using Cubic kernel.
@@ -132,7 +138,7 @@ def surrogateGRBF_Cubic(x, f, df):
     return s, Phi, A
     
 def evalGRBF_Cubic(x, s, y):
-    """Evaluate surrogate model at new point.
+    """Evaluate GRBF Cubic kernel surrogate model at new points.
     
     Parameters
     ----------
@@ -143,6 +149,11 @@ def evalGRBF_Cubic(x, s, y):
         RBF coefficients.
     y : ndarray, shape (n,d,)
         Array of points where we want to evaluate the surrogate model.
+    
+    Returns
+    -------
+    f : ndarray, shape(n,)
+        Array of interpolated values.
     """
     m = x.shape[0]
     y = np.array(y)
@@ -161,4 +172,6 @@ def evalGRBF_Cubic(x, s, y):
     A = np.block([[Phi,d_Phi]])
     
     # evaluation
-    return np.dot(A,s)
+    f  =np.dot(A,s)
+    
+    return f

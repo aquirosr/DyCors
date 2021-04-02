@@ -1,7 +1,9 @@
 import numpy as np
 
 def RSLatinHyperCube(m,d):
-    """Symmetric random Latin Hypercube.
+    """Symmetric random Latin Hypercube [1]_.
+    
+    Data is randomly sampled using a uniform distribution.
     
     Parameters
     ----------
@@ -9,6 +11,17 @@ def RSLatinHyperCube(m,d):
         Number of sampling points.
     d : int
         Number of dimensions.
+    
+    Returns
+    -------
+    IPts : ndarray, shape (m,d,)
+        Sampling data.
+    
+    References
+    ----------
+    .. [1] Helton, J C and F J Davis. 2003. Latin Hypercube Sampling
+        and the Propagation of Uncertainty in Analyses of Complex
+        Systems. Reliability Engineering & System Safety 81 (1): 23-69.
     """
 
     bounds = np.zeros((m+1,d,))
