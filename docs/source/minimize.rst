@@ -1,3 +1,4 @@
-Main function
-=============
-.. autofunction:: DyCors.minimize
+DyCors Algorithm
+================
+.. automodule:: DyCors.core
+    :members:

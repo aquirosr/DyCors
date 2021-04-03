@@ -29,7 +29,10 @@ author = 'Alejandro Quiros Rodriguez'
 # ones.
 extensions = ['sphinx.ext.autodoc',
               'numpydoc',
-              'sphinx.ext.napoleon'
+              'sphinx.ext.napoleon',
+              'sphinx.ext.autosectionlabel',
+              'sphinx.ext.mathjax',
+              'sphinx.ext.viewcode'
 ]
 
 numpydoc_show_class_members = False

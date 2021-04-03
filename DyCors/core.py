@@ -36,6 +36,8 @@ def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None,
              options=None, parallel=False, par_options=None, verbose=True):
     """Minimization of scalar function of one or more variables using
     DyCors algorithm [1]_.
+    
+    This function is a wrapper around the class :class:`DyCorsMinimize`.
 
     Parameters
     ----------
@@ -63,7 +65,8 @@ def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None,
             - 'GRBF-Matern': gradient-enhanced with Matérn kernel
             - 'GRBF-Cubic' : gradient-enhanced with cubic kernel
         
-        The default method is 'RBF-Expo'.
+        The default method is 'RBF-Expo'. See :ref:`Kernel functions`
+        for more details on each specific method.
     jac : callable, optional
         It should return the gradient of `fun`.
 
@@ -226,6 +229,10 @@ def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None,
     return DyCorsMin()
 
 class DyCorsMinimize:
+    """Implementation of DyCors algorithm.
+    
+    For a full description of the different options see :func:`minimize`
+    """
     def __init__(self, fun, x0, args, method, jac, bounds, options, parallel,
                  par_options, verbose):
         self.fun = fun
@@ -316,7 +323,7 @@ class DyCorsMinimize:
         self.fevals += self.m
         
     def __call__(self):
-        """Perform optimization.
+        """Perform the optimization.
         """
         # First, set up Client
         if self.parallel and self.SLURM:
@@ -423,10 +430,28 @@ class DyCorsMinimize:
                                    if self.grad else None))
 
     def par_fun(self, fun, xnew):
-        return np.apply_along_axis(fun, 1, [xnew], *self.args)
+        """Wrapper around the function to be evaluated. Needed in case
+        of parallel function evaluations.
+        
+        Parameters
+        ----------
+        fun : callable
+            Function to be evaluated.
+        xnew : float
+            Point where the function is to be evaluated.
+        
+        Returns
+        -------
+        f : float
+            Value of the function `fun` at `xnew`.
+        """
+        f = np.apply_along_axis(fun, 1, [xnew], *self.args)
+        
+        return f
 
     def initialize(self):
-        """Compute function evaluations of initial sampling points.
+        """Compute function and gradient evaluations of initial
+        sampling points.
         """
         # set up client
         if self.parallel and self.SLURM:
@@ -502,8 +527,9 @@ class DyCorsMinimize:
             self.yk = yk.copy()
 
     def selectNewPts(self):
-        """Evaluate trial points using the surrogate model. Compute
-        scores.
+        """Evaluate trial points using the surrogate model, compute
+        scores and select the new points where we want to run the
+        expensive function evaluation.
         """
         n = self.x.shape[0]
         # estimate function value
@@ -551,7 +577,7 @@ class DyCorsMinimize:
             self.xnew.append(xnew.tolist())
 
     def update(self):
-        """Update info.
+        """Update information after every iteration.
         """
         # update counters
         Cs = 0
@@ -586,14 +612,24 @@ class DyCorsMinimize:
 
     def update_internal_params(self):
         """Optimize internal parameters based on the Leave-One-Out
-        error using a differential evolution algorithm. A constraint
-        is applied to the condition number of the kernel matrix to
-        ensure the smoothness of the function.
+        error using a differential evolution algorithm [1]_, [2]_. A
+        constraint is applied to the condition number of the kernel
+        matrix to ensure the smoothness of the function.
         
         Notes
         -----
         We are not using the gradient information at the moment to
         compute the LOO-Error.
+        
+        References
+        ----------
+        .. [1] Rippa, S. 1999. An algorithm for selecting a good value
+            for the parameter c in radial basis function interpolation.
+            Advances in Computational Mathematics 11 (2). 193-210.
+        .. [2] Bompard, M, J Peter and J A Desideri. 2010. Surrogate
+            models based on function and derivative values for aerodynamic
+            global optimization. V European Conference on Computational
+            Fluid Dynamics ECCOMAS CFD 2010, ECCOMAS. Lisbon, Portugal.
         """
         def constr_f(ip):
             if self.method.endswith("Expo"):
@@ -678,7 +714,7 @@ class DyCorsMinimize:
                     print("Not updated")
                 
     def restart(self):
-        """Restart DyCors. Keep just xB.
+        """Restart DyCors keeping only the best point.
         """
         x = np.outer((self.m-1)*[1],self.bounds[:,0]) \
             + np.outer((self.m-1)*[1], self.bounds[:,1]-self.bounds[:,0]) \

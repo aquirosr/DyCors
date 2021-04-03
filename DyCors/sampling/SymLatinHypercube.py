@@ -14,8 +14,8 @@ def SLatinHyperCube(m,d):
     
     Returns
     -------
-    IPts : ndarray, shape (m,d,)
-        Sampling data.
+    s : ndarray, shape (m,d,)
+        Sampling data. :math:`s \in R^d : 0 \leq s \leq 1`.
     
     References
     ----------
@@ -47,11 +47,11 @@ def SLatinHyperCube(m,d):
                 P[m-1-i,j] = P[i,j]
                 P[i,j]     = m-1-P[i,j]
     
-    IPts = np.zeros((m,d))
+    s = np.zeros((m,d))
     for j in range(d):
         for i in range(m):
-            IPts[i,j] = X[P[i,j],j]
-    return IPts
+            s[i,j] = X[P[i,j],j]
+    return s
 
 if __name__ == "__main__":
     print('This is test for SLHDstandard')

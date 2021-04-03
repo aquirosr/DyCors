@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 class ResultDyCors(OptimizeResult):
     """Represents the optimization result.
     
-    Inherits from `scipy.optimize.OptimizeResult`. 
+    Inherits from `scipy.optimize.OptimizeResult
+    <https://docs.scipy.org/doc/scipy/reference/generated/
+    scipy.optimize.OptimizeResult.html>`_.
     
     Attributes
     ----------
@@ -15,8 +17,8 @@ class ResultDyCors(OptimizeResult):
     success : bool
         Whether or not the optimizer exited successfully.
     status : int
-        Termination status of the optimizer. Refer to 
-        `message` for details.
+        Termination status of the optimizer. Refer to `message` for
+        details.
     message : str
         Description of the cause of the termination.
     fun, jac : ndarray
