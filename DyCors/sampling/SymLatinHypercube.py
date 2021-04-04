@@ -15,7 +15,7 @@ def SLatinHyperCube(m,d):
     Returns
     -------
     s : ndarray, shape (m,d,)
-        Sampling data. :math:`s \in R^d : 0 \leq s \leq 1`.
+        Sampling data. :math:`s \in \mathbb{R}^d : 0 \leq s \leq 1`.
     
     References
     ----------

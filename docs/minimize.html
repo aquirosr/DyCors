@@ -1,0 +1,358 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DyCors Algorithm &#8212; DyCors  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tools" href="tools.html" />
+    <link rel="prev" title="Reference manual" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tools.html" title="Tools"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Reference manual"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DyCors  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">DyCors Algorithm</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-DyCors.core">
+<span id="dycors-algorithm"></span><h1>DyCors Algorithm<a class="headerlink" href="#module-DyCors.core" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="DyCors.core.DyCorsMinimize">
+<em class="property">class </em><code class="sig-prename descclassname">DyCors.core.</code><code class="sig-name descname">DyCorsMinimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">x0</span></em>, <em class="sig-param"><span class="n">args</span></em>, <em class="sig-param"><span class="n">method</span></em>, <em class="sig-param"><span class="n">jac</span></em>, <em class="sig-param"><span class="n">bounds</span></em>, <em class="sig-param"><span class="n">options</span></em>, <em class="sig-param"><span class="n">parallel</span></em>, <em class="sig-param"><span class="n">par_options</span></em>, <em class="sig-param"><span class="n">verbose</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of DyCors algorithm.</p>
+<p>For a full description of the different options see <a class="reference internal" href="#DyCors.core.minimize" title="DyCors.core.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p>
+<dl class="py method">
+<dt id="DyCors.core.DyCorsMinimize.initialize">
+<code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute function and gradient evaluations of initial
+sampling points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="DyCors.core.DyCorsMinimize.par_fun">
+<code class="sig-name descname">par_fun</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">xnew</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.par_fun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.par_fun" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around the function to be evaluated. Needed in case
+of parallel function evaluations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fun</strong><span class="classifier">callable</span></dt><dd><p>Function to be evaluated.</p>
+</dd>
+<dt><strong>xnew</strong><span class="classifier">float</span></dt><dd><p>Point where the function is to be evaluated.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>f</strong><span class="classifier">float</span></dt><dd><p>Value of the function <cite>fun</cite> at <cite>xnew</cite>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="DyCors.core.DyCorsMinimize.restart">
+<code class="sig-name descname">restart</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.restart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.restart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restart DyCors keeping only the best point.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="DyCors.core.DyCorsMinimize.selectNewPts">
+<code class="sig-name descname">selectNewPts</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.selectNewPts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.selectNewPts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate trial points using the surrogate model, compute
+scores and select the new points where we want to run the
+expensive function evaluation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="DyCors.core.DyCorsMinimize.trialPoints">
+<code class="sig-name descname">trialPoints</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.trialPoints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.trialPoints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate trial points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="DyCors.core.DyCorsMinimize.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update information after every iteration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="DyCors.core.DyCorsMinimize.update_internal_params">
+<code class="sig-name descname">update_internal_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.update_internal_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.update_internal_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimize internal parameters based on the Leave-One-Out
+error using a differential evolution algorithm <a class="reference internal" href="#r99c3ba7c1b96-1" id="id1">[1]</a>, <a class="reference internal" href="#r99c3ba7c1b96-2" id="id2">[2]</a>. A
+constraint is applied to the condition number of the kernel
+matrix to ensure the smoothness of the function.</p>
+<p class="rubric">Notes</p>
+<p>We are not using the gradient information at the moment to
+compute the LOO-Error.</p>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="r99c3ba7c1b96-1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p>Rippa, S. 1999. An algorithm for selecting a good value
+for the parameter c in radial basis function interpolation.
+Advances in Computational Mathematics 11 (2). 193-210.</p>
+</dd>
+<dt class="label" id="r99c3ba7c1b96-2"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
+<dd><p>Bompard, M, J Peter and J A Desideri. 2010. Surrogate
+models based on function and derivative values for aerodynamic
+global optimization. V European Conference on Computational
+Fluid Dynamics ECCOMAS CFD 2010, ECCOMAS. Lisbon, Portugal.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="DyCors.core.minimize">
+<code class="sig-prename descclassname">DyCors.core.</code><code class="sig-name descname">minimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">x0</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">()</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'RBF-Expo'</span></em>, <em class="sig-param"><span class="n">jac</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">options</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">par_options</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#minimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.minimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimization of scalar function of one or more variables using
+DyCors algorithm <a class="reference internal" href="#r3046228dd70a-1" id="id5">[1]</a>.</p>
+<p>This function is a wrapper around the class <a class="reference internal" href="#DyCors.core.DyCorsMinimize" title="DyCors.core.DyCorsMinimize"><code class="xref py py-class docutils literal notranslate"><span class="pre">DyCorsMinimize</span></code></a>.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>fun</strong><span class="classifier">callable</span></dt><dd><p>The objective function to be minimized.</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">fun(x,</span> <span class="pre">*args)</span> <span class="pre">-&gt;</span> <span class="pre">float</span></code></p>
+</div></blockquote>
+<p>where <code class="docutils literal notranslate"><span class="pre">x</span></code> is an 1-D array with shape (d,) and <code class="docutils literal notranslate"><span class="pre">args</span></code>
+is a tuple of the fixed parameters needed to completely
+specify the function.</p>
+</dd>
+<dt><strong>x0</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Starting sampling points. m is the number of sampling points
+and d is the number of dimensions.</p>
+</dd>
+<dt><strong>args</strong><span class="classifier">tuple, optional</span></dt><dd><p>Extra arguments passed to the objective function and its
+derivatives (<cite>fun</cite> and <cite>jac</cite> functions).</p>
+</dd>
+<dt><strong>method</strong><span class="classifier">str, optional</span></dt><dd><p>Type of algorithm. Should be:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>‘RBF-Expo’   : derivative-free with exponential kernel</p></li>
+<li><p>‘RBF-Matern’ : derivative-free with Matérn kernel</p></li>
+<li><p>‘RBF-Cubic’  : derivative-free with cubic kernel</p></li>
+<li><p>‘GRBF-Expo’  : gradient-enhanced with exponential kernel</p></li>
+<li><p>‘GRBF-Matern’: gradient-enhanced with Matérn kernel</p></li>
+<li><p>‘GRBF-Cubic’ : gradient-enhanced with cubic kernel</p></li>
+</ul>
+</div></blockquote>
+<p>The default method is ‘RBF-Expo’. See <a class="reference internal" href="kernel.html#kernel-functions"><span class="std std-ref">Kernel functions</span></a>
+for more details on each specific method.</p>
+</dd>
+<dt><strong>jac</strong><span class="classifier">callable, optional</span></dt><dd><p>It should return the gradient of <cite>fun</cite>.</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">jac(x,</span> <span class="pre">*args)</span> <span class="pre">-&gt;</span> <span class="pre">array_like,</span> <span class="pre">shape</span> <span class="pre">(d,)</span></code></p>
+</div></blockquote>
+<p>where <code class="docutils literal notranslate"><span class="pre">x</span></code> is an 1-D array with shape (d,) and <code class="docutils literal notranslate"><span class="pre">args</span></code>
+is a tuple of the fixed parameters needed to completely
+specify the function.
+Only necessary for ‘GRBF-Expo’, ‘GRBF-Matern’ and
+‘GRBF-Cubic’ methods.</p>
+</dd>
+<dt><strong>bounds</strong><span class="classifier">ndarray, shape (d,2,), optional</span></dt><dd><p>Bounds on variables. If not provided, the default is not to
+use any bounds on variables.</p>
+</dd>
+<dt><strong>options</strong><span class="classifier">dict, optional</span></dt><dd><p>A dictionary of solver options:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Nmax<span class="classifier">int</span></dt><dd><p>Maximum number of function evaluations in serial.</p>
+</dd>
+<dt>sig0<span class="classifier">float or ndarray</span></dt><dd><p>Initial standard deviation to create new trial points.</p>
+</dd>
+<dt>sigm<span class="classifier">float or ndarray</span></dt><dd><p>Minimum standard deviation to create new trial points.</p>
+</dd>
+<dt>Ts<span class="classifier">int</span></dt><dd><p>Number of consecutive successful function evaluations
+before increasing the standard deviation to create new
+trial points.</p>
+</dd>
+<dt>Tf<span class="classifier">int</span></dt><dd><p>Number of consecutive unsuccessful function evaluations
+before decreasing the standard deviation to create new
+trial points.</p>
+</dd>
+<dt>l<span class="classifier">float or ndarray</span></dt><dd><p>Kernel internal parameter. Kernel width.</p>
+</dd>
+<dt>nu<span class="classifier">float (half integer)</span></dt><dd><p>Matérn kernel internal parameter. Order of the Bessel
+Function.</p>
+</dd>
+<dt>optim_loo<span class="classifier">boolean</span></dt><dd><p>Whether or not to use optimization of internal
+parameters.</p>
+</dd>
+<dt>nits_loo<span class="classifier">int</span></dt><dd><p>Optimize internal parameters after every <code class="docutils literal notranslate"><span class="pre">nits_loo</span></code>
+iterations.</p>
+</dd>
+<dt>warnings<span class="classifier">boolean</span></dt><dd><p>Whether or not to print solver warnings.</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt><strong>parallel</strong><span class="classifier">boolean, optional</span></dt><dd><p>Whether or not to use parallel function evaluations. The
+default is to run in serial.</p>
+</dd>
+<dt><strong>par_options</strong><span class="classifier">dict, optional</span></dt><dd><p>A dictionary of options to set the task manager:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>SLURM<span class="classifier">boolean</span></dt><dd><p>Whether or not the computations are carried out by
+SLURM. To use with supercomputers.</p>
+</dd>
+<dt>cores_per_feval<span class="classifier">int</span></dt><dd><p>Number of cores to use in each function evaluation.</p>
+</dd>
+<dt>par_fevals<span class="classifier">int</span></dt><dd><p>Number of function evaluations to run in parallel.</p>
+</dd>
+<dt>memory<span class="classifier">str</span></dt><dd><p>Requested memory for each function evaluation. To use
+only if SLURM is set to True.</p>
+</dd>
+<dt>walltime<span class="classifier">str</span></dt><dd><p>Requested wall time for each function evaluation. To
+use only if SLURM is set to True.</p>
+</dd>
+<dt>queue<span class="classifier">str</span></dt><dd><p>Name of the partition. To use only if SLURM is set to
+True.</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">boolean, optional</span></dt><dd><p>Whether or not to print information of the solver iterations.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">ResultDyCors</span></dt><dd><p>The optimization result represented as a <code class="docutils literal notranslate"><span class="pre">ResultDyCors</span></code>
+object. Important attributes are: <code class="docutils literal notranslate"><span class="pre">x</span></code> the solution array,
+<code class="docutils literal notranslate"><span class="pre">success</span></code> a Boolean flag indicating if the optimizer exited
+successfully and <code class="docutils literal notranslate"><span class="pre">message</span></code> which describes the cause of the
+termination. See <a class="reference internal" href="result.html#DyCors.result.ResultDyCors" title="DyCors.result.ResultDyCors"><code class="xref py py-class docutils literal notranslate"><span class="pre">ResultDyCors</span></code></a>
+for a description of other attributes.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The parallel function evaluations feature needs further testing.</p>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="r3046228dd70a-1"><span class="brackets"><a class="fn-backref" href="#id5">1</a></span></dt>
+<dd><p>Regis, R G and C A Shoemaker. 2013. Combining radial basis
+function surrogates and dynamic coordinate search in
+high-dimensional expensive black-box optimization. Engineering
+Optimization 45 (5): 529-555.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Let us consider the problem of minimizing the quadratic function.</p>
+<div class="math notranslate nohighlight">
+\[f(x) = x^2\]</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">DyCors</span> <span class="kn">import</span> <span class="n">minimize</span>
+</pre></div>
+</div>
+<p>We define the objective function, the initial sampling points and
+the boundaries of the domain as follows:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">])[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span>
+</pre></div>
+</div>
+<p>Finally, we run the optimization and print the results:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;fun&quot;</span><span class="p">])</span>
+<span class="go">[-5.10072782e-05] 2.601742429387877e-09</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Reference manual</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tools.html"
+                        title="next chapter">Tools</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/minimize.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tools.html" title="Tools"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Reference manual"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DyCors  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">DyCors Algorithm</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Alejandro Quiros Rodriguez.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
+    </div>
+  </body>
+</html>

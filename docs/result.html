@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return object &#8212; DyCors  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Sampling techniques" href="sampling.html" />
+    <link rel="prev" title="Tools" href="tools.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sampling.html" title="Sampling techniques"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tools.html" title="Tools"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DyCors  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="tools.html" accesskey="U">Tools</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Return object</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-DyCors.result">
+<span id="return-object"></span><h1>Return object<a class="headerlink" href="#module-DyCors.result" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="DyCors.result.ResultDyCors">
+<em class="property">class </em><code class="sig-prename descclassname">DyCors.result.</code><code class="sig-name descname">ResultDyCors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">jac</span></em>, <em class="sig-param"><span class="n">nfev</span></em>, <em class="sig-param"><span class="n">njev</span></em>, <em class="sig-param"><span class="n">nit</span></em>, <em class="sig-param"><span class="n">status</span></em>, <em class="sig-param"><span class="n">message</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">success</span></em>, <em class="sig-param"><span class="n">m</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dhist</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/result.html#ResultDyCors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.result.ResultDyCors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents the optimization result.</p>
+<p>Inherits from <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.OptimizeResult.html">scipy.optimize.OptimizeResult</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">ndarray</span></dt><dd><p>The solution of the optimization.</p>
+</dd>
+<dt><strong>success</strong><span class="classifier">bool</span></dt><dd><p>Whether or not the optimizer exited successfully.</p>
+</dd>
+<dt><strong>status</strong><span class="classifier">int</span></dt><dd><p>Termination status of the optimizer. Refer to <cite>message</cite> for
+details.</p>
+</dd>
+<dt><strong>message</strong><span class="classifier">str</span></dt><dd><p>Description of the cause of the termination.</p>
+</dd>
+<dt><strong>fun, jac</strong><span class="classifier">ndarray</span></dt><dd><p>Values of objective function and its Jacobian.</p>
+</dd>
+<dt><strong>nfev, njev</strong><span class="classifier">int</span></dt><dd><p>Number of evaluations of the objective functions and of its
+Jacobian.</p>
+</dd>
+<dt><strong>nit</strong><span class="classifier">int</span></dt><dd><p>Number of restarts performed by DyCors.</p>
+</dd>
+<dt><strong>m</strong><span class="classifier">int, optional</span></dt><dd><p>Numbe of initial sampling points</p>
+</dd>
+<dt><strong>hist</strong><span class="classifier">ndarray, optional</span></dt><dd><p>Values of objective function at all iterations.</p>
+</dd>
+<dt><strong>dhist</strong><span class="classifier">ndarray, optional</span></dt><dd><p>Values of gradient at all iterations.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="DyCors.result.ResultDyCors.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">()</span></em>, <em class="sig-param"><span class="n">ylim_f</span><span class="o">=</span><span class="default_value">()</span></em>, <em class="sig-param"><span class="n">ylim_df</span><span class="o">=</span><span class="default_value">()</span></em>, <em class="sig-param"><span class="n">fontsize</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/result.html#ResultDyCors.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.result.ResultDyCors.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot evolution of minimum value and norm of the gradient
+if used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>figsize</strong><span class="classifier">tuple, optional</span></dt><dd><p>Size of the figure.</p>
+</dd>
+<dt><strong>ylim_f</strong><span class="classifier">tuple, optional</span></dt><dd><p>y limits on the function history.</p>
+</dd>
+<dt><strong>ylim_df</strong><span class="classifier">tuple, optional</span></dt><dd><p>y limits on the function history.</p>
+</dd>
+<dt><strong>fontsize</strong><span class="classifier">int, optional</span></dt><dd><p>Font size.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tools.html"
+                        title="previous chapter">Tools</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sampling.html"
+                        title="next chapter">Sampling techniques</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/result.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sampling.html" title="Sampling techniques"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tools.html" title="Tools"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DyCors  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="tools.html" >Tools</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Return object</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Alejandro Quiros Rodriguez.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
+    </div>
+  </body>
+</html>

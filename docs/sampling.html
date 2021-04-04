@@ -1,0 +1,305 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sampling techniques &#8212; DyCors  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Kernel functions" href="kernel.html" />
+    <link rel="prev" title="Return object" href="result.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kernel.html" title="Kernel functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="result.html" title="Return object"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DyCors  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="tools.html" accesskey="U">Tools</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Sampling techniques</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="sampling-techniques">
+<h1>Sampling techniques<a class="headerlink" href="#sampling-techniques" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="DyCors.sampling.LatinHyperCube">
+<code class="sig-prename descclassname">DyCors.sampling.</code><code class="sig-name descname">LatinHyperCube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/LatinHypercube.html#LatinHyperCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.sampling.LatinHyperCube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Non-symmetric Latin Hypercube <a class="reference internal" href="#r2b492a3047e8-1" id="id1">[1]</a>.</p>
+<p>Data is sampled at the center of the bins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>m</strong><span class="classifier">int</span></dt><dd><p>Number of sampling points.</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">int</span></dt><dd><p>Number of dimensions.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>s</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Sampling data. <span class="math notranslate nohighlight">\(s \in \mathbb{R}^d : 0 \leq s \leq 1\)</span>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="r2b492a3047e8-1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p>Helton, J C and F J Davis. 2003. Latin Hypercube Sampling
+and the Propagation of Uncertainty in Analyses of Complex
+Systems. Reliability Engineering &amp; System Safety 81 (1): 23-69.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="DyCors.sampling.SLatinHyperCube">
+<code class="sig-prename descclassname">DyCors.sampling.</code><code class="sig-name descname">SLatinHyperCube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/SymLatinHypercube.html#SLatinHyperCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.sampling.SLatinHyperCube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Symmetric Latin Hypercube <a class="reference internal" href="#rbf017300ac27-1" id="id3">[1]</a>.</p>
+<p>Data is sampled at the center of the bins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>m</strong><span class="classifier">int</span></dt><dd><p>Number of sampling points.</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">int</span></dt><dd><p>Number of dimensions.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>s</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Sampling data. <span class="math notranslate nohighlight">\(s \in \mathbb{R}^d : 0 \leq s \leq 1\)</span>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="rbf017300ac27-1"><span class="brackets"><a class="fn-backref" href="#id3">1</a></span></dt>
+<dd><p>Helton, J C and F J Davis. 2003. Latin Hypercube Sampling
+and the Propagation of Uncertainty in Analyses of Complex
+Systems. Reliability Engineering &amp; System Safety 81 (1): 23-69.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="DyCors.sampling.RLatinHyperCube">
+<code class="sig-prename descclassname">DyCors.sampling.</code><code class="sig-name descname">RLatinHyperCube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/RandLatinHypercube.html#RLatinHyperCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.sampling.RLatinHyperCube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Non-symmetric random Latin Hypercube <a class="reference internal" href="#rae13820fd0bc-1" id="id5">[1]</a>.</p>
+<p>Data is randomly sampled using a uniform distribution inside each
+bin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>m</strong><span class="classifier">int</span></dt><dd><p>Number of sampling points.</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">int</span></dt><dd><p>Number of dimensions.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>s</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Sampling data. <span class="math notranslate nohighlight">\(s \in \mathbb{R}^d : 0 \leq s \leq 1\)</span>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="rae13820fd0bc-1"><span class="brackets"><a class="fn-backref" href="#id5">1</a></span></dt>
+<dd><p>Helton, J C and F J Davis. 2003. Latin Hypercube Sampling
+and the Propagation of Uncertainty in Analyses of Complex
+Systems. Reliability Engineering &amp; System Safety 81 (1): 23-69.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="DyCors.sampling.RSLatinHyperCube">
+<code class="sig-prename descclassname">DyCors.sampling.</code><code class="sig-name descname">RSLatinHyperCube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/RandSymLatinHypercube.html#RSLatinHyperCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.sampling.RSLatinHyperCube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Symmetric random Latin Hypercube <a class="reference internal" href="#r4ead1d246c7d-1" id="id7">[1]</a>.</p>
+<p>Data is randomly sampled using a uniform distribution inside each
+bin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>m</strong><span class="classifier">int</span></dt><dd><p>Number of sampling points.</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">int</span></dt><dd><p>Number of dimensions.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>s</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Sampling data. <span class="math notranslate nohighlight">\(s \in \mathbb{R}^d : 0 \leq s \leq 1\)</span>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="r4ead1d246c7d-1"><span class="brackets"><a class="fn-backref" href="#id7">1</a></span></dt>
+<dd><p>Helton, J C and F J Davis. 2003. Latin Hypercube Sampling
+and the Propagation of Uncertainty in Analyses of Complex
+Systems. Reliability Engineering &amp; System Safety 81 (1): 23-69.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="DyCors.sampling.ERLatinHyperCube">
+<code class="sig-prename descclassname">DyCors.sampling.</code><code class="sig-name descname">ERLatinHyperCube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/EnhRandLatinHypercube.html#ERLatinHyperCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.sampling.ERLatinHyperCube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Non-symmetric enhanced random Latin Hypercube <a class="reference internal" href="#re08178ee8ef6-1" id="id9">[1]</a>.</p>
+<p>Data is randomly sampled using a uniform distribution inside each
+bin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>m</strong><span class="classifier">int</span></dt><dd><p>Number of sampling points.</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">int</span></dt><dd><p>Number of dimensions.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>s</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Sampling data. <span class="math notranslate nohighlight">\(s \in \mathbb{R}^d : 0 \leq s \leq 1\)</span>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="re08178ee8ef6-1"><span class="brackets"><a class="fn-backref" href="#id9">1</a></span></dt>
+<dd><p>Beachkofski, B and R Grandhi. 2002. Improved Distributed
+Hypercube Sampling. 43rd AIAA/ASME/ASCE/AHS/ASC Structures,
+Structural Dynamics, and Materials Conference. Denver,
+Colorado.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="DyCors.sampling.ERSLatinHyperCube">
+<code class="sig-prename descclassname">DyCors.sampling.</code><code class="sig-name descname">ERSLatinHyperCube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/EnhRandSymLatinHypercube.html#ERSLatinHyperCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.sampling.ERSLatinHyperCube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Non-symmetric enhanced random symmetric Latin Hypercube <a class="reference internal" href="#r10d6b670e10b-1" id="id11">[1]</a>.</p>
+<p>Data is randomly sampled using a uniform distribution inside each
+bin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>m</strong><span class="classifier">int</span></dt><dd><p>Number of sampling points.</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">int</span></dt><dd><p>Number of dimensions.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>s</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Sampling data. <span class="math notranslate nohighlight">\(s \in \mathbb{R}^d : 0 \leq s \leq 1\)</span>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="r10d6b670e10b-1"><span class="brackets"><a class="fn-backref" href="#id11">1</a></span></dt>
+<dd><p>Beachkofski, B and R Grandhi. 2002. Improved Distributed
+Hypercube Sampling. 43rd AIAA/ASME/ASCE/AHS/ASC Structures,
+Structural Dynamics, and Materials Conference. Denver,
+Colorado.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="result.html"
+                        title="previous chapter">Return object</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="kernel.html"
+                        title="next chapter">Kernel functions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/sampling.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kernel.html" title="Kernel functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="result.html" title="Return object"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DyCors  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="tools.html" >Tools</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Sampling techniques</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Alejandro Quiros Rodriguez.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
+    </div>
+  </body>
+</html>
