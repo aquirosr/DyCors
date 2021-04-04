@@ -18,6 +18,9 @@ Both RBF (Radial Basis Functions) and GRBF (Gradient-enhanced Radial
 Basis Functions) can be used. Three different kernels have been
 implemented: exponential kernel, Matérn kernel and cubic kernel.
 
+Source code available in `DyCors code
+<https://github.com/aquirosr/DyCors>`_.
+
 Installation
 ------------
 Follow this commands to install DyCors::
