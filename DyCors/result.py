@@ -34,22 +34,36 @@ class ResultDyCors(OptimizeResult):
         Values of objective function at all iterations.
     dhist : ndarray, optional
         Values of gradient at all iterations.
+    xres : ndarray, optional
+        Array with all the points evaluated by the optimization
+        algorithm.
+    fres : ndarray, optional
+        Array with the values of the objective function at all points
+        that have been evaluated.
+    gres : ndarray, optional
+        Array with the values of the gradient of the objective function
+        at all points that have been evaluated.
     """
     def __init__(self, fun, jac, nfev, njev, nit, status,
                  message, x, success, m=None, hist=None,
-                 dhist=None):
+                 dhist=None, xres=None, fres=None, gres=None):
         super().__init__({"fun":fun, "jac":jac, "nfev":nfev,
                           "njev":njev, "nit":nit, "status":status,
                           "message":message, "x":x, "success":success})
         self.scipy_dict = self.copy()
         
-        self.hist = hist
-        if self.hist is not None and m is not None:
-            self["hist"] = np.arange(m, nfev+1), self.hist[m-1:]
+        self["m"] = m
+        self["hist"] = None
+        if hist is not None and m is not None:
+            self["hist"] = np.arange(m, nfev+1), hist[m-1:]
         
-        self.dhist = dhist
-        if self.dhist is not None and m is not None:
-            self["dhist"] = np.arange(m, nfev+1), la.norm(self.dhist[m-1:,:], axis=-1)
+        self["dhist"] = None
+        if dhist is not None and m is not None:
+            self["dhist"] = np.arange(m, nfev+1), la.norm(dhist[m-1:,:], axis=-1)
+        
+        self["xres"] = xres
+        self["fres"] = fres
+        self["gres"] = gres
         
     def __repr__(self):
         if self.scipy_dict.keys():
@@ -74,7 +88,7 @@ class ResultDyCors(OptimizeResult):
         fontsize : int, optional
             Font size.
         """
-        if self.hist is None:
+        if self["hist"] is None:
             return None
         
         if figsize:
@@ -90,7 +104,7 @@ class ResultDyCors(OptimizeResult):
         if ylim_f:
             ax1.set_ylim(*ylim_f)
         
-        if self.dhist is not None:
+        if self["dhist"] is not None:
             ax2 = ax1.twinx()
             im2 = ax2.plot(self["dhist"][0], self["dhist"][1], "C1",
                            label=r"$|\mathrm{d}f(x)|$")

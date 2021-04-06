@@ -161,7 +161,7 @@
 <span id="dycors-algorithm"></span><h1>DyCors Algorithm<a class="headerlink" href="#module-DyCors.core" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="DyCors.core.DyCorsMinimize">
-<em class="property">class </em><code class="sig-prename descclassname">DyCors.core.</code><code class="sig-name descname">DyCorsMinimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">x0</span></em>, <em class="sig-param"><span class="n">args</span></em>, <em class="sig-param"><span class="n">method</span></em>, <em class="sig-param"><span class="n">jac</span></em>, <em class="sig-param"><span class="n">bounds</span></em>, <em class="sig-param"><span class="n">options</span></em>, <em class="sig-param"><span class="n">parallel</span></em>, <em class="sig-param"><span class="n">par_options</span></em>, <em class="sig-param"><span class="n">verbose</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">DyCors.core.</code><code class="sig-name descname">DyCorsMinimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">x0</span></em>, <em class="sig-param"><span class="n">args</span></em>, <em class="sig-param"><span class="n">method</span></em>, <em class="sig-param"><span class="n">jac</span></em>, <em class="sig-param"><span class="n">bounds</span></em>, <em class="sig-param"><span class="n">options</span></em>, <em class="sig-param"><span class="n">restart</span></em>, <em class="sig-param"><span class="n">parallel</span></em>, <em class="sig-param"><span class="n">par_options</span></em>, <em class="sig-param"><span class="n">verbose</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implementation of DyCors algorithm.</p>
 <p>For a full description of the different options see <a class="reference internal" href="#DyCors.core.minimize" title="DyCors.core.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p>
 <dl class="py method">
@@ -169,6 +169,12 @@
 <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute function and gradient evaluations of initial
 sampling points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="DyCors.core.DyCorsMinimize.initialize_restart">
+<code class="sig-name descname">initialize_restart</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.initialize_restart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.initialize_restart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize optimization from a previous optimization.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -195,8 +201,8 @@ of parallel function evaluations.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="DyCors.core.DyCorsMinimize.restart">
-<code class="sig-name descname">restart</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.restart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.restart" title="Permalink to this definition">¶</a></dt>
+<dt id="DyCors.core.DyCorsMinimize.restart_dycors">
+<code class="sig-name descname">restart_dycors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.restart_dycors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.restart_dycors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restart DyCors keeping only the best point.</p>
 </dd></dl>
 
@@ -250,10 +256,13 @@ Fluid Dynamics ECCOMAS CFD 2010, ECCOMAS. Lisbon, Portugal.</p>
 
 <dl class="py function">
 <dt id="DyCors.core.minimize">
-<code class="sig-prename descclassname">DyCors.core.</code><code class="sig-name descname">minimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">x0</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">()</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'RBF-Expo'</span></em>, <em class="sig-param"><span class="n">jac</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">options</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">par_options</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#minimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.minimize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">DyCors.core.</code><code class="sig-name descname">minimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">x0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">()</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'RBF-Expo'</span></em>, <em class="sig-param"><span class="n">jac</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">options</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">restart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">par_options</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#minimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.minimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Minimization of scalar function of one or more variables using
 DyCors algorithm <a class="reference internal" href="#r3046228dd70a-1" id="id5">[1]</a>.</p>
-<p>This function is a wrapper around the class <a class="reference internal" href="#DyCors.core.DyCorsMinimize" title="DyCors.core.DyCorsMinimize"><code class="xref py py-class docutils literal notranslate"><span class="pre">DyCorsMinimize</span></code></a>.</p>
+<p>This function is a wrapper around the class
+<a class="reference internal" href="#DyCors.core.DyCorsMinimize" title="DyCors.core.DyCorsMinimize"><code class="xref py py-class docutils literal notranslate"><span class="pre">DyCorsMinimize</span></code></a>.</p>
+<p>The only mandatory parameters are <code class="docutils literal notranslate"><span class="pre">fun</span></code> and either <code class="docutils literal notranslate"><span class="pre">x0</span></code> or
+<code class="docutils literal notranslate"><span class="pre">restart</span></code>.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl>
@@ -265,7 +274,7 @@ DyCors algorithm <a class="reference internal" href="#r3046228dd70a-1" id="id5">
 is a tuple of the fixed parameters needed to completely
 specify the function.</p>
 </dd>
-<dt><strong>x0</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Starting sampling points. m is the number of sampling points
+<dt><strong>x0</strong><span class="classifier">ndarray, shape (m,d,), optional</span></dt><dd><p>Starting sampling points. m is the number of sampling points
 and d is the number of dimensions.</p>
 </dd>
 <dt><strong>args</strong><span class="classifier">tuple, optional</span></dt><dd><p>Extra arguments passed to the objective function and its
@@ -330,6 +339,8 @@ iterations.</p>
 </dd>
 </dl>
 </div></blockquote>
+</dd>
+<dt><strong>restart</strong><span class="classifier">ResultDyCors, optional</span></dt><dd><p>Restart optimization from a previous optimization.</p>
 </dd>
 <dt><strong>parallel</strong><span class="classifier">boolean, optional</span></dt><dd><p>Whether or not to use parallel function evaluations. The
 default is to run in serial.</p>
@@ -399,9 +410,19 @@ the boundaries of the domain as follows:</p>
 </pre></div>
 </div>
 <p>Finally, we run the optimization and print the results:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+<span class="gp">... </span>               <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;warnings&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">},</span>
+<span class="gp">... </span>               <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;fun&quot;</span><span class="p">])</span>
-<span class="go">[-5.10072782e-05] 2.601742429387877e-09</span>
+<span class="go">[1.32665389e-05] 1.7600105366604962e-10</span>
+</pre></div>
+</div>
+<p>We can also restart the optimization:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+<span class="gp">... </span>               <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Nmax&quot;</span><span class="p">:</span><span class="mi">500</span><span class="p">,</span> <span class="s2">&quot;warnings&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">},</span>
+<span class="gp">... </span>               <span class="n">restart</span><span class="o">=</span><span class="n">res</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;fun&quot;</span><span class="p">])</span>
+<span class="go">[1.55369877e-06] 2.413979870364038e-12</span>
 </pre></div>
 </div>
 </dd></dl>

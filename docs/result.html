@@ -168,7 +168,7 @@
 <span id="return-object"></span><h1>Return object<a class="headerlink" href="#module-DyCors.result" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="DyCors.result.ResultDyCors">
-<em class="property">class </em><code class="sig-prename descclassname">DyCors.result.</code><code class="sig-name descname">ResultDyCors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">jac</span></em>, <em class="sig-param"><span class="n">nfev</span></em>, <em class="sig-param"><span class="n">njev</span></em>, <em class="sig-param"><span class="n">nit</span></em>, <em class="sig-param"><span class="n">status</span></em>, <em class="sig-param"><span class="n">message</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">success</span></em>, <em class="sig-param"><span class="n">m</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dhist</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/result.html#ResultDyCors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.result.ResultDyCors" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">DyCors.result.</code><code class="sig-name descname">ResultDyCors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">jac</span></em>, <em class="sig-param"><span class="n">nfev</span></em>, <em class="sig-param"><span class="n">njev</span></em>, <em class="sig-param"><span class="n">nit</span></em>, <em class="sig-param"><span class="n">status</span></em>, <em class="sig-param"><span class="n">message</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">success</span></em>, <em class="sig-param"><span class="n">m</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dhist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xres</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fres</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gres</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/result.html#ResultDyCors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.result.ResultDyCors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents the optimization result.</p>
 <p>Inherits from <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.OptimizeResult.html">scipy.optimize.OptimizeResult</a>.</p>
 <dl class="field-list simple">
@@ -195,6 +195,15 @@ Jacobian.</p>
 <dt><strong>hist</strong><span class="classifier">ndarray, optional</span></dt><dd><p>Values of objective function at all iterations.</p>
 </dd>
 <dt><strong>dhist</strong><span class="classifier">ndarray, optional</span></dt><dd><p>Values of gradient at all iterations.</p>
+</dd>
+<dt><strong>xres</strong><span class="classifier">ndarray, optional</span></dt><dd><p>Array with all the points evaluated by the optimization
+algorithm.</p>
+</dd>
+<dt><strong>fres</strong><span class="classifier">ndarray, optional</span></dt><dd><p>Array with the values of the objective function at all points
+that have been evaluated.</p>
+</dd>
+<dt><strong>gres</strong><span class="classifier">ndarray, optional</span></dt><dd><p>Array with the values of the gradient of the objective function
+at all points that have been evaluated.</p>
 </dd>
 </dl>
 </dd>

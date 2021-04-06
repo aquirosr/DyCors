@@ -32,13 +32,18 @@ PAR_DEFAULT_OPTIONS = {"SLURM":False, "cores_per_feval":1,
                        "par_fevals":NCORES, "memory":"1GB",
                        "walltime":"00:10:00", "queue":"regular"}
 
-def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None, 
-             options=None, parallel=False, par_options=None, verbose=True):
+def minimize(fun, x0=None, args=(), method="RBF-Expo", jac=None, bounds=None, 
+             options=None, restart=None, parallel=False, par_options=None,
+             verbose=True):
     """Minimization of scalar function of one or more variables using
     DyCors algorithm [1]_.
     
-    This function is a wrapper around the class :class:`DyCorsMinimize`.
+    This function is a wrapper around the class
+    :class:`DyCorsMinimize`.
 
+    The only mandatory parameters are ``fun`` and either ``x0`` or
+    ``restart``.
+    
     Parameters
     ----------
     fun : callable
@@ -49,7 +54,7 @@ def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None,
         where ``x`` is an 1-D array with shape (d,) and ``args``
         is a tuple of the fixed parameters needed to completely
         specify the function.
-    x0 : ndarray, shape (m,d,)
+    x0 : ndarray, shape (m,d,), optional
         Starting sampling points. m is the number of sampling points
         and d is the number of dimensions.
     args : tuple, optional
@@ -111,6 +116,8 @@ def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None,
             warnings : boolean
                 Whether or not to print solver warnings.
         
+    restart : ResultDyCors, optional
+        Restart optimization from a previous optimization.
     parallel : boolean, optional
         Whether or not to use parallel function evaluations. The 
         default is to run in serial.
@@ -177,18 +184,45 @@ def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None,
     
     Finally, we run the optimization and print the results:
     
-    >>> res = minimize(fun, x0, bounds=bounds, verbose=False)
+    >>> res = minimize(fun, x0, bounds=bounds,
+    ...                options={"warnings":False},
+    ...                verbose=False)
     >>> print(res["x"], res["fun"])
-    [-5.10072782e-05] 2.601742429387877e-09
-
+    [1.32665389e-05] 1.7600105366604962e-10
+    
+    We can also restart the optimization:
+    
+    >>> res = minimize(fun, bounds=bounds,
+    ...                options={"Nmax":500, "warnings":False},
+    ...                restart=res, verbose=False)
+    >>> print(res["x"], res["fun"])
+    [1.55369877e-06] 2.413979870364038e-12
+    
     """
 
     # check options are ok
     if not callable(fun):
         raise TypeError("fun is not callable")
 
-    if x0.ndim!=2:
-        raise ValueError("dimensions of x0 are not 2")
+    if x0 is not None and restart is not None:
+        raise ValueError("set either x0 or restart, not both")
+    elif x0 is None and restart is None:
+        raise ValueError("set either x0 or restart")
+    elif x0 is not None:
+        if x0.ndim!=2:
+            raise ValueError("dimensions of x0 are not 2")
+        elif bounds is not None and x0.shape[1]!=bounds.shape[0]:
+            raise ValueError("dimension mismatch. Modify x0 or bounds")
+    else:
+        if not isinstance(restart, ResultDyCors):
+            raise TypeError("restart must be ResultDyCors, not %s"%type(restart))
+        elif restart["xres"] is None or restart["fres"] is None:
+            raise ValueError("restart object is not properly initialized")
+        elif method.startswith("G") and restart["gres"] is None:
+            raise ValueError("restart object does not have the gradient "
+                             + "information")
+        elif bounds is not None and restart["xres"].shape[1]!=bounds.shape[0]:
+            raise ValueError("dimension mismatch. Modify bounds")
 
     if method not in METHODS:
         raise ValueError("invalid method %s,\n  valid options are %s"
@@ -196,9 +230,6 @@ def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None,
     elif method.startswith("G"):
         if not callable(jac):
             raise TypeError("jac is not callable")
-
-    if bounds is not None and x0.shape[1]!=bounds.shape[0]:
-        raise ValueError("dimension mismatch. Modify x0 or bounds")
 
     if options is None:
         options = DEFAULT_OPTIONS
@@ -224,8 +255,8 @@ def minimize(fun, x0, args=(), method="RBF-Expo", jac=None, bounds=None,
         warnings.filterwarnings("ignore", category=UserWarning)
 
     # run the optimization
-    DyCorsMin = DyCorsMinimize(fun, x0, args, method, jac, bounds, options, 
-                               parallel, par_options, verbose)
+    DyCorsMin = DyCorsMinimize(fun, x0, args, method, jac, bounds, options,
+                               restart, parallel, par_options, verbose)
     return DyCorsMin()
 
 class DyCorsMinimize:
@@ -233,8 +264,8 @@ class DyCorsMinimize:
     
     For a full description of the different options see :func:`minimize`
     """
-    def __init__(self, fun, x0, args, method, jac, bounds, options, parallel,
-                 par_options, verbose):
+    def __init__(self, fun, x0, args, method, jac, bounds, options, restart,
+                 parallel, par_options, verbose):
         self.fun = fun
         self.x0 = x0
         self.args = args
@@ -242,6 +273,7 @@ class DyCorsMinimize:
         self.jac = jac
         self.bounds = bounds
         self.options = options
+        self.restart = restart
         self.parallel = parallel
         self.par_options = par_options
         self.verbose = verbose
@@ -286,7 +318,10 @@ class DyCorsMinimize:
             self.cores = 1
             self.procs = 1
 
-        self.m, self.d = self.x0.shape
+        if self.restart is None:
+            self.m, self.d = self.x0.shape
+        else:
+            self.m, self.d = self.restart["xres"].shape
         if self.bounds is not None:
             self.bL, self.bU = self.bounds[:,0], self.bounds[:,1]
         self.Nmax  = self.options["Nmax"]
@@ -300,6 +335,7 @@ class DyCorsMinimize:
             self.sigm = self.options["sigm"]*np.ones((self.d,))
             self.sig  = self.options["sig0"]*np.ones((self.d,))
         self.Ts, self.Tf = self.options["Ts"], max(self.d, self.options["Tf"])
+        self.Cs, self.Cf = 0, 0
         self.l = self.options["l"]*np.ones((self.d,))
         self.nu = self.options["nu"]
         self.optim_loo = self.options["optim_loo"]
@@ -309,8 +345,11 @@ class DyCorsMinimize:
 
         # compute starting points
         self.fevals = 0
-        self.initialize()
-        
+        if self.restart is None:
+            self.initialize()
+        else:
+            self.initialize_restart()
+            
         self.iB = np.argmin(self.f) # find best solution
         self.xB, self.fB = self.x[self.iB,:], np.asarray([self.f[self.iB]])
         if self.grad:
@@ -403,7 +442,7 @@ class DyCorsMinimize:
                     
                 # restart if algorithm converged to a local minimum
                 if self.sig[0]<=self.sigm[0] and self.fevals<self.Nmax-self.m:
-                    self.restart()
+                    self.restart_dycors()
                     nits += 1
                     
                     if self.verbose:
@@ -427,7 +466,9 @@ class DyCorsMinimize:
                             x=np.asarray(self.xB), success=(warnflag==0),
                             m=self.m, hist=np.asarray(self.fBhist),
                             dhist=(np.asarray(self.dfBhist)
-                                   if self.grad else None))
+                                   if self.grad else None),
+                            xres=self.x, fres=self.f,
+                            gres=self.df if self.grad else None)
 
     def par_fun(self, fun, xnew):
         """Wrapper around the function to be evaluated. Needed in case
@@ -494,12 +535,17 @@ class DyCorsMinimize:
                 self.df = np.apply_along_axis(self.jac, 1, self.x, 
                                               *self.args).flatten()
         
-        # counter: success, failure
-        self.Cs, self.Cf = 0, 0
-        
         if self.parallel:
             client.close()
-
+            
+    def initialize_restart(self):
+        """Initialize optimization from a previous optimization.
+        """
+        self.x = self.restart["xres"]
+        self.f = self.restart["fres"]
+        if self.grad:
+            self.df = self.restart["gres"]
+        
     def trialPoints(self):
         """Generate trial points.
         """
@@ -713,7 +759,7 @@ class DyCorsMinimize:
                 if self.verbose:
                     print("Not updated")
                 
-    def restart(self):
+    def restart_dycors(self):
         """Restart DyCors keeping only the best point.
         """
         x = np.outer((self.m-1)*[1],self.bounds[:,0]) \

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from DyCors import *
+from DyCors import minimize, SLatinHyperCube, RLatinHyperCube
 
 def Rastrigin(x):
     f = 10*len(x) + sum(x*x - 10*np.cos(2*np.pi*x))
@@ -38,9 +38,27 @@ parallel    = False
 par_options = {"SLURM":False, "cores_per_feval":1, "par_fevals":4, 
                "memory":"1GB", "walltime":"00:10:00", "queue":"regular"}
 
+# initial optimization
 solf = minimize(fun=Rastrigin, x0=x0, args=(), method="GRBF-Expo",
                 jac=df_Rastrigin, bounds=bounds, options=options,
-                parallel=parallel, par_options=par_options, verbose=True)
+                restart=None, parallel=parallel, par_options=par_options,
+                verbose=True)
+
+print(solf)
+
+print("x_opt = ",solf["x"])
+print("f(x_opt) = %.8f"%solf["fun"])
+
+solf.plot()
+plt.show()
+
+# restarted optimization
+Nmax = 500
+options["Nmax"] = Nmax
+solf = minimize(fun=Rastrigin, x0=None, args=(), method="GRBF-Expo",
+                jac=df_Rastrigin, bounds=bounds, options=options,
+                restart=solf, parallel=parallel, par_options=par_options,
+                verbose=True)
 
 print(solf)
 
