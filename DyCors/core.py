@@ -318,31 +318,20 @@ class DyCorsMinimize:
             self.cores = 1
             self.procs = 1
 
+        self.Nmax  = self.options["Nmax"]
         if self.restart is None:
             self.m, self.d = self.x0.shape
         else:
-            self.m, self.d = self.restart["xres"].shape
+            self.d = self.restart["xres"].shape[1]
+            
         if self.bounds is not None:
             self.bL, self.bU = self.bounds[:,0], self.bounds[:,1]
-        self.Nmax  = self.options["Nmax"]
-        self.n0, self.Np = self.m, self.Nmax - self.m
-        self.ic = 0 # counter
-        self.k = min(100*self.d, 5000) # number of trial points
-        if self.bounds is not None:
             self.sigm = self.options["sigm"]*(self.bU - self.bL)
             self.sig = self.options["sig0"]*(self.bU - self.bL)
         else:
             self.sigm = self.options["sigm"]*np.ones((self.d,))
             self.sig  = self.options["sig0"]*np.ones((self.d,))
-        self.Ts, self.Tf = self.options["Ts"], max(self.d, self.options["Tf"])
-        self.Cs, self.Cf = 0, 0
-        self.l = self.options["l"]*np.ones((self.d,))
-        self.nu = self.options["nu"]
-        self.optim_loo = self.options["optim_loo"]
-        if self.method.endswith("Cubic"):
-            self.optim_loo = False
-        self.nits_loo = self.options["nits_loo"]
-
+            
         # compute starting points
         self.fevals = 0
         if self.restart is None:
@@ -350,16 +339,26 @@ class DyCorsMinimize:
         else:
             self.initialize_restart()
             
+        self.n0, self.Np = self.m, self.Nmax - self.m
+        
+        self.k = min(100*self.d, 5000) # number of trial points
+        self.Ts, self.Tf = self.options["Ts"], max(self.d, self.options["Tf"])
+        self.l = self.options["l"]*np.ones((self.d,))
+        self.nu = self.options["nu"]
+        self.optim_loo = self.options["optim_loo"]
+        if self.method.endswith("Cubic"):
+            self.optim_loo = False
+        self.nits_loo = self.options["nits_loo"]
+            
         self.iB = np.argmin(self.f) # find best solution
         self.xB, self.fB = self.x[self.iB,:], np.asarray([self.f[self.iB]])
         if self.grad:
             self.dfB = self.df[self.iB*self.d:(self.iB+1)*self.d]
-        self.fBhist = [self.fB[0] for i in range(self.m)]
+        self.fBhist = [self.fB[0] for i in range(self.fevals)]
         if self.grad:
             self.dfBhist = []
-            for i in range(self.m):
+            for i in range(self.fevals):
                 self.dfBhist.append(self.dfB)
-        self.fevals += self.m
         
     def __call__(self):
         """Perform the optimization.
@@ -494,6 +493,10 @@ class DyCorsMinimize:
         """Compute function and gradient evaluations of initial
         sampling points.
         """
+        # counters
+        self.ic, self.Cs, self.Cf = 0, 0, 0
+        self.fevals += self.m
+
         # set up client
         if self.parallel and self.SLURM:
             cluster = SLURMCluster(n_workers=self.procs, cores=self.cores, 
@@ -546,6 +549,11 @@ class DyCorsMinimize:
         if self.grad:
             self.df = self.restart["gres"]
         
+        self.m = self.restart["m"]
+        self.ic = self.x.shape[0] - self.m
+        self.Cs, self.Cf = 0, 0
+        self.fevals += self.x.shape[0]
+    
     def trialPoints(self):
         """Generate trial points.
         """
@@ -776,7 +784,6 @@ class DyCorsMinimize:
         else:
             self.sigm = self.options["sigm"]*np.ones((self.d,))
             self.sig = self.options["sig0"]*np.ones((self.d,))
-        self.ic, self.Cs, self.Cf = 0, 0, 0
         
         self.initialize()
         
@@ -788,5 +795,4 @@ class DyCorsMinimize:
         if self.grad:
             for i in range(self.m):
                 self.dfBhist.append(self.dfB)
-        self.fevals += self.m
         
