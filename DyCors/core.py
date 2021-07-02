@@ -18,8 +18,8 @@ from dask.distributed import Client
 EPS = np.finfo(np.float64).eps
 
 DEFAULT_OPTIONS = {"Nmax":250, "sig0":0.2, "sigm":0.2/2**6, "Ts":3, "Tf":5,
-                   "l":np.sqrt(0.5), "nu":5/2, "optim_loo":False,
-                   "nits_loo":40, "warnings":True}
+                   "weights":[0.3,0.5,0.8,0.95], "l":np.sqrt(0.5), "nu":5/2,
+                   "optim_loo":False, "nits_loo":40, "warnings":True}
 
 METHODS = ["RBF-Expo", "RBF-Matern", "RBF-Cubic",
            "GRBF-Expo", "GRBF-Matern", "GRBF-Cubic"]
@@ -98,6 +98,9 @@ def minimize(fun, x0=None, args=(), method="RBF-Expo", jac=None, bounds=None,
             Tf : int
                 Number of consecutive unsuccessful function evaluations
                 before decreasing the standard deviation to create new
+                trial points.
+            weights: list
+                Weights that will be used to compute the scores of the
                 trial points.
             l : float or ndarray
                 Kernel internal parameter. Kernel width.
@@ -337,6 +340,7 @@ class DyCorsMinimize:
         
         self.k = min(100*self.d, 5000) # number of trial points
         self.Ts, self.Tf = self.options["Ts"], max(self.d, self.options["Tf"])
+        self.weights = self.options["weights"]
         self.optim_loo = self.options["optim_loo"]
         if self.method.endswith("Cubic"):
             self.optim_loo = False
@@ -383,8 +387,8 @@ class DyCorsMinimize:
                     _ = self.kernel.fit(self.x, self.f)
 
                 # generate trial points and select the bests
-                self.trialPoints()
-                self.selectNewPts()
+                self.trial_points()
+                self.select_new_pts()
 
                 if self.parallel:
                     # submit parallel fevals
@@ -535,7 +539,7 @@ class DyCorsMinimize:
         self.Cs, self.Cf = 0, 0
         self.fevals += self.x.shape[0]
     
-    def trialPoints(self):
+    def trial_points(self):
         """Generate trial points.
         """
         # probability for coordinates
@@ -561,7 +565,7 @@ class DyCorsMinimize:
         else:
             self.yk = yk.copy()
 
-    def selectNewPts(self):
+    def select_new_pts(self):
         """Evaluate trial points using the surrogate model, compute
         scores and select the new points where we want to run the
         expensive function evaluation.
@@ -572,23 +576,21 @@ class DyCorsMinimize:
 
         # compute RBF-score
         s1, s2 = s.min(), s.max()
-        VR     = (s-s1)/(s2-s1) if (abs(s2-s1)>1.e-8) else 1
+        VR = (s-s1)/(s2-s1) if (abs(s2-s1)>1.e-8) else 1
 
         # compute DIS-score
         dis = np.zeros(self.k)
         for i in range(self.k):
-            tmp1   = np.outer(n*[1], self.yk[i,:]) - self.x
-            tmp2   = np.apply_along_axis(nla.norm, 0, tmp1)
+            tmp1 = np.outer(n*[1], self.yk[i,:]) - self.x
+            tmp2 = np.apply_along_axis(nla.norm, 0, tmp1)
             dis[i] = tmp2.min()
         d1, d2 = dis.min(), dis.max()
-        VD     = (d2-dis)/(d2-d1) if (abs(d2-d1)>1.e-8) else 1
+        VD = (d2-dis)/(d2-d1) if (abs(d2-d1)>1.e-8) else 1
 
         # combine the two scores
-        G      = [0.3,0.5,0.8,0.95] # weight rotation
-        nn     = (self.ic+1)%4
-        nnn    = nn - 1 if (nn!=0) else 3
-        wR, wD = G[nnn], 1 - G[nnn]
-        V      = wR*VR + wD*VD # full weight
+        wR = self.weights[self.ic%len(self.weights)]
+        wD = 1 - wR
+        V = wR*VR + wD*VD # full weight
 
         # select the next points (avoid singular RBF matrix)
         iB, iP, iX = np.argsort(V), 0, 0

@@ -29,11 +29,13 @@ sig0     = np.array([0.2]*d)
 sigm     = np.array([0.2/2**6]*d)
 Ts       = 3
 Tf       = 5
+weights  = [0.3,0.5,0.8,0.95]
 l        = 0.5*np.ones((d,))
 nu       = 5/2
 nits_loo = 40
 options  = {"Nmax":Nmax, "sig0":sig0, "sigm":sigm, "Ts":Ts, "Tf":Tf, "l":l,
-            "nu":nu, "optim_loo":False, "nits_loo":nits_loo, "warnings":False}
+            "weights": weights, "nu":nu, "optim_loo":False,
+            "nits_loo":nits_loo, "warnings":False}
 parallel    = False
 par_options = {"SLURM":False, "cores_per_feval":1, "par_fevals":4, 
                "memory":"1GB", "walltime":"00:10:00", "queue":"regular"}
