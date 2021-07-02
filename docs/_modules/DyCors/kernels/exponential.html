@@ -157,204 +157,250 @@
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.linalg</span> <span class="k">as</span> <span class="nn">la</span>
 
-<div class="viewcode-block" id="surrogateRBF_Expo"><a class="viewcode-back" href="../../../kernel.html#DyCors.kernels.surrogateRBF_Expo">[docs]</a><span class="k">def</span> <span class="nf">surrogateRBF_Expo</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Build RBF surrogate model using Exponential kernel.</span>
+<div class="viewcode-block" id="RBF_Exponential"><a class="viewcode-back" href="../../../kernel.html#DyCors.kernels.exponential.RBF_Exponential">[docs]</a><span class="k">class</span> <span class="nc">RBF_Exponential</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;RBF Exponential kernel class.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    x : ndarray, shape (m,d,)</span>
-<span class="sd">        Array of points where function values are known. m is the</span>
-<span class="sd">        number of sampling points and d is the number of dimensions.</span>
-<span class="sd">    f : ndarray, shape (m,)</span>
-<span class="sd">        Array of function values at ``x``.</span>
-<span class="sd">    l : ndarray, shape (d,), optional</span>
-<span class="sd">        Array with the values of the internal parameter of the kernel.</span>
-<span class="sd">        </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
+<span class="sd">    l : float or ndarray, shape (d,), optional</span>
+<span class="sd">        Internal parameter. Width of the kernel. </span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    l : float or ndarray, shape (d,)</span>
+<span class="sd">        Internal parameter. Width of the kernel.</span>
 <span class="sd">    s : ndarray, shape(m,)</span>
 <span class="sd">        RBF coefficients.</span>
-<span class="sd">    Phi : ndarray, shape(m,m,)</span>
-<span class="sd">        RBF matrix.</span>
-<span class="sd">    A : ndarray, shape(m*(d+1),m*(d+1),)</span>
-<span class="sd">        RBF matrix with linear polynomial terms.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">m</span><span class="p">,</span><span class="n">d</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
     
-    <span class="k">if</span> <span class="n">l</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="n">l</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="kc">None</span>
     
-    <span class="c1"># RBF-matrix</span>
-    <span class="n">R</span>   <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">l</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="n">l</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
-        <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
-    <span class="n">Phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
-
-    <span class="c1"># polynomial part</span>
-    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span> <span class="n">x</span><span class="p">))</span>
-    
-    <span class="c1"># zero matrix</span>
-    <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">d</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
-    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([[</span><span class="n">Phi</span><span class="p">,</span><span class="n">P</span><span class="p">],[</span><span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">Z</span><span class="p">]])</span>
-    
-    <span class="c1"># right-hand side</span>
-    <span class="n">F</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="n">d</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">F</span><span class="p">[:</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span> 
-    
-    <span class="c1"># solution</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">F</span><span class="p">)</span> 
-    
-    <span class="k">return</span> <span class="n">s</span><span class="p">,</span> <span class="n">Phi</span><span class="p">,</span> <span class="n">A</span></div>
-
-<div class="viewcode-block" id="evalRBF_Expo"><a class="viewcode-back" href="../../../kernel.html#DyCors.kernels.evalRBF_Expo">[docs]</a><span class="k">def</span> <span class="nf">evalRBF_Expo</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Evaluate RBF Exponential kernel surrogate model at new points.</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    x : ndarray, shape (m,d,)</span>
-<span class="sd">        Array of points where function values are known. m is the</span>
-<span class="sd">        number of sampling points and d is the number of dimensions.</span>
-<span class="sd">    s : ndarray, shape(m,)</span>
-<span class="sd">        RBF coefficients.</span>
-<span class="sd">    y : ndarray, shape (n,d,)</span>
-<span class="sd">        Array of points where we want to evaluate the surrogate model.</span>
-<span class="sd">    l : ndarray, shape (d,), optional</span>
-<span class="sd">        Array with the values of the internal parameter of the kernel.</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    f : ndarray, shape(n,)</span>
-<span class="sd">        Array of interpolated values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-    <span class="n">n</span><span class="p">,</span><span class="n">d</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
-    
-    <span class="k">if</span> <span class="n">l</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-
-    <span class="c1"># RBF-matrix</span>
-    <span class="n">R</span>   <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">l</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="n">l</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
-        <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
-    <span class="n">Phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
-
-    <span class="c1"># polynomial part</span>
-    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span><span class="n">y</span><span class="p">))</span>
-    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([</span><span class="n">Phi</span><span class="p">,</span><span class="n">P</span><span class="p">])</span>
-    
-    <span class="c1"># evaluation</span>
-    <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
-    
-    <span class="k">return</span> <span class="n">f</span></div>
-
-<div class="viewcode-block" id="surrogateGRBF_Expo"><a class="viewcode-back" href="../../../kernel.html#DyCors.kernels.surrogateGRBF_Expo">[docs]</a><span class="k">def</span> <span class="nf">surrogateGRBF_Expo</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Build GRBF surrogate model using Exponential kernel.</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    x : ndarray, shape (m,d,)</span>
-<span class="sd">        Array of points where function values are known. m is the</span>
-<span class="sd">        number of sampling points and d is the number of dimensions.</span>
-<span class="sd">    f : ndarray, shape (m,)</span>
-<span class="sd">        Array of function values at ``x``.</span>
-<span class="sd">    df : ndarray, shape (m,d,)</span>
-<span class="sd">        Array of function gradient values at ``x``.</span>
-<span class="sd">    l : ndarray, shape (d,), optional</span>
-<span class="sd">        Array with the values of the internal parameter of the kernel.</span>
+<div class="viewcode-block" id="RBF_Exponential.fit"><a class="viewcode-back" href="../../../kernel.html#DyCors.kernels.exponential.RBF_Exponential.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build surrogate model.</span>
 <span class="sd">        </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : ndarray, shape (m,d,)</span>
+<span class="sd">            Array of points where function values are known. m is the</span>
+<span class="sd">            number of sampling points and d is the number of dimensions.</span>
+<span class="sd">        f : ndarray, shape (m,)</span>
+<span class="sd">            Array of function values at ``x``.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Phi : ndarray, shape(m,m,)</span>
+<span class="sd">            RBF matrix.</span>
+<span class="sd">        A : ndarray, shape(m*(d+1),m*(d+1),)</span>
+<span class="sd">            RBF matrix with linear polynomial terms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">m</span><span class="p">,</span><span class="n">d</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+        
+        <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">l</span>
+        
+        <span class="c1"># RBF-matrix</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">l</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="n">l</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
+            <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">Phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># polynomial part</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span> <span class="n">x</span><span class="p">))</span>
+        
+        <span class="c1"># zero matrix</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">d</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">d</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([[</span><span class="n">Phi</span><span class="p">,</span><span class="n">P</span><span class="p">],[</span><span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">Z</span><span class="p">]])</span>
+        
+        <span class="c1"># right-hand side</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="n">d</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">F</span><span class="p">[:</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span> 
+        
+        <span class="c1"># solution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">F</span><span class="p">)</span> 
+        
+        <span class="k">return</span> <span class="n">Phi</span><span class="p">,</span> <span class="n">A</span></div>
+        
+<div class="viewcode-block" id="RBF_Exponential.evaluate"><a class="viewcode-back" href="../../../kernel.html#DyCors.kernels.exponential.RBF_Exponential.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate surrogate model at given points.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : ndarray, shape (m,d,)</span>
+<span class="sd">            Array of points where function values are known. m is the</span>
+<span class="sd">            number of sampling points and d is the number of dimensions.</span>
+<span class="sd">        y : ndarray, shape (n,d,)</span>
+<span class="sd">            Array of points where we want to evaluate the surrogate model.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        f : ndarray, shape(n,)</span>
+<span class="sd">            Array of interpolated values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">n</span><span class="p">,</span><span class="n">d</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">l</span>
+
+        <span class="c1"># RBF-matrix</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">l</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="n">l</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
+            <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">Phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># polynomial part</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span><span class="n">y</span><span class="p">))</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([</span><span class="n">Phi</span><span class="p">,</span><span class="n">P</span><span class="p">])</span>
+
+        <span class="c1"># evaluation</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">s</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">f</span></div>
+    
+<div class="viewcode-block" id="RBF_Exponential.update"><a class="viewcode-back" href="../../../kernel.html#DyCors.kernels.exponential.RBF_Exponential.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update internal parameters of the kernel.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        l : float or ndarray, shape (d,), optional</span>
+<span class="sd">            Internal parameter. Width of the kernel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="n">l</span></div></div>
+        
+<div class="viewcode-block" id="GRBF_Exponential"><a class="viewcode-back" href="../../../kernel.html#DyCors.kernels.exponential.GRBF_Exponential">[docs]</a><span class="k">class</span> <span class="nc">GRBF_Exponential</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;GRBF Exponential kernel class.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    l : float or ndarray, shape (d,), optional</span>
+<span class="sd">        Internal parameter. Width of the kernel.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    l : float or ndarray, shape (d,)</span>
+<span class="sd">        Internal parameter. Width of the kernel.</span>
 <span class="sd">    s : ndarray, shape(m,)</span>
 <span class="sd">        GRBF coefficients.</span>
-<span class="sd">    Phi : ndarray, shape(m,m,)</span>
-<span class="sd">        RBF matrix.</span>
-<span class="sd">    A : ndarray, shape(m*(d+1),m*(d+1),)</span>
-<span class="sd">        GRBF matrix with gradient terms.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">m</span><span class="p">,</span><span class="n">d</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
     
-    <span class="k">if</span> <span class="n">l</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="n">l</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="kc">None</span>
+    
+<div class="viewcode-block" id="GRBF_Exponential.fit"><a class="viewcode-back" href="../../../kernel.html#DyCors.kernels.exponential.GRBF_Exponential.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build surrogate model.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : ndarray, shape (m,d,)</span>
+<span class="sd">            Array of points where function values are known. m is the</span>
+<span class="sd">            number of sampling points and d is the number of dimensions.</span>
+<span class="sd">        f : ndarray, shape (m,)</span>
+<span class="sd">            Array of function values at ``x``.</span>
+<span class="sd">        df : ndarray, shape (m,d,)</span>
+<span class="sd">            Array of function gradient values at ``x``.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Phi : ndarray, shape(m,m,)</span>
+<span class="sd">            RBF matrix.</span>
+<span class="sd">        A : ndarray, shape(m*(d+1),m*(d+1),)</span>
+<span class="sd">            GRBF matrix with gradient terms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">m</span><span class="p">,</span><span class="n">d</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+        
+        <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">l</span>
 
-    <span class="c1"># RBF-matrix</span>
-    <span class="n">R</span>   <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">l</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="n">l</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
-        <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
-    <span class="n">Phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> 
-    
-    <span class="c1"># First derivative</span>
-    <span class="n">_Phi_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
-    <span class="n">_Phi_d</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">Phi</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,:])</span>\
-        <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">Phi_d</span> <span class="o">=</span> <span class="n">_Phi_d</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="n">m</span><span class="o">*</span><span class="n">d</span><span class="p">))</span>
+        <span class="c1"># RBF-matrix</span>
+        <span class="n">R</span>   <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">l</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="n">l</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
+            <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">Phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> 
+        
+        <span class="c1"># First derivative</span>
+        <span class="n">_Phi_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
+        <span class="n">_Phi_d</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">Phi</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,:])</span>\
+            <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">Phi_d</span> <span class="o">=</span> <span class="n">_Phi_d</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="n">m</span><span class="o">*</span><span class="n">d</span><span class="p">))</span>
 
-    <span class="c1"># Second derivative</span>
-    <span class="n">Phi_dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="n">d</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
-    <span class="n">Phi_dd</span> <span class="o">=</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">_Phi_d</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,:]</span> \
-        <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[:,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span> \
-        <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> \
-        <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">))[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span> \
-        <span class="o">*</span> <span class="mi">2</span><span class="o">*</span><span class="n">Phi</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> \
-        <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">Phi_dd</span> <span class="o">=</span> <span class="n">Phi_dd</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">m</span><span class="o">*</span><span class="n">d</span><span class="p">,</span><span class="n">m</span><span class="o">*</span><span class="n">d</span><span class="p">))</span>
+        <span class="c1"># Second derivative</span>
+        <span class="n">Phi_dd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="n">d</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
+        <span class="n">Phi_dd</span> <span class="o">=</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">_Phi_d</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,:]</span> \
+            <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[:,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span> \
+            <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> \
+            <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">))[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span> \
+            <span class="o">*</span> <span class="mi">2</span><span class="o">*</span><span class="n">Phi</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> \
+            <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">Phi_dd</span> <span class="o">=</span> <span class="n">Phi_dd</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">m</span><span class="o">*</span><span class="n">d</span><span class="p">,</span><span class="n">m</span><span class="o">*</span><span class="n">d</span><span class="p">))</span>
 
-    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([[</span><span class="n">Phi</span><span class="p">,</span><span class="n">Phi_d</span><span class="p">],[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">Phi_d</span><span class="p">),</span><span class="n">Phi_dd</span><span class="p">]])</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([[</span><span class="n">Phi</span><span class="p">,</span><span class="n">Phi_d</span><span class="p">],[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">Phi_d</span><span class="p">),</span><span class="n">Phi_dd</span><span class="p">]])</span>
 
-    <span class="c1"># right-hand side</span>
-    <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="o">*</span><span class="p">(</span><span class="n">d</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+        <span class="c1"># right-hand side</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="o">*</span><span class="p">(</span><span class="n">d</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
 
-    <span class="c1"># function value</span>
-    <span class="n">F</span><span class="p">[:</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="c1"># function value</span>
+        <span class="n">F</span><span class="p">[:</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
 
-    <span class="c1"># derivative function value</span>
-    <span class="n">F</span><span class="p">[</span><span class="n">m</span><span class="p">:</span><span class="n">m</span><span class="o">*</span><span class="p">(</span><span class="n">d</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">df</span>
-    
-    <span class="c1"># solution</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">F</span><span class="p">)</span>
-    
-    <span class="k">return</span> <span class="n">s</span><span class="p">,</span> <span class="n">Phi</span><span class="p">,</span> <span class="n">A</span></div>
-    
-<div class="viewcode-block" id="evalGRBF_Expo"><a class="viewcode-back" href="../../../kernel.html#DyCors.kernels.evalGRBF_Expo">[docs]</a><span class="k">def</span> <span class="nf">evalGRBF_Expo</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Evaluate GRBF Exponential kernel surrogate model at new points.</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    x : ndarray, shape (m,d,)</span>
-<span class="sd">        Array of points where function values are known. m is the</span>
-<span class="sd">        number of sampling points and d is the number of dimensions.</span>
-<span class="sd">    s : ndarray, shape(m,)</span>
-<span class="sd">        RBF coefficients.</span>
-<span class="sd">    y : ndarray, shape (n,d,)</span>
-<span class="sd">        Array of points where we want to evaluate the surrogate model.</span>
-<span class="sd">    l : ndarray, shape (d,), optional</span>
-<span class="sd">        Array with the values of the internal parameter of the kernel.</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    f : ndarray, shape(n,)</span>
-<span class="sd">        Array of interpolated values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">m</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-    <span class="n">n</span><span class="p">,</span><span class="n">d</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
-    
-    <span class="k">if</span> <span class="n">l</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-    
-    <span class="c1"># RBF-matrix</span>
-    <span class="n">R</span>   <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">l</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="n">l</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
-        <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
-    <span class="n">Phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
-    
-    <span class="c1"># First derivative </span>
-    <span class="n">d_Phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
-    <span class="n">d_Phi</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">Phi</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,:])</span> \
-        <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">d_Phi</span> <span class="o">=</span> <span class="n">d_Phi</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="o">*</span><span class="n">d</span><span class="p">))</span>
+        <span class="c1"># derivative function value</span>
+        <span class="n">F</span><span class="p">[</span><span class="n">m</span><span class="p">:</span><span class="n">m</span><span class="o">*</span><span class="p">(</span><span class="n">d</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">df</span>
+        
+        <span class="c1"># solution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">F</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">Phi</span><span class="p">,</span> <span class="n">A</span></div>
+        
+<div class="viewcode-block" id="GRBF_Exponential.evaluate"><a class="viewcode-back" href="../../../kernel.html#DyCors.kernels.exponential.GRBF_Exponential.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate surrogate model at given points.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : ndarray, shape (m,d,)</span>
+<span class="sd">            Array of points where function values are known. m is the</span>
+<span class="sd">            number of sampling points and d is the number of dimensions.</span>
+<span class="sd">        y : ndarray, shape (n,d,)</span>
+<span class="sd">            Array of points where we want to evaluate the surrogate model.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        f : ndarray, shape(n,)</span>
+<span class="sd">            Array of interpolated values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="n">m</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">n</span><span class="p">,</span><span class="n">d</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+        
+        <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">l</span>
+        
+        <span class="c1"># RBF-matrix</span>
+        <span class="n">R</span>   <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">l</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="n">l</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
+            <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">Phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        
+        <span class="c1"># First derivative </span>
+        <span class="n">d_Phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
+        <span class="n">d_Phi</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">Phi</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span><span class="p">[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,:])</span> \
+            <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">d_Phi</span> <span class="o">=</span> <span class="n">d_Phi</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="o">*</span><span class="n">d</span><span class="p">))</span>
 
-    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([[</span><span class="n">Phi</span><span class="p">,</span><span class="n">d_Phi</span><span class="p">]])</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">block</span><span class="p">([[</span><span class="n">Phi</span><span class="p">,</span><span class="n">d_Phi</span><span class="p">]])</span>
+        
+        <span class="c1"># evaluation</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">s</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">f</span></div>
     
-    <span class="c1"># evaluation</span>
-    <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">s</span><span class="p">)</span>
-    
-    <span class="k">return</span> <span class="n">f</span></div>
+<div class="viewcode-block" id="GRBF_Exponential.update"><a class="viewcode-back" href="../../../kernel.html#DyCors.kernels.exponential.GRBF_Exponential.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update internal parameters of the kernel.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        l : float or ndarray, shape (d,), optional</span>
+<span class="sd">            Internal parameter. Width of the kernel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="n">l</span></div></div>
 </pre></div>
 
            </div>

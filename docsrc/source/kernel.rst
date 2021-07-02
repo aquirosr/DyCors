@@ -70,10 +70,8 @@ The second derivative is defined as:
     \Phi_{,rr}(r) = - \dfrac{1}{l^2} \exp \left( -\dfrac{r^2}{2 l^2} \right)
     + \dfrac{r^2}{l^4} \exp \left( -\dfrac{r^2}{2 l^2} \right)
 
-.. autofunction:: DyCors.kernels.surrogateRBF_Expo
-.. autofunction:: DyCors.kernels.evalRBF_Expo
-.. autofunction:: DyCors.kernels.surrogateGRBF_Expo
-.. autofunction:: DyCors.kernels.evalGRBF_Expo
+.. automodule:: DyCors.kernels.exponential
+    :members:
 
 Matérn Kernel
 ~~~~~~~~~~~~~
@@ -117,10 +115,8 @@ The second derivative is defined as:
      \dfrac{p!}{(2p)!} \sum_{i=0}^{p-2} \dfrac{(p+i)!}{i!(p-i)!}
     \left( 2 \sqrt{2p+1} \dfrac{r}{l} \right)^{p-i-2}
 
-.. autofunction:: DyCors.kernels.surrogateRBF_Matern
-.. autofunction:: DyCors.kernels.evalRBF_Matern
-.. autofunction:: DyCors.kernels.surrogateGRBF_Matern
-.. autofunction:: DyCors.kernels.evalGRBF_Matern
+.. automodule:: DyCors.kernels.matern
+    :members:
 
 Cubic Kernel
 ~~~~~~~~~~~~~
@@ -143,7 +139,5 @@ The second derivative is defined as:
 .. math::
     \Phi_{,rr}(r) = 6 r
 
-.. autofunction:: DyCors.kernels.surrogateRBF_Cubic
-.. autofunction:: DyCors.kernels.evalRBF_Cubic
-.. autofunction:: DyCors.kernels.surrogateGRBF_Cubic
-.. autofunction:: DyCors.kernels.evalGRBF_Cubic
+.. automodule:: DyCors.kernels.cubic
+    :members:

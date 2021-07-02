@@ -228,50 +228,37 @@ distance is defined as:</p>
 <div class="math notranslate nohighlight">
 \[\Phi_{,rr}(r) = - \dfrac{1}{l^2} \exp \left( -\dfrac{r^2}{2 l^2} \right)
 + \dfrac{r^2}{l^4} \exp \left( -\dfrac{r^2}{2 l^2} \right)\]</div>
-<dl class="py function">
-<dt id="DyCors.kernels.surrogateRBF_Expo">
-<code class="sig-prename descclassname">DyCors.kernels.</code><code class="sig-name descname">surrogateRBF_Expo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/exponential.html#surrogateRBF_Expo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.surrogateRBF_Expo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build RBF surrogate model using Exponential kernel.</p>
+<span class="target" id="module-DyCors.kernels.exponential"></span><dl class="py class">
+<dt id="DyCors.kernels.exponential.GRBF_Exponential">
+<em class="property">class </em><code class="sig-prename descclassname">DyCors.kernels.exponential.</code><code class="sig-name descname">GRBF_Exponential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/exponential.html#GRBF_Exponential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.exponential.GRBF_Exponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>GRBF Exponential kernel class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
-number of sampling points and d is the number of dimensions.</p>
-</dd>
-<dt><strong>f</strong><span class="classifier">ndarray, shape (m,)</span></dt><dd><p>Array of function values at <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
-</dd>
-<dt><strong>l</strong><span class="classifier">ndarray, shape (d,), optional</span></dt><dd><p>Array with the values of the internal parameter of the kernel.</p>
+<dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,), optional</span></dt><dd><p>Internal parameter. Width of the kernel.</p>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Attributes</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
+<dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,)</span></dt><dd><p>Internal parameter. Width of the kernel.</p>
 </dd>
-<dt><strong>Phi</strong><span class="classifier">ndarray, shape(m,m,)</span></dt><dd><p>RBF matrix.</p>
-</dd>
-<dt><strong>A</strong><span class="classifier">ndarray, shape(m*(d+1),m*(d+1),)</span></dt><dd><p>RBF matrix with linear polynomial terms.</p>
+<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>GRBF coefficients.</p>
 </dd>
 </dl>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="DyCors.kernels.evalRBF_Expo">
-<code class="sig-prename descclassname">DyCors.kernels.</code><code class="sig-name descname">evalRBF_Expo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/exponential.html#evalRBF_Expo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.evalRBF_Expo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluate RBF Exponential kernel surrogate model at new points.</p>
+<dl class="py method">
+<dt id="DyCors.kernels.exponential.GRBF_Exponential.evaluate">
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/exponential.html#GRBF_Exponential.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.exponential.GRBF_Exponential.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate surrogate model at given points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
 number of sampling points and d is the number of dimensions.</p>
-</dd>
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
 </dd>
 <dt><strong>y</strong><span class="classifier">ndarray, shape (n,d,)</span></dt><dd><p>Array of points where we want to evaluate the surrogate model.</p>
-</dd>
-<dt><strong>l</strong><span class="classifier">ndarray, shape (d,), optional</span></dt><dd><p>Array with the values of the internal parameter of the kernel.</p>
 </dd>
 </dl>
 </dd>
@@ -284,10 +271,10 @@ number of sampling points and d is the number of dimensions.</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt id="DyCors.kernels.surrogateGRBF_Expo">
-<code class="sig-prename descclassname">DyCors.kernels.</code><code class="sig-name descname">surrogateGRBF_Expo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/exponential.html#surrogateGRBF_Expo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.surrogateGRBF_Expo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build GRBF surrogate model using Exponential kernel.</p>
+<dl class="py method">
+<dt id="DyCors.kernels.exponential.GRBF_Exponential.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">df</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/exponential.html#GRBF_Exponential.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.exponential.GRBF_Exponential.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build surrogate model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -298,14 +285,10 @@ number of sampling points and d is the number of dimensions.</p>
 </dd>
 <dt><strong>df</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of function gradient values at <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
 </dd>
-<dt><strong>l</strong><span class="classifier">ndarray, shape (d,), optional</span></dt><dd><p>Array with the values of the internal parameter of the kernel.</p>
-</dd>
 </dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>GRBF coefficients.</p>
-</dd>
 <dt><strong>Phi</strong><span class="classifier">ndarray, shape(m,m,)</span></dt><dd><p>RBF matrix.</p>
 </dd>
 <dt><strong>A</strong><span class="classifier">ndarray, shape(m*(d+1),m*(d+1),)</span></dt><dd><p>GRBF matrix with gradient terms.</p>
@@ -315,21 +298,53 @@ number of sampling points and d is the number of dimensions.</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt id="DyCors.kernels.evalGRBF_Expo">
-<code class="sig-prename descclassname">DyCors.kernels.</code><code class="sig-name descname">evalGRBF_Expo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/exponential.html#evalGRBF_Expo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.evalGRBF_Expo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluate GRBF Exponential kernel surrogate model at new points.</p>
+<dl class="py method">
+<dt id="DyCors.kernels.exponential.GRBF_Exponential.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/exponential.html#GRBF_Exponential.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.exponential.GRBF_Exponential.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update internal parameters of the kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,), optional</span></dt><dd><p>Internal parameter. Width of the kernel.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="DyCors.kernels.exponential.RBF_Exponential">
+<em class="property">class </em><code class="sig-prename descclassname">DyCors.kernels.exponential.</code><code class="sig-name descname">RBF_Exponential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/exponential.html#RBF_Exponential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.exponential.RBF_Exponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>RBF Exponential kernel class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,), optional</span></dt><dd><p>Internal parameter. Width of the kernel.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,)</span></dt><dd><p>Internal parameter. Width of the kernel.</p>
+</dd>
+<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="DyCors.kernels.exponential.RBF_Exponential.evaluate">
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/exponential.html#RBF_Exponential.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.exponential.RBF_Exponential.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate surrogate model at given points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
 number of sampling points and d is the number of dimensions.</p>
 </dd>
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
-</dd>
 <dt><strong>y</strong><span class="classifier">ndarray, shape (n,d,)</span></dt><dd><p>Array of points where we want to evaluate the surrogate model.</p>
-</dd>
-<dt><strong>l</strong><span class="classifier">ndarray, shape (d,), optional</span></dt><dd><p>Array with the values of the internal parameter of the kernel.</p>
 </dd>
 </dl>
 </dd>
@@ -340,6 +355,47 @@ number of sampling points and d is the number of dimensions.</p>
 </dl>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="DyCors.kernels.exponential.RBF_Exponential.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/exponential.html#RBF_Exponential.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.exponential.RBF_Exponential.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build surrogate model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
+number of sampling points and d is the number of dimensions.</p>
+</dd>
+<dt><strong>f</strong><span class="classifier">ndarray, shape (m,)</span></dt><dd><p>Array of function values at <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Phi</strong><span class="classifier">ndarray, shape(m,m,)</span></dt><dd><p>RBF matrix.</p>
+</dd>
+<dt><strong>A</strong><span class="classifier">ndarray, shape(m*(d+1),m*(d+1),)</span></dt><dd><p>RBF matrix with linear polynomial terms.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="DyCors.kernels.exponential.RBF_Exponential.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/exponential.html#RBF_Exponential.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.exponential.RBF_Exponential.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update internal parameters of the kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,), optional</span></dt><dd><p>Internal parameter. Width of the kernel.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -378,56 +434,41 @@ distance is defined as:</p>
 \exp \left( -\sqrt{2p+1} \dfrac{r}{l} \right)
  \dfrac{p!}{(2p)!} \sum_{i=0}^{p-2} \dfrac{(p+i)!}{i!(p-i)!}
 \left( 2 \sqrt{2p+1} \dfrac{r}{l} \right)^{p-i-2}\end{split}\]</div>
-<dl class="py function">
-<dt id="DyCors.kernels.surrogateRBF_Matern">
-<code class="sig-prename descclassname">DyCors.kernels.</code><code class="sig-name descname">surrogateRBF_Matern</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/matern.html#surrogateRBF_Matern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.surrogateRBF_Matern" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build RBF surrogate model using half integer
-simplification of Matérn kernel.</p>
+<span class="target" id="module-DyCors.kernels.matern"></span><dl class="py class">
+<dt id="DyCors.kernels.matern.GRBF_Matern">
+<em class="property">class </em><code class="sig-prename descclassname">DyCors.kernels.matern.</code><code class="sig-name descname">GRBF_Matern</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">2.5</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/matern.html#GRBF_Matern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.matern.GRBF_Matern" title="Permalink to this definition">¶</a></dt>
+<dd><p>GRBF Matérn kernel class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
-number of sampling points and d is the number of dimensions.</p>
+<dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,), optional</span></dt><dd><p>Internal parameter of the kernel.</p>
 </dd>
-<dt><strong>f</strong><span class="classifier">ndarray, shape (m,)</span></dt><dd><p>Array of function values at <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
-</dd>
-<dt><strong>l</strong><span class="classifier">ndarray, shape (d,), optional</span></dt><dd><p>Array with the values of the width internal parameter of the
-kernel.</p>
-</dd>
-<dt><strong>nu</strong><span class="classifier">float, optional</span></dt><dd><p>Order of Bessel function of the kernel.</p>
+<dt><strong>nu</strong><span class="classifier">float, optional</span></dt><dd><p>Internal parameter. Order of Bessel function of the kernel.</p>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Attributes</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
+<dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,)</span></dt><dd><p>Internal parameter of the kernel.</p>
 </dd>
-<dt><strong>Phi</strong><span class="classifier">ndarray, shape(m,m,)</span></dt><dd><p>RBF matrix.</p>
+<dt><strong>nu</strong><span class="classifier">float</span></dt><dd><p>Internal parameter. Order of Bessel function of the kernel.</p>
 </dd>
-<dt><strong>A</strong><span class="classifier">ndarray, shape(m*(d+1),m*(d+1),)</span></dt><dd><p>RBF matrix with linear polynomial terms.</p>
-</dd>
-</dl>
+<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>GRBF coefficients.</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="DyCors.kernels.evalRBF_Matern">
-<code class="sig-prename descclassname">DyCors.kernels.</code><code class="sig-name descname">evalRBF_Matern</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/matern.html#evalRBF_Matern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.evalRBF_Matern" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluate RBF Matérn kernel surrogate model at new points.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="DyCors.kernels.matern.GRBF_Matern.evaluate">
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/matern.html#GRBF_Matern.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.matern.GRBF_Matern.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate surrogate model at given points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
 number of sampling points and d is the number of dimensions.</p>
-</dd>
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
 </dd>
 <dt><strong>y</strong><span class="classifier">ndarray, shape (n,d,)</span></dt><dd><p>Array of points where we want to evaluate the surrogate model.</p>
-</dd>
-<dt><strong>l</strong><span class="classifier">ndarray, shape (d,), optional</span></dt><dd><p>Array with the values of the internal parameter of the kernel.</p>
-</dd>
-<dt><strong>nu</strong><span class="classifier">float, optional</span></dt><dd><p>Order of Bessel function of the kernel.</p>
 </dd>
 </dl>
 </dd>
@@ -440,11 +481,10 @@ number of sampling points and d is the number of dimensions.</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt id="DyCors.kernels.surrogateGRBF_Matern">
-<code class="sig-prename descclassname">DyCors.kernels.</code><code class="sig-name descname">surrogateGRBF_Matern</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/matern.html#surrogateGRBF_Matern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.surrogateGRBF_Matern" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build GRBF surrogate model using half integer
-simplification of Matérn kernel.</p>
+<dl class="py method">
+<dt id="DyCors.kernels.matern.GRBF_Matern.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">df</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/matern.html#GRBF_Matern.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.matern.GRBF_Matern.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build surrogate model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -455,43 +495,72 @@ number of sampling points and d is the number of dimensions.</p>
 </dd>
 <dt><strong>df</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of function gradient values at <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
 </dd>
-<dt><strong>l</strong><span class="classifier">ndarray, shape (d,), optional</span></dt><dd><p>Array with the values of the width internal parameter of the
-kernel.</p>
-</dd>
-<dt><strong>nu</strong><span class="classifier">float, optional</span></dt><dd><p>Order of Bessel function of the kernel.</p>
-</dd>
 </dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>GRBF coefficients.</p>
-</dd>
 <dt><strong>Phi</strong><span class="classifier">ndarray, shape(m,m,)</span></dt><dd><p>RBF matrix.</p>
 </dd>
-<dt><strong>A</strong><span class="classifier">ndarray, shape(m*(d+1),m*(d+1),)</span></dt><dd><p>gRBF matrix with gradient terms.</p>
+<dt><strong>A</strong><span class="classifier">ndarray, shape(m*(d+1),m*(d+1),)</span></dt><dd><p>GRBF matrix with gradient terms.</p>
 </dd>
 </dl>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt id="DyCors.kernels.evalGRBF_Matern">
-<code class="sig-prename descclassname">DyCors.kernels.</code><code class="sig-name descname">evalGRBF_Matern</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/matern.html#evalGRBF_Matern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.evalGRBF_Matern" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluate GRBF Matérn kernel surrogate model at new points.</p>
+<dl class="py method">
+<dt id="DyCors.kernels.matern.GRBF_Matern.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">2.5</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/matern.html#GRBF_Matern.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.matern.GRBF_Matern.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update internal parameters of the kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,)</span></dt><dd><p>Internal parameter of the kernel.</p>
+</dd>
+<dt><strong>nu</strong><span class="classifier">float, optional</span></dt><dd><p>Internal parameter. Order of Bessel function of the kernel.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="DyCors.kernels.matern.RBF_Matern">
+<em class="property">class </em><code class="sig-prename descclassname">DyCors.kernels.matern.</code><code class="sig-name descname">RBF_Matern</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">2.5</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/matern.html#RBF_Matern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.matern.RBF_Matern" title="Permalink to this definition">¶</a></dt>
+<dd><p>RBF Matérn kernel class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,), optional</span></dt><dd><p>Internal parameter. Width of the kernel.</p>
+</dd>
+<dt><strong>nu</strong><span class="classifier">float, optional</span></dt><dd><p>Internal parameter. Order of Bessel function of the kernel.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,)</span></dt><dd><p>Internal parameter. Width of the kernel.</p>
+</dd>
+<dt><strong>nu</strong><span class="classifier">float</span></dt><dd><p>Internal parameter. Order of Bessel function of the kernel.</p>
+</dd>
+<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="DyCors.kernels.matern.RBF_Matern.evaluate">
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/matern.html#RBF_Matern.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.matern.RBF_Matern.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate surrogate model at given points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
 number of sampling points and d is the number of dimensions.</p>
 </dd>
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
-</dd>
 <dt><strong>y</strong><span class="classifier">ndarray, shape (n,d,)</span></dt><dd><p>Array of points where we want to evaluate the surrogate model.</p>
-</dd>
-<dt><strong>l</strong><span class="classifier">ndarray, shape (d,), optional</span></dt><dd><p>Array with the values of the internal parameter of the kernel.</p>
-</dd>
-<dt><strong>nu</strong><span class="classifier">float, optional</span></dt><dd><p>Order of Bessel function of the kernel.</p>
 </dd>
 </dl>
 </dd>
@@ -502,6 +571,49 @@ number of sampling points and d is the number of dimensions.</p>
 </dl>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="DyCors.kernels.matern.RBF_Matern.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/matern.html#RBF_Matern.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.matern.RBF_Matern.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build surrogate model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
+number of sampling points and d is the number of dimensions.</p>
+</dd>
+<dt><strong>f</strong><span class="classifier">ndarray, shape (m,)</span></dt><dd><p>Array of function values at <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Phi</strong><span class="classifier">ndarray, shape(m,m,)</span></dt><dd><p>RBF matrix.</p>
+</dd>
+<dt><strong>A</strong><span class="classifier">ndarray, shape(m*(d+1),m*(d+1),)</span></dt><dd><p>RBF matrix with linear polynomial terms.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="DyCors.kernels.matern.RBF_Matern.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">2.5</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/matern.html#RBF_Matern.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.matern.RBF_Matern.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update internal parameters of the kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,), optional</span></dt><dd><p>Internal parameter of the kernel.</p>
+</dd>
+<dt><strong>nu</strong><span class="classifier">float, optional</span></dt><dd><p>Internal parameter. Order of Bessel function of the kernel.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -519,44 +631,27 @@ distance is defined as:</p>
 <p>The second derivative is defined as:</p>
 <div class="math notranslate nohighlight">
 \[\Phi_{,rr}(r) = 6 r\]</div>
-<dl class="py function">
-<dt id="DyCors.kernels.surrogateRBF_Cubic">
-<code class="sig-prename descclassname">DyCors.kernels.</code><code class="sig-name descname">surrogateRBF_Cubic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/cubic.html#surrogateRBF_Cubic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.surrogateRBF_Cubic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build RBF surrogate model using Cubic kernel.</p>
+<span class="target" id="module-DyCors.kernels.cubic"></span><dl class="py class">
+<dt id="DyCors.kernels.cubic.GRBF_Cubic">
+<em class="property">class </em><code class="sig-prename descclassname">DyCors.kernels.cubic.</code><code class="sig-name descname">GRBF_Cubic</code><a class="reference internal" href="_modules/DyCors/kernels/cubic.html#GRBF_Cubic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.cubic.GRBF_Cubic" title="Permalink to this definition">¶</a></dt>
+<dd><p>GRBF Cubic kernel class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>GRBF coefficients.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="DyCors.kernels.cubic.GRBF_Cubic.evaluate">
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/cubic.html#GRBF_Cubic.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.cubic.GRBF_Cubic.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate surrogate model at given points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
 number of sampling points and d is the number of dimensions.</p>
-</dd>
-<dt><strong>f</strong><span class="classifier">ndarray, shape (m,)</span></dt><dd><p>Array of function values at <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
-</dd>
-<dt><strong>Phi</strong><span class="classifier">ndarray, shape(m,m,)</span></dt><dd><p>RBF matrix.</p>
-</dd>
-<dt><strong>A</strong><span class="classifier">ndarray, shape(m*(d+1),m*(d+1),)</span></dt><dd><p>RBF matrix with linear polynomial terms.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="DyCors.kernels.evalRBF_Cubic">
-<code class="sig-prename descclassname">DyCors.kernels.</code><code class="sig-name descname">evalRBF_Cubic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/cubic.html#evalRBF_Cubic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.evalRBF_Cubic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluate RBF Cubic kernel surrogate model at new points.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
-number of sampling points and d is the number of dimensions.</p>
-</dd>
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
 </dd>
 <dt><strong>y</strong><span class="classifier">ndarray, shape (n,d,)</span></dt><dd><p>Array of points where we want to evaluate the surrogate model.</p>
 </dd>
@@ -571,10 +666,10 @@ number of sampling points and d is the number of dimensions.</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt id="DyCors.kernels.surrogateGRBF_Cubic">
-<code class="sig-prename descclassname">DyCors.kernels.</code><code class="sig-name descname">surrogateGRBF_Cubic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">df</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/cubic.html#surrogateGRBF_Cubic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.surrogateGRBF_Cubic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build GRBF surrogate model using Cubic kernel.</p>
+<dl class="py method">
+<dt id="DyCors.kernels.cubic.GRBF_Cubic.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">df</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/cubic.html#GRBF_Cubic.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.cubic.GRBF_Cubic.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build surrogate model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -589,8 +684,6 @@ number of sampling points and d is the number of dimensions.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>GRBF coefficients.</p>
-</dd>
 <dt><strong>Phi</strong><span class="classifier">ndarray, shape(m,m,)</span></dt><dd><p>RBF matrix.</p>
 </dd>
 <dt><strong>A</strong><span class="classifier">ndarray, shape(m*(d+1),m*(d+1),)</span></dt><dd><p>GRBF matrix with gradient terms.</p>
@@ -600,17 +693,29 @@ number of sampling points and d is the number of dimensions.</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt id="DyCors.kernels.evalGRBF_Cubic">
-<code class="sig-prename descclassname">DyCors.kernels.</code><code class="sig-name descname">evalGRBF_Cubic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/cubic.html#evalGRBF_Cubic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.evalGRBF_Cubic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluate GRBF Cubic kernel surrogate model at new points.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="DyCors.kernels.cubic.RBF_Cubic">
+<em class="property">class </em><code class="sig-prename descclassname">DyCors.kernels.cubic.</code><code class="sig-name descname">RBF_Cubic</code><a class="reference internal" href="_modules/DyCors/kernels/cubic.html#RBF_Cubic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.cubic.RBF_Cubic" title="Permalink to this definition">¶</a></dt>
+<dd><p>RBF Cubic kernel class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="DyCors.kernels.cubic.RBF_Cubic.evaluate">
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/cubic.html#RBF_Cubic.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.cubic.RBF_Cubic.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate surrogate model at given points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
 number of sampling points and d is the number of dimensions.</p>
-</dd>
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
 </dd>
 <dt><strong>y</strong><span class="classifier">ndarray, shape (n,d,)</span></dt><dd><p>Array of points where we want to evaluate the surrogate model.</p>
 </dd>
@@ -623,6 +728,33 @@ number of sampling points and d is the number of dimensions.</p>
 </dl>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="DyCors.kernels.cubic.RBF_Cubic.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/kernels/cubic.html#RBF_Cubic.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.kernels.cubic.RBF_Cubic.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build surrogate model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
+number of sampling points and d is the number of dimensions.</p>
+</dd>
+<dt><strong>f</strong><span class="classifier">ndarray, shape (m,)</span></dt><dd><p>Array of function values at <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Phi</strong><span class="classifier">ndarray, shape(m,m,)</span></dt><dd><p>RBF matrix.</p>
+</dd>
+<dt><strong>A</strong><span class="classifier">ndarray, shape(m*(d+1),m*(d+1),)</span></dt><dd><p>RBF matrix with linear polynomial terms.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </div>
