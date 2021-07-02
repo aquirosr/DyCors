@@ -6,12 +6,9 @@ from scipy.optimize import differential_evolution, NonlinearConstraint
 import multiprocessing
 import warnings
 
-from .kernels import surrogateRBF_Expo, evalRBF_Expo
-from .kernels import surrogateGRBF_Expo, evalGRBF_Expo
-from .kernels import surrogateRBF_Matern, evalRBF_Matern
-from .kernels import surrogateGRBF_Matern, evalGRBF_Matern
-from .kernels import surrogateRBF_Cubic, evalRBF_Cubic
-from .kernels import surrogateGRBF_Cubic, evalGRBF_Cubic
+from .kernels import RBF_Exponential, GRBF_Exponential
+from .kernels import RBF_Matern, GRBF_Matern
+from .kernels import RBF_Cubic, GRBF_Cubic
 from .result import ResultDyCors
 from .sampling import ERLatinHyperCube
 
@@ -61,7 +58,7 @@ def minimize(fun, x0=None, args=(), method="RBF-Expo", jac=None, bounds=None,
         Extra arguments passed to the objective function and its
         derivatives (`fun` and `jac` functions).
     method : str, optional
-        Type of algorithm. Should be:
+        Kernel function to be used. Should be:
 
             - 'RBF-Expo'   : derivative-free with exponential kernel
             - 'RBF-Matern' : derivative-free with Matérn kernel
@@ -277,25 +274,22 @@ class DyCorsMinimize:
         self.parallel = parallel
         self.par_options = par_options
         self.verbose = verbose
+        
+        self.l = self.options["l"]
+        self.nu = self.options["nu"]
 
         if self.method=="RBF-Expo":
-            self.surrogateFunc = surrogateRBF_Expo
-            self.evalSurr = evalRBF_Expo
+            self.kernel = RBF_Exponential(self.l)
         elif self.method=="RBF-Matern":
-            self.surrogateFunc = surrogateRBF_Matern
-            self.evalSurr = evalRBF_Matern
+            self.kernel = RBF_Matern(self.l, self.nu)
         elif self.method=="RBF-Cubic":
-            self.surrogateFunc = surrogateRBF_Cubic
-            self.evalSurr = evalRBF_Cubic
+            self.kernel = RBF_Cubic()
         elif self.method=="GRBF-Expo":
-            self.surrogateFunc = surrogateGRBF_Expo
-            self.evalSurr = evalGRBF_Expo
+            self.kernel = GRBF_Exponential(self.l)
         elif self.method=="GRBF-Matern":
-            self.surrogateFunc = surrogateGRBF_Matern
-            self.evalSurr = evalGRBF_Matern
+            self.kernel = GRBF_Matern(self.l, self.nu)
         elif self.method=="GRBF-Cubic":
-            self.surrogateFunc = surrogateGRBF_Cubic
-            self.evalSurr = evalGRBF_Cubic
+            self.kernel = GRBF_Cubic()
 
         if self.method.startswith("G"):
             self.grad = True
@@ -343,8 +337,6 @@ class DyCorsMinimize:
         
         self.k = min(100*self.d, 5000) # number of trial points
         self.Ts, self.Tf = self.options["Ts"], max(self.d, self.options["Tf"])
-        self.l = self.options["l"]*np.ones((self.d,))
-        self.nu = self.options["nu"]
         self.optim_loo = self.options["optim_loo"]
         if self.method.endswith("Cubic"):
             self.optim_loo = False
@@ -385,22 +377,11 @@ class DyCorsMinimize:
                     self.update_internal_params()
                     
                 # fit response surface model
-                if self.method=="RBF-Expo":
-                    self.s,*_ = self.surrogateFunc(self.x, self.f, self.l)
-                elif self.method=="RBF-Matern":
-                    self.s,*_ = self.surrogateFunc(self.x, self.f, self.l,
-                                                   self.nu)
-                elif self.method=="RBF-Cubic":
-                    self.s,*_ = self.surrogateFunc(self.x, self.f)
-                elif self.method=="GRBF-Expo":
-                    self.s,*_ = self.surrogateFunc(self.x, self.f, self.df,
-                                                   self.l)
-                elif self.method=="GRBF-Matern":
-                    self.s,*_ = self.surrogateFunc(self.x, self.f, self.df,
-                                                   self.l, self.nu)
-                elif self.method=="GRBF-Cubic":
-                    self.s,*_ = self.surrogateFunc(self.x, self.f, self.df)
-                    
+                if self.grad:
+                    _ = self.kernel.fit(self.x, self.f, self.df)
+                else:
+                    _ = self.kernel.fit(self.x, self.f)
+
                 # generate trial points and select the bests
                 self.trialPoints()
                 self.selectNewPts()
@@ -587,12 +568,7 @@ class DyCorsMinimize:
         """
         n = self.x.shape[0]
         # estimate function value
-        if self.method.endswith("Expo"):
-            s = self.evalSurr(self.x, self.s, self.yk, self.l)
-        elif self.method.endswith("Matern"):
-            s = self.evalSurr(self.x, self.s, self.yk, self.l, self.nu)
-        elif self.method.endswith("Cubic"):
-            s = self.evalSurr(self.x, self.s, self.yk)
+        s = self.kernel.evaluate(self.x, self.yk)
 
         # compute RBF-score
         s1, s2 = s.min(), s.max()
@@ -689,7 +665,8 @@ class DyCorsMinimize:
             if self.method.endswith("Expo"):
                 l = ip
                 
-                _,Phi,_ = surrogateRBF_Expo(self.x, self.f, l)
+                kernel = RBF_Exponential(l)
+                Phi,_ = kernel.fit(self.x, self.f)
                 
                 return nla.cond(Phi)
                 
@@ -697,29 +674,33 @@ class DyCorsMinimize:
                 l  = ip[:-1]
                 nu = ip[-1]
                 
-                _,Phi,_ = surrogateRBF_Matern(self.x, self.f, l, nu)
+                kernel = RBF_Matern(l, nu)
+                Phi,_ = kernel.fit(self.x, self.f)
                 
                 return nla.cond(Phi)
-        
-        if self.method.endswith("Expo"):
-            def error(l):
+            
+        def error(ip):
+            if self.method.endswith("Expo"):
+                l = ip
                 n = self.x.shape[0]
                 
-                _,Phi,_ = surrogateRBF_Expo(self.x, self.f, l)
+                kernel = RBF_Exponential(l)
+                Phi,_ = kernel.fit(self.x, self.f)
+                
                 H_inv = sla.inv(Phi)
                 H_inv2 = H_inv@H_inv
 
                 return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)),
                                 ord=1)
 
-        elif self.method.endswith("Matern"):
-            def error(lnu):
-                l  = lnu[:-1]
-                nu = lnu[-1]
-                
+            elif self.method.endswith("Matern"):
+                l  = ip[:-1]
+                nu = ip[-1]
                 n = self.x.shape[0]
                 
-                _,Phi,_ = surrogateRBF_Matern(self.x, self.f, l, nu)
+                kernel = RBF_Matern(l, nu)
+                Phi,_ = kernel.fit(self.x, self.f)
+                
                 H_inv = sla.inv(Phi)
                 H_inv2 = H_inv@H_inv
 

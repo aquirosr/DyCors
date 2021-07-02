@@ -1,11 +1,8 @@
 from .core import minimize, DyCorsMinimize
 
-from .kernels import surrogateRBF_Expo, evalRBF_Expo
-from .kernels import surrogateGRBF_Expo, evalGRBF_Expo
-from .kernels import surrogateRBF_Matern, evalRBF_Matern
-from .kernels import surrogateGRBF_Matern, evalGRBF_Matern
-from .kernels import surrogateRBF_Cubic, evalRBF_Cubic
-from .kernels import surrogateGRBF_Cubic, evalGRBF_Cubic
+from .kernels import RBF_Exponential, GRBF_Exponential
+from .kernels import RBF_Matern, GRBF_Matern
+from .kernels import RBF_Cubic, GRBF_Cubic
 
 from .result import ResultDyCors
 

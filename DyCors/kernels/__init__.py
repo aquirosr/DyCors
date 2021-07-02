@@ -1,8 +1,3 @@
-from .exponential import surrogateRBF_Expo, evalRBF_Expo
-from .exponential import surrogateGRBF_Expo, evalGRBF_Expo
-
-from .matern import surrogateRBF_Matern, evalRBF_Matern
-from .matern import surrogateGRBF_Matern, evalGRBF_Matern
-
-from .cubic import surrogateRBF_Cubic, evalRBF_Cubic
-from .cubic import surrogateGRBF_Cubic, evalGRBF_Cubic
+from .exponential import RBF_Exponential, GRBF_Exponential
+from .matern import RBF_Matern, GRBF_Matern
+from .cubic import RBF_Cubic, GRBF_Cubic
