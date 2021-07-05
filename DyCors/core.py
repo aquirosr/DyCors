@@ -572,7 +572,7 @@ class DyCorsMinimize:
         """
         n = self.x.shape[0]
         # estimate function value
-        s = self.kernel.evaluate(self.x, self.yk)
+        s = self.kernel.evaluate(self.yk)
 
         # compute RBF-score
         s1, s2 = s.min(), s.max()

@@ -11,10 +11,14 @@ class RBF_Cubic():
     ----------
     s : ndarray, shape(m,)
         RBF coefficients.
+    x : ndarray, shape (m,d,)
+        Array of points where function values are known. m is the
+        number of sampling points and d is the number of dimensions.
     """
     
     def __init__(self):
         self.s = None
+        self.x = None
     
     def fit(self, x, f):
         """Build surrogate model.
@@ -34,14 +38,15 @@ class RBF_Cubic():
         A : ndarray, shape(m*(d+1),m*(d+1),)
             RBF matrix with linear polynomial terms.
         """
-        m,d = x.shape
+        self.x = x
+        m,d = self.x.shape
     
         # RBF-matrix
-        R = la.norm(x[...,np.newaxis] - x.T[np.newaxis,...], axis=1)
+        R = la.norm(self.x[...,np.newaxis] - self.x.T[np.newaxis,...], axis=1)
         Phi = R**3
 
         # polynomial part
-        P = np.hstack((np.ones((m,1)), x))
+        P = np.hstack((np.ones((m,1)), self.x))
         
         # zero matrix
         Z = np.zeros((d+1,d+1))
@@ -56,14 +61,11 @@ class RBF_Cubic():
         
         return Phi, A
         
-    def evaluate(self, x, y):
+    def evaluate(self, y):
         """Evaluate surrogate model at given points.
 
         Parameters
         ----------
-        x : ndarray, shape (m,d,)
-            Array of points where function values are known. m is the
-            number of sampling points and d is the number of dimensions.
         y : ndarray, shape (n,d,)
             Array of points where we want to evaluate the surrogate model.
 
@@ -79,7 +81,7 @@ class RBF_Cubic():
         n,d = y.shape
         
         # RBF-matrix
-        R = la.norm(x[...,np.newaxis] - y.T[np.newaxis,...], axis=1)
+        R = la.norm(self.x[...,np.newaxis] - y.T[np.newaxis,...], axis=1)
         Phi = R.T**3
 
         # polynomial part
@@ -100,10 +102,14 @@ class GRBF_Cubic():
     ----------
     s : ndarray, shape(m,)
         GRBF coefficients.
+    x : ndarray, shape (m,d,)
+        Array of points where function values are known. m is the
+        number of sampling points and d is the number of dimensions.
     """
     
     def __init__(self):
         self.s = None
+        self.x = None
     
     def fit(self, x, f, df):
         """Build surrogate model.
@@ -125,23 +131,25 @@ class GRBF_Cubic():
         A : ndarray, shape(m*(d+1),m*(d+1),)
             GRBF matrix with gradient terms.
         """
-        m,d = x.shape
+        self.x = x
+        m,d = self.x.shape
 
         # RBF-matrix
-        R = la.norm(x[...,np.newaxis] - x.T[np.newaxis,...], axis=1)
+        R = la.norm(self.x[...,np.newaxis] - self.x.T[np.newaxis,...], axis=1)
         Phi = R**3
         
         # First derivative
         _Phi_d = np.zeros((m,m,d))
-        _Phi_d = 3 * R[...,np.newaxis] * (x[:,np.newaxis,:] - x[np.newaxis,:,:])
+        _Phi_d = 3 * R[...,np.newaxis] * (self.x[:,np.newaxis,:] 
+                                          - self.x[np.newaxis,:,:])
         Phi_d = _Phi_d.reshape((m,m*d))
 
         # Second derivative
         Phi_dd = np.zeros((m,d,m,d))
-        Phi_dd = 3 * ( (x[:,np.newaxis,np.newaxis,:]
-                        - x[np.newaxis,np.newaxis,:,:])
-                    * (x[:,:,np.newaxis,np.newaxis]
-                        - x.T[np.newaxis,:,:,np.newaxis])
+        Phi_dd = 3 * ( (self.x[:,np.newaxis,np.newaxis,:]
+                        - self.x[np.newaxis,np.newaxis,:,:])
+                    * (self.x[:,:,np.newaxis,np.newaxis]
+                        - self.x.T[np.newaxis,:,:,np.newaxis])
                     / R[:,np.newaxis,:,np.newaxis]
                     + np.diag(np.ones(d))[np.newaxis,:,np.newaxis,:]
                     * R[:,np.newaxis,:,np.newaxis] )
@@ -163,14 +171,11 @@ class GRBF_Cubic():
         
         return Phi, A
         
-    def evaluate(self, x, y):
+    def evaluate(self, y):
         """Evaluate surrogate model at given points.
         
         Parameters
         ----------
-        x : ndarray, shape (m,d,)
-            Array of points where function values are known. m is the
-            number of sampling points and d is the number of dimensions.
         y : ndarray, shape (n,d,)
             Array of points where we want to evaluate the surrogate model.
         
@@ -182,17 +187,18 @@ class GRBF_Cubic():
         if self.s is None:
             return None
         
-        m = x.shape[0]
+        m = self.x.shape[0]
         y = np.array(y)
         n,d = y.shape
         
         # RBF-matrix
-        R = la.norm(x[...,np.newaxis] - y.T[np.newaxis,...], axis=1)
+        R = la.norm(self.x[...,np.newaxis] - y.T[np.newaxis,...], axis=1)
         Phi = R.T**3
         
         # First derivative 
         d_Phi = np.zeros((n,m,d))
-        d_Phi = 3 * R.T[...,np.newaxis] * (y[:,np.newaxis,:] - x[np.newaxis,:,:])
+        d_Phi = 3 * R.T[...,np.newaxis] * (y[:,np.newaxis,:] 
+                                           - self.x[np.newaxis,:,:])
 
         d_Phi = d_Phi.reshape((n,m*d))
 
