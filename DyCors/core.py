@@ -724,6 +724,7 @@ class DyCorsMinimize:
                     if self.verbose:
                         print("Updated")
                     self.l = sol["x"]
+                    self.kernel.update(self.l)
                 else:
                     if self.verbose:
                         print("Not updated")
@@ -743,6 +744,7 @@ class DyCorsMinimize:
                         print("Updated")
                     self.l = sol["x"][:-1]
                     self.nu = sol["x"][-1]
+                    self.kernel.update(self.l, self.nu)
                 else:
                     if self.verbose:
                         print("Not updated")
