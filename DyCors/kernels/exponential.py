@@ -173,7 +173,7 @@ class GRBF_Exponential():
         
         # First derivative
         _Phi_d = np.zeros((m,m,d))
-        _Phi_d = -2*Phi[...,np.newaxis] * (self .x[:,np.newaxis,:] 
+        _Phi_d = -2*Phi[...,np.newaxis] * (self.x[:,np.newaxis,:] 
                                            - self.x[np.newaxis,:,:])\
             / (2*l[np.newaxis,np.newaxis,:]**2)
         Phi_d = _Phi_d.reshape((m,m*d))
