@@ -6,9 +6,13 @@ class RBF_Cubic():
     
     Parameters
     ----------
+    l : float or ndarray, shape (d,)
+        Internal parameter. Width of the kernel.
     
     Attributes
     ----------
+    l : float or ndarray, shape (d,)
+        Internal parameter. Width of the kernel.
     s : ndarray, shape(m,)
         RBF coefficients.
     x : ndarray, shape (m,d,)
@@ -16,7 +20,8 @@ class RBF_Cubic():
         number of sampling points and d is the number of dimensions.
     """
     
-    def __init__(self):
+    def __init__(self, l=1.0):
+        self.l = l
         self.s = None
         self.x = None
     
@@ -41,8 +46,11 @@ class RBF_Cubic():
         self.x = x
         m,d = self.x.shape
     
+        l = np.ones(d)*self.l
+    
         # RBF-matrix
-        R = la.norm(self.x[...,np.newaxis] - self.x.T[np.newaxis,...], axis=1)
+        R = la.norm(self.x[...,np.newaxis]/l[:,np.newaxis]
+                    - self.x.T[np.newaxis,...]/ l[:,np.newaxis], axis=1)
         Phi = R**3
 
         # polynomial part
@@ -80,8 +88,11 @@ class RBF_Cubic():
         y = np.array(y)
         n,d = y.shape
         
+        l = np.ones(d)*self.l
+        
         # RBF-matrix
-        R = la.norm(self.x[...,np.newaxis] - y.T[np.newaxis,...], axis=1)
+        R = la.norm(self.x[...,np.newaxis]/l[:,np.newaxis] 
+                    - y.T[np.newaxis,...]/ l[:,np.newaxis], axis=1)
         Phi = R.T**3
 
         # polynomial part
@@ -97,9 +108,13 @@ class GRBF_Cubic():
     
     Parameters
     ----------
+    l : float or ndarray, shape (d,)
+        Internal parameter. Width of the kernel.
     
     Attributes
     ----------
+    l : float or ndarray, shape (d,)
+        Internal parameter. Width of the kernel.
     s : ndarray, shape(m,)
         GRBF coefficients.
     x : ndarray, shape (m,d,)
@@ -107,7 +122,8 @@ class GRBF_Cubic():
         number of sampling points and d is the number of dimensions.
     """
     
-    def __init__(self):
+    def __init__(self, l=1.0):
+        self.l = l
         self.s = None
         self.x = None
     
@@ -121,7 +137,7 @@ class GRBF_Cubic():
             number of sampling points and d is the number of dimensions.
         f : ndarray, shape (m,)
             Array of function values at ``x``.
-        df : ndarray, shape (m,d,)
+        df : ndarray, shape (m*d,)
             Array of function gradient values at ``x``.
             
         Returns
@@ -133,15 +149,20 @@ class GRBF_Cubic():
         """
         self.x = x
         m,d = self.x.shape
+        
+        l = np.ones(d)*self.l
 
         # RBF-matrix
-        R = la.norm(self.x[...,np.newaxis] - self.x.T[np.newaxis,...], axis=1)
+        R = la.norm(self.x[...,np.newaxis]/l[:,np.newaxis] 
+                    - self.x.T[np.newaxis,...]/l[:,np.newaxis], axis=1)
         Phi = R**3
         
         # First derivative
         _Phi_d = np.zeros((m,m,d))
         _Phi_d = 3 * R[...,np.newaxis] * (self.x[:,np.newaxis,:] 
-                                          - self.x[np.newaxis,:,:])
+                                          - self.x[np.newaxis,:,:]) \
+            / l[np.newaxis,np.newaxis,:]**2
+                
         Phi_d = _Phi_d.reshape((m,m*d))
 
         # Second derivative
@@ -151,8 +172,10 @@ class GRBF_Cubic():
                     * (self.x[:,:,np.newaxis,np.newaxis]
                         - self.x.T[np.newaxis,:,:,np.newaxis])
                     / R[:,np.newaxis,:,np.newaxis]
+                    / l[np.newaxis,:,np.newaxis,np.newaxis]**4
                     + np.diag(np.ones(d))[np.newaxis,:,np.newaxis,:]
-                    * R[:,np.newaxis,:,np.newaxis] )
+                    * R[:,np.newaxis,:,np.newaxis] 
+                    / l[np.newaxis,:,np.newaxis,np.newaxis]**2 )
         Phi_dd = np.nan_to_num(Phi_dd).reshape((m*d,m*d))
 
         A = np.block([[Phi,Phi_d],[-np.transpose(Phi_d),Phi_dd]])
@@ -191,14 +214,18 @@ class GRBF_Cubic():
         y = np.array(y)
         n,d = y.shape
         
+        l = np.ones(d)*self.l
+        
         # RBF-matrix
-        R = la.norm(self.x[...,np.newaxis] - y.T[np.newaxis,...], axis=1)
+        R = la.norm(self.x[...,np.newaxis]/l[:,np.newaxis] 
+                    - y.T[np.newaxis,...]/l[:,np.newaxis], axis=1)
         Phi = R.T**3
         
         # First derivative 
         d_Phi = np.zeros((n,m,d))
         d_Phi = 3 * R.T[...,np.newaxis] * (y[:,np.newaxis,:] 
-                                           - self.x[np.newaxis,:,:])
+                                           - self.x[np.newaxis,:,:]) \
+            / l[np.newaxis,np.newaxis,:]**2
 
         d_Phi = d_Phi.reshape((n,m*d))
 
