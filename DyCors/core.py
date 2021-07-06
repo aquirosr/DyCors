@@ -286,13 +286,13 @@ class DyCorsMinimize:
         elif self.method=="RBF-Matern":
             self.kernel = RBF_Matern(self.l, self.nu)
         elif self.method=="RBF-Cubic":
-            self.kernel = RBF_Cubic()
+            self.kernel = RBF_Cubic(self.l)
         elif self.method=="GRBF-Expo":
             self.kernel = GRBF_Exponential(self.l)
         elif self.method=="GRBF-Matern":
             self.kernel = GRBF_Matern(self.l, self.nu)
         elif self.method=="GRBF-Cubic":
-            self.kernel = GRBF_Cubic()
+            self.kernel = GRBF_Cubic(self.l)
 
         if self.method.startswith("G"):
             self.grad = True
@@ -342,8 +342,6 @@ class DyCorsMinimize:
         self.Ts, self.Tf = self.options["Ts"], max(self.d, self.options["Tf"])
         self.weights = self.options["weights"]
         self.optim_loo = self.options["optim_loo"]
-        if self.method.endswith("Cubic"):
-            self.optim_loo = False
         self.nits_loo = self.options["nits_loo"]
             
         self.iB = np.argmin(self.f) # find best solution
@@ -680,6 +678,13 @@ class DyCorsMinimize:
                 Phi,_ = kernel.fit(self.x, self.f)
                 
                 return nla.cond(Phi)
+            elif self.method.endswith("Cubic"):
+                l  = ip
+                
+                kernel = RBF_Cubic(l)
+                Phi,_ = kernel.fit(self.x, self.f)
+                
+                return nla.cond(Phi)
             
         def error(ip):
             if self.method.endswith("Expo"):
@@ -708,12 +713,24 @@ class DyCorsMinimize:
 
                 return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)),
                                 ord=1)
+            elif self.method.endswith("Cubic"):
+                l  = ip
+                n = self.x.shape[0]
+                
+                kernel = RBF_Cubic(l)
+                Phi,_ = kernel.fit(self.x, self.f)
+                
+                H_inv = sla.inv(Phi)
+                H_inv2 = H_inv@H_inv
+
+                return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)),
+                                ord=1)
 
         from scipy.optimize import NonlinearConstraint
         nlc = NonlinearConstraint(constr_f, 0, 0.1/EPS)
         if self.verbose:
             print("Updating internal params...")
-        if self.method.endswith("Expo"):
+        if self.method.endswith("Expo") or self.method.endswith("Cubic"):
             error0 = error(self.l)
             try:
                 sol = differential_evolution(func=error,
