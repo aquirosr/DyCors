@@ -182,7 +182,7 @@ class GRBF_Matern():
             number of sampling points and d is the number of dimensions.
         f : ndarray, shape (m,)
             Array of function values at ``x``.
-        df : ndarray, shape (m,d,)
+        df : ndarray, shape (m*d,)
             Array of function gradient values at ``x``.
             
         Returns
