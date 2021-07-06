@@ -29,7 +29,7 @@ PAR_DEFAULT_OPTIONS = {"SLURM":False, "cores_per_feval":1,
                        "par_fevals":NCORES, "memory":"1GB",
                        "walltime":"00:10:00", "queue":"regular"}
 
-def minimize(fun, x0=None, args=(), method="RBF-Expo", jac=None, bounds=None, 
+def minimize(fun, x0=None, args=(), method="RBF-Cubic", jac=None, bounds=None, 
              options=None, restart=None, parallel=False, par_options=None,
              verbose=True):
     """Minimization of scalar function of one or more variables using
@@ -67,7 +67,7 @@ def minimize(fun, x0=None, args=(), method="RBF-Expo", jac=None, bounds=None,
             - 'GRBF-Matern': gradient-enhanced with Matérn kernel
             - 'GRBF-Cubic' : gradient-enhanced with cubic kernel
         
-        The default method is 'RBF-Expo'. See :ref:`Kernel functions`
+        The default method is 'RBF-Cubic'. See :ref:`Kernel functions`
         for more details on each specific method.
     jac : callable, optional
         It should return the gradient of `fun`.

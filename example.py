@@ -41,7 +41,7 @@ par_options = {"SLURM":False, "cores_per_feval":1, "par_fevals":4,
                "memory":"1GB", "walltime":"00:10:00", "queue":"regular"}
 
 # initial optimization
-solf = minimize(fun=Rastrigin, x0=x0, args=(), method="GRBF-Expo",
+solf = minimize(fun=Rastrigin, x0=x0, args=(), method="RBF-Cubic",
                 jac=df_Rastrigin, bounds=bounds, options=options,
                 restart=None, parallel=parallel, par_options=par_options,
                 verbose=True)
@@ -57,7 +57,7 @@ plt.show()
 # restarted optimization
 Nmax = 500
 options["Nmax"] = Nmax
-solf = minimize(fun=Rastrigin, x0=None, args=(), method="GRBF-Expo",
+solf = minimize(fun=Rastrigin, x0=None, args=(), method="RBF-Cubic",
                 jac=df_Rastrigin, bounds=bounds, options=options,
                 restart=solf, parallel=parallel, par_options=par_options,
                 verbose=True)
