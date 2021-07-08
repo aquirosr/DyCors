@@ -1,44 +1,69 @@
 Kernel functions
 ----------------
-Here we provide a description of the different functions used to build
-and evaluate the RBF and the GRBF.
+Here we provide a description of the different classes used to build
+and evaluate the RBF and the GRBF surrogate models. Three different
+kernel functions :math:`\phi(r)` are defined in the code, the Exponential
+kernel (:class:`RBF_Exponential <.kernels.exponential.RBF_Exponential>`, 
+:class:`GRBF_Exponential <.kernels.exponential.GRBF_Exponential>`),
+the Matérn kernel (:class:`RBF_Matern <.kernels.matern.RBF_Matern>`, 
+:class:`GRBF_Matern <.kernels.matern.GRBF_Matern>`) and the Cubic kernel
+(:class:`RBF_Cubic <.kernels.cubic.RBF_Cubic>`, 
+:class:`GRBF_Cubic <.kernels.cubic.GRBF_Cubic>`).
 
-The full RBF matrix A is defined as:
+The ``fit`` method of these classes solves the system :math:`A s = F`.
+In the case of RBF interpolants, the vector :math:`F` contains the values
+of the function where the points have been evaluated and the matrix :math:`A`
+is defined as:
 
 .. math::
     A = \begin{bmatrix}
             \Phi & P \\
-            P^T & 0
+            P^T & 0.
         \end{bmatrix}
 
-where :math:`\Phi` is the RBF kernel matrix and :math:`P` is the matrix
-with the linear polynomial terms [1]_.
-
-The full GRBF matrix A is defined as:
+In the case of GRBF interpolants, the vector :math:`F` contains both the values
+of the function and its gradient and the matrix :math:`A` is defined as:
 
 .. math::
     A = \begin{bmatrix}
-            \Phi & \Phi_d \\
-            -\Phi_d^T & \Phi_{dd}
+            \Phi & \Phi_\mathrm{d} \\
+            -\Phi_\mathrm{d}^T & \Phi_\mathrm{dd},
         \end{bmatrix}
 
-where :math:`\Phi_d` is the first derivative of the RBF kernel matrix
-:math:`\Phi` and :math:`\Phi_{dd}` is the second derivative [2]_. The
-matrices :math:`\Phi_d` and :math:`\Phi_{dd}` are defined as:
+where :math:`\Phi` is the RBF kernel matrix, :math:`P` is a matrix with linear
+polynomial terms, :math:`\Phi_\mathrm{d}` is the first derivative of the RBF
+kernel matrix :math:`\Phi` and :math:`\Phi_\mathrm{dd}` is the second derivative
+[1]_, [2]_.
+
+The matrix :math:`\Phi` is defined as:
 
 .. math::
-    \Phi_d = \dfrac{\partial \Phi}{\partial r}
-    \dfrac{\mathrm{d} r}{\mathrm{d} x_k^i},
+    \Phi_{i,j} = \phi(r_{i,j}),
+
+where :math:`r_{i,j} = \left \| x^i-x^j \right\|` is the Euclidean distance
+between the points :math:`x^i` and :math:`x^j`. Tha matrices :math:`\Phi_\mathrm{d}`
+and :math:`\Phi_\mathrm{dd}` are defined as:
 
 .. math::
-    \Phi_{dd} = \dfrac{\partial \Phi_d}{\partial x_k^i} =
-    \dfrac{\partial^2 \Phi}{\partial r^2}
-    \left( \dfrac{\mathrm{d} r}{\mathrm{d} x_k^i} \right)^2
-    + \dfrac{\partial \Phi}{\partial r}
-    \dfrac{\mathrm{d}^2 r}{\mathrm{d} (x_k^i)^2},
+    \Phi_{\mathrm{d}_{i,j,k}} = \dfrac{\partial \Phi_{i,j}}{\partial x_k^i} 
+    = \dfrac{\partial \Phi_{i,j}}{\partial r_{i,j}}
+    \dfrac{\partial r_{i,j}}{\partial x_k^i},
 
-where :math:`r` is the Euclidean distance and :math:`x_k^i` is the
-`kth` component of the `ith` point in the vector of points `x`.
+.. math::
+    \Phi_{\mathrm{dd}_{i,j,k,l}} = \dfrac{\partial \Phi_{\mathrm{d}_{i,j,k}}}{\partial x_l^i}
+    = \dfrac{\partial^2 \Phi_{i,j}}{\partial r_{i,j}^2}
+    \dfrac{\partial r_{i,j}}{\partial x_l^i}
+    \dfrac{\partial r_{i,j}}{\partial x_k^i}
+    
+    + \dfrac{\partial \Phi_{i,j}}{\partial r_{i,j}}
+    \dfrac{\partial^2 r_{i,j}}{\partial (x_k^i) \partial (x_l^i)}.
+
+where :math:`x_k^i` is the `kth` component of the `ith` point in the vector
+of evaluated points `x`.
+
+Once the ``fit`` method has been used to build the surrogate model, it is possible
+to evaluate points using the method ``evaluate``. If needed, the internal parameters
+can be updated using the ``update`` method.
 
 .. [1] Regis, R G and C A Shoemaker. 2013. Combining radial basis
         function surrogates and dynamic coordinate search in
