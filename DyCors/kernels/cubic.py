@@ -102,6 +102,16 @@ class RBF_Cubic():
         # evaluation
         f = np.dot(A, self.s)
         return f
+    
+    def update(self, l=1.0):
+        """Update internal parameters of the kernel.
+        
+        Parameters
+        ----------
+        l : float or ndarray, shape (d,), optional
+            Internal parameter. Width of the kernel.
+        """
+        self.l = l
         
 class GRBF_Cubic():
     """GRBF Cubic kernel class.
@@ -235,3 +245,13 @@ class GRBF_Cubic():
         f  =np.dot(A, self.s)
         
         return f
+
+    def update(self, l=1.0):
+        """Update internal parameters of the kernel.
+        
+        Parameters
+        ----------
+        l : float or ndarray, shape (d,), optional
+            Internal parameter. Width of the kernel.
+        """
+        self.l = l
