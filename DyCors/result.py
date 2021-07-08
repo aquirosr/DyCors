@@ -29,7 +29,7 @@ class ResultDyCors(OptimizeResult):
     nit : int
         Number of restarts performed by DyCors.
     m : int, optional
-        Numbe of initial sampling points
+        Number of initial sampling points
     hist : ndarray, optional
         Values of objective function at all iterations.
     dhist : ndarray, optional
