@@ -13,7 +13,7 @@ class RBF_Cubic():
     ----------
     l : float or ndarray, shape (d,)
         Internal parameter. Width of the kernel.
-    s : ndarray, shape(m,)
+    s : ndarray, shape(m+d+1,)
         RBF coefficients.
     x : ndarray, shape (m,d,)
         Array of points where function values are known. m is the
@@ -125,7 +125,7 @@ class GRBF_Cubic():
     ----------
     l : float or ndarray, shape (d,)
         Internal parameter. Width of the kernel.
-    s : ndarray, shape(m,)
+    s : ndarray, shape(m*(d+1),)
         GRBF coefficients.
     x : ndarray, shape (m,d,)
         Array of points where function values are known. m is the
