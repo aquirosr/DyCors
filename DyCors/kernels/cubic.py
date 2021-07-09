@@ -50,7 +50,7 @@ class RBF_Cubic():
     
         # RBF-matrix
         R = la.norm(self.x[...,np.newaxis]/l[:,np.newaxis]
-                    - self.x.T[np.newaxis,...]/ l[:,np.newaxis], axis=1)
+                    - self.x.T[np.newaxis,...]/l[:,np.newaxis], axis=1)
         Phi = R**3
 
         # polynomial part
@@ -92,7 +92,7 @@ class RBF_Cubic():
         
         # RBF-matrix
         R = la.norm(self.x[...,np.newaxis]/l[:,np.newaxis] 
-                    - y.T[np.newaxis,...]/ l[:,np.newaxis], axis=1)
+                    - y.T[np.newaxis,...]/l[:,np.newaxis], axis=1)
         Phi = R.T**3
 
         # polynomial part

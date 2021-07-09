@@ -278,7 +278,16 @@ class DyCorsMinimize:
         self.par_options = par_options
         self.verbose = verbose
         
-        self.l = self.options["l"]
+        if self.bounds is not None:
+            self.bL, self.bU = self.bounds[:,0], self.bounds[:,1]
+            self.sigm = self.options["sigm"]*(self.bU - self.bL)
+            self.sig = self.options["sig0"]*(self.bU - self.bL)
+            self.l = self.options["l"]*(self.bU - self.bL)
+        else:
+            self.sigm = self.options["sigm"]*np.ones((self.d,))
+            self.sig  = self.options["sig0"]*np.ones((self.d,))
+            self.l = self.options["l"]*np.ones((self.d,))
+        
         self.nu = self.options["nu"]
 
         if self.method=="RBF-Expo":
@@ -320,14 +329,6 @@ class DyCorsMinimize:
             self.m, self.d = self.x0.shape
         else:
             self.d = self.restart["xres"].shape[1]
-            
-        if self.bounds is not None:
-            self.bL, self.bU = self.bounds[:,0], self.bounds[:,1]
-            self.sigm = self.options["sigm"]*(self.bU - self.bL)
-            self.sig = self.options["sig0"]*(self.bU - self.bL)
-        else:
-            self.sigm = self.options["sigm"]*np.ones((self.d,))
-            self.sig  = self.options["sig0"]*np.ones((self.d,))
             
         # compute starting points
         self.fevals = 0
