@@ -182,7 +182,8 @@ class GRBF_Cubic():
                     * (self.x[:,:,np.newaxis,np.newaxis]
                         - self.x.T[np.newaxis,:,:,np.newaxis])
                     / R[:,np.newaxis,:,np.newaxis]
-                    / l[np.newaxis,:,np.newaxis,np.newaxis]**4
+                    / l[np.newaxis,:,np.newaxis,np.newaxis]**2
+                    / l[np.newaxis,np.newaxis,np.newaxis,:]**2
                     + np.diag(np.ones(d))[np.newaxis,:,np.newaxis,:]
                     * R[:,np.newaxis,:,np.newaxis] 
                     / l[np.newaxis,:,np.newaxis,np.newaxis]**2 )
