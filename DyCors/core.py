@@ -278,11 +278,20 @@ class DyCorsMinimize:
         self.par_options = par_options
         self.verbose = verbose
         
+        self.Nmax  = self.options["Nmax"]
+        if self.restart is None:
+            self.m, self.d = self.x0.shape
+        else:
+            self.d = self.restart["xres"].shape[1]
+        
         if self.bounds is not None:
             self.bL, self.bU = self.bounds[:,0], self.bounds[:,1]
             self.sigm = self.options["sigm"]*(self.bU - self.bL)
             self.sig = self.options["sig0"]*(self.bU - self.bL)
-            self.l = self.options["l"]*(self.bU - self.bL)
+            if np.all(self.options["l"]==DEFAULT_OPTIONS["l"]):
+                self.l = self.options["l"]*(self.bU - self.bL)
+            else:
+                self.l = self.options["l"]*np.ones((self.d,))    
         else:
             self.sigm = self.options["sigm"]*np.ones((self.d,))
             self.sig  = self.options["sig0"]*np.ones((self.d,))
@@ -323,12 +332,6 @@ class DyCorsMinimize:
         else:
             self.cores = 1
             self.procs = 1
-
-        self.Nmax  = self.options["Nmax"]
-        if self.restart is None:
-            self.m, self.d = self.x0.shape
-        else:
-            self.d = self.restart["xres"].shape[1]
             
         # compute starting points
         self.fevals = 0
