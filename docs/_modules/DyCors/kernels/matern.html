@@ -176,7 +176,7 @@
 <span class="sd">        Internal parameter. Width of the kernel.</span>
 <span class="sd">    nu : float</span>
 <span class="sd">        Internal parameter. Order of Bessel function of the kernel.</span>
-<span class="sd">    s : ndarray, shape(m,)</span>
+<span class="sd">    s : ndarray, shape(m+d+1,)</span>
 <span class="sd">        RBF coefficients.</span>
 <span class="sd">    x : ndarray, shape (m,d,)</span>
 <span class="sd">        Array of points where function values are known. m is the</span>
@@ -315,7 +315,7 @@
 <span class="sd">        Internal parameter of the kernel.</span>
 <span class="sd">    nu : float</span>
 <span class="sd">        Internal parameter. Order of Bessel function of the kernel.</span>
-<span class="sd">    s : ndarray, shape(m,)</span>
+<span class="sd">    s : ndarray, shape(m*(d+1),)</span>
 <span class="sd">        GRBF coefficients.</span>
 <span class="sd">    x : ndarray, shape (m,d,)</span>
 <span class="sd">        Array of points where function values are known. m is the</span>

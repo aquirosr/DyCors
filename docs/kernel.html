@@ -263,7 +263,7 @@ distance is defined as:</p>
 <dd class="field-even"><dl class="simple">
 <dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,)</span></dt><dd><p>Internal parameter. Width of the kernel.</p>
 </dd>
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>GRBF coefficients.</p>
+<dt><strong>s</strong><span class="classifier">ndarray, shape(m*(d+1),)</span></dt><dd><p>GRBF coefficients.</p>
 </dd>
 <dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
 number of sampling points and d is the number of dimensions.</p>
@@ -349,7 +349,7 @@ number of sampling points and d is the number of dimensions.</p>
 <dd class="field-even"><dl class="simple">
 <dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,)</span></dt><dd><p>Internal parameter. Width of the kernel.</p>
 </dd>
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
+<dt><strong>s</strong><span class="classifier">ndarray, shape(m+d+1,)</span></dt><dd><p>RBF coefficients.</p>
 </dd>
 <dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
 number of sampling points and d is the number of dimensions.</p>
@@ -473,7 +473,7 @@ distance is defined as:</p>
 </dd>
 <dt><strong>nu</strong><span class="classifier">float</span></dt><dd><p>Internal parameter. Order of Bessel function of the kernel.</p>
 </dd>
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>GRBF coefficients.</p>
+<dt><strong>s</strong><span class="classifier">ndarray, shape(m*(d+1),)</span></dt><dd><p>GRBF coefficients.</p>
 </dd>
 <dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
 number of sampling points and d is the number of dimensions.</p>
@@ -565,7 +565,7 @@ number of sampling points and d is the number of dimensions.</p>
 </dd>
 <dt><strong>nu</strong><span class="classifier">float</span></dt><dd><p>Internal parameter. Order of Bessel function of the kernel.</p>
 </dd>
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
+<dt><strong>s</strong><span class="classifier">ndarray, shape(m+d+1,)</span></dt><dd><p>RBF coefficients.</p>
 </dd>
 <dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
 number of sampling points and d is the number of dimensions.</p>
@@ -666,7 +666,7 @@ distance is defined as:</p>
 <dd class="field-even"><dl class="simple">
 <dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,)</span></dt><dd><p>Internal parameter. Width of the kernel.</p>
 </dd>
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>GRBF coefficients.</p>
+<dt><strong>s</strong><span class="classifier">ndarray, shape(m*(d+1),)</span></dt><dd><p>GRBF coefficients.</p>
 </dd>
 <dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
 number of sampling points and d is the number of dimensions.</p>
@@ -752,7 +752,7 @@ number of sampling points and d is the number of dimensions.</p>
 <dd class="field-even"><dl class="simple">
 <dt><strong>l</strong><span class="classifier">float or ndarray, shape (d,)</span></dt><dd><p>Internal parameter. Width of the kernel.</p>
 </dd>
-<dt><strong>s</strong><span class="classifier">ndarray, shape(m,)</span></dt><dd><p>RBF coefficients.</p>
+<dt><strong>s</strong><span class="classifier">ndarray, shape(m+d+1,)</span></dt><dd><p>RBF coefficients.</p>
 </dd>
 <dt><strong>x</strong><span class="classifier">ndarray, shape (m,d,)</span></dt><dd><p>Array of points where function values are known. m is the
 number of sampling points and d is the number of dimensions.</p>
