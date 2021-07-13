@@ -18,7 +18,7 @@ from dask.distributed import Client
 EPS = np.finfo(np.float64).eps
 
 DEFAULT_OPTIONS = {"Nmax":250, "sig0":0.2, "sigm":0.2/2**6, "Ts":3, "Tf":5,
-                   "weights":[0.3,0.5,0.8,0.95], "l":np.sqrt(0.5), "nu":5/2,
+                   "weights":[0.3,0.5,0.8,0.95], "l":1.0, "nu":5/2,
                    "optim_loo":False, "nits_loo":40, "warnings":True}
 
 METHODS = ["RBF-Expo", "RBF-Matern", "RBF-Cubic",
