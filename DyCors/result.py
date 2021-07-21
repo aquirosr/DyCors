@@ -43,10 +43,14 @@ class ResultDyCors(OptimizeResult):
     gres : ndarray, optional
         Array with the values of the gradient of the objective function
         at all points that have been evaluated.
+    restart_its : list, optional
+        List with iterations at which the optimization algorithm has
+        been restarted
     """
     def __init__(self, fun, jac, nfev, njev, nit, status,
                  message, x, success, m=None, hist=None,
-                 dhist=None, xres=None, fres=None, gres=None):
+                 dhist=None, xres=None, fres=None, gres=None,
+                 restart_its=None):
         super().__init__({"fun":fun, "jac":jac, "nfev":nfev,
                           "njev":njev, "nit":nit, "status":status,
                           "message":message, "x":x, "success":success})
@@ -64,6 +68,8 @@ class ResultDyCors(OptimizeResult):
         self["xres"] = xres
         self["fres"] = fres
         self["gres"] = gres
+        
+        self["restart_its"] = restart_its
         
     def __repr__(self):
         if self.scipy_dict.keys():

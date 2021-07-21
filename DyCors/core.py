@@ -347,6 +347,12 @@ class DyCorsMinimize:
         self.weights = self.options["weights"]
         self.optim_loo = self.options["optim_loo"]
         self.nits_loo = self.options["nits_loo"]
+        
+        self.xres = None
+        self.fres = None
+        if self.grad:
+            self.gres = None
+        self.restart_its = []
             
         self.iB = np.argmin(self.f) # find best solution
         self.xB, self.fB = self.x[self.iB,:], np.asarray([self.f[self.iB]])
@@ -443,6 +449,13 @@ class DyCorsMinimize:
 
         if self.parallel:
             client.close()
+            
+        if self.xres is not None:
+            self.xres = np.r_[self.xres, self.x]
+            self.fres = np.r_[self.fres, self.f]
+            if self.grad:
+                self.gres = np.r_[self.gres, self.df]
+            
         
         return ResultDyCors(fun=self.fB[0],
                             jac=self.dfB if self.grad else None,
@@ -452,9 +465,12 @@ class DyCorsMinimize:
                             x=np.asarray(self.xB), success=(warnflag==0),
                             m=self.m, hist=np.asarray(self.fBhist),
                             dhist=(np.asarray(self.dfBhist)
-                                   if self.grad else None),
-                            xres=self.x, fres=self.f,
-                            gres=self.df if self.grad else None)
+                                if self.grad else None),
+                            xres=self.x if self.xres is None else self.xres,
+                            fres=self.f if self.fres is None else self.fres,
+                            gres=(self.df if self.gres is None else self.gres)
+                                if self.grad else None,
+                            restart_its=self.restart_its)
 
     def par_fun(self, fun, xnew):
         """Wrapper around the function to be evaluated. Needed in case
@@ -531,10 +547,15 @@ class DyCorsMinimize:
     def initialize_restart(self):
         """Initialize optimization from a previous optimization.
         """
-        self.x = self.restart["xres"]
-        self.f = self.restart["fres"]
+        if self.restart["restart_its"] is None:
+            restart_it = 0
+        else:
+            restart_it = self.restart["restart_its"][-1]
+        
+        self.x = self.restart["xres"][restart_it:,:]
+        self.f = self.restart["fres"][restart_it:]
         if self.grad:
-            self.df = self.restart["gres"]
+            self.df = self.restart["gres"][restart_it*self.d:]
         
         self.m = self.restart["m"]
         self.ic = self.x.shape[0] - self.m
@@ -776,6 +797,18 @@ class DyCorsMinimize:
     def restart_dycors(self):
         """Restart DyCors keeping only the best point.
         """
+        self.restart_its.append(self.fevals)
+        if self.xres is None:
+            self.xres = self.x.copy()
+            self.fres = self.f.copy()
+            if self.grad:
+                self.gres = self.df.copy()
+        else:
+            self.xres = np.r_[self.xres, self.x]
+            self.fres = np.r_[self.fres, self.f]
+            if self.grad:
+                self.gres = np.r_[self.gres, self.df]
+        
         x = np.outer((self.m-1)*[1],self.bounds[:,0]) \
             + np.outer((self.m-1)*[1], self.bounds[:,1]-self.bounds[:,0]) \
                 * ERLatinHyperCube((self.m-1),self.d)
