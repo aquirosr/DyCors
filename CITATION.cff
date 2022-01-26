@@ -1,0 +1,16 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: DyCors
+message: 'If you use this software, please cite it as below.'
+type: software
+authors:
+  - given-names: Alejandro
+    family-names: Quirós Rodríguez
+    email: >-
+      alejandro.quiros_rodriguez@sorbonne-universite.fr
+    affiliation: Sorbonne University
+license: GPL-3.0
+version: 0.0.1
+doi: 10.5281/zenodo.5907690
