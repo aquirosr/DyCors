@@ -9,6 +9,9 @@ Reference documentation
 DyCors/G-DyCors
 ---------------
 
+.. image:: https://zenodo.org/badge/337030866.svg
+   :target: https://zenodo.org/badge/latestdoi/337030866
+
 DYCORS (DYnamic COordinate search using Response Surfaces),
 G-DYCORS (Gradient-enhanced DYnamic COordinate search using Response Surfaces).
 
