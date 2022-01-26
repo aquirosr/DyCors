@@ -320,7 +320,7 @@ class DyCorsMinimize:
             while (self.fevals < self.Nmax):
                 # update internal parameters
                 if self.optim_loo and (self.ic+self.m)%self.nits_loo==0:
-                    self.update_internal_params()
+                    self.kernel.optimize()
                     
                 # fit response surface model
                 if self.grad:
@@ -526,135 +526,6 @@ class DyCorsMinimize:
         self.f = np.concatenate((self.f, self.fnew))
         if self.grad:
             self.df = np.concatenate((self.df, self.dfnew))
-
-    def update_internal_params(self):
-        """Optimize internal parameters based on the Leave-One-Out
-        error using a differential evolution algorithm [1]_, [2]_. A
-        constraint is applied to the condition number of the kernel
-        matrix to ensure the smoothness of the function.
-        
-        Notes
-        -----
-        We are not using the gradient information at the moment to
-        compute the LOO-Error.
-        
-        References
-        ----------
-        .. [1] Rippa, S. 1999. An algorithm for selecting a good value
-            for the parameter c in radial basis function interpolation.
-            Advances in Computational Mathematics 11 (2). 193-210.
-        .. [2] Bompard, M, J Peter and J A Desideri. 2010. Surrogate
-            models based on function and derivative values for aerodynamic
-            global optimization. V European Conference on Computational
-            Fluid Dynamics ECCOMAS CFD 2010, ECCOMAS. Lisbon, Portugal.
-        """
-        def constr_f(ip):
-            if self.method.endswith("Expo"):
-                l = ip
-                
-                kernel = RBF_Exponential(l)
-                Phi,_ = kernel.fit(self.x, self.f)
-                
-                return nla.cond(Phi)
-                
-            elif self.method.endswith("Matern"):
-                l  = ip[:-1]
-                nu = ip[-1]
-                
-                kernel = RBF_Matern(l, nu)
-                Phi,_ = kernel.fit(self.x, self.f)
-                
-                return nla.cond(Phi)
-            elif self.method.endswith("Cubic"):
-                l  = ip
-                
-                kernel = RBF_Cubic(l)
-                Phi,_ = kernel.fit(self.x, self.f)
-                
-                return nla.cond(Phi)
-            
-        def error(ip):
-            if self.method.endswith("Expo"):
-                l = ip
-                n = self.x.shape[0]
-                
-                kernel = RBF_Exponential(l)
-                Phi,_ = kernel.fit(self.x, self.f)
-                
-                H_inv = sla.inv(Phi)
-                H_inv2 = H_inv@H_inv
-
-                return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)),
-                                ord=1)
-
-            elif self.method.endswith("Matern"):
-                l  = ip[:-1]
-                nu = ip[-1]
-                n = self.x.shape[0]
-                
-                kernel = RBF_Matern(l, nu)
-                Phi,_ = kernel.fit(self.x, self.f)
-                
-                H_inv = sla.inv(Phi)
-                H_inv2 = H_inv@H_inv
-
-                return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)),
-                                ord=1)
-            elif self.method.endswith("Cubic"):
-                l  = ip
-                n = self.x.shape[0]
-                
-                kernel = RBF_Cubic(l)
-                Phi,_ = kernel.fit(self.x, self.f)
-                
-                H_inv = sla.inv(Phi)
-                H_inv2 = H_inv@H_inv
-
-                return nla.norm(self.f.T@H_inv2@self.f/(n*np.diag(H_inv2)),
-                                ord=1)
-
-        from scipy.optimize import NonlinearConstraint
-        nlc = NonlinearConstraint(constr_f, 0, 0.1/EPS)
-        if self.verbose:
-            print("Updating internal params...")
-        if self.method.endswith("Expo") or self.method.endswith("Cubic"):
-            error0 = error(self.l)
-            try:
-                sol = differential_evolution(func=error,
-                                             bounds=(((1e-5,1e1),)*self.d),
-                                             constraints=(nlc),
-                                             strategy="rand2bin", maxiter=100)
-                if sol["fun"]<error0:
-                    if self.verbose:
-                        print("Updated")
-                    self.l = sol["x"]
-                    self.kernel.update(self.l)
-                else:
-                    if self.verbose:
-                        print("Not updated")
-            except np.linalg.LinAlgError:
-                if self.verbose:
-                    print("Not updated")
-        elif self.method.endswith("Matern"):
-            error0 = error(np.concatenate((self.l,[self.nu])))
-            try:
-                sol = differential_evolution(func=error, 
-                                             bounds=(((1e-5,1e1),) * self.d 
-                                                     + ((0.5,5e1),)),
-                                             constraints=(nlc), 
-                                             strategy="rand2bin", maxiter=100)
-                if sol["fun"]<error0:
-                    if self.verbose:
-                        print("Updated")
-                    self.l = sol["x"][:-1]
-                    self.nu = sol["x"][-1]
-                    self.kernel.update(self.l, self.nu)
-                else:
-                    if self.verbose:
-                        print("Not updated")
-            except np.linalg.LinAlgError:
-                if self.verbose:
-                    print("Not updated")
                 
     def restart_dycors(self):
         """Restart DyCors keeping only the best point.

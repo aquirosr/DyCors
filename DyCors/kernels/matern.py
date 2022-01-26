@@ -1,5 +1,7 @@
 import numpy as np
+import numpy.linalg as nla
 import scipy.linalg as la
+from scipy.optimize import differential_evolution, NonlinearConstraint
 from scipy.special import factorial
 
 EPS = np.finfo(np.float64).eps
@@ -25,6 +27,8 @@ class RBF_Matern():
     x : ndarray, shape (m,d,)
         Array of points where function values are known. m is the
         number of sampling points and d is the number of dimensions.
+    f : ndarray, shape (m,)
+        Array of function values at ``x``.
     """
     
     def __init__(self, l=1.0, nu=5/2):
@@ -32,6 +36,7 @@ class RBF_Matern():
         self.nu = nu
         self.s = None
         self.x = None
+        self.f = None
     
     def fit(self, x, f):
         """Build surrogate model.
@@ -52,6 +57,7 @@ class RBF_Matern():
             RBF matrix with linear polynomial terms.
         """
         self.x = x
+        self.f = f
         m,d = x.shape
         
         l = np.ones(d)*self.l
@@ -79,7 +85,7 @@ class RBF_Matern():
 
         # right-hand side
         F     = np.zeros(m+d+1)
-        F[:m] = f
+        F[:m] = self.f
         
         # solution
         self.s = la.solve(A, F)
@@ -130,6 +136,71 @@ class RBF_Matern():
         
         return f
     
+    def constr(self, ip):
+        """Constraint on the condition number of the kernel matrix.
+        """
+        l0 = self.l.copy()
+        nu0 = self.nu
+        
+        self.l  = ip[:-1]
+        self.nu = ip[-1]
+        Phi,_ = self.fit(self.x, self.f)
+        
+        self.l = l0
+        self.nu = nu0
+        
+        return nla.cond(Phi)
+    
+    def eloo(self, ip):
+        """Compute leave-one-one error.
+        """
+        l0 = self.l.copy()
+        nu0 = self.nu
+        
+        n = self.x.shape[0]
+        
+        self.l  = ip[:-1]
+        self.nu = ip[-1]
+        Phi,_ = self.fit(self.x, self.f)
+        
+        self.l = l0
+        self.nu = nu0
+        
+        iH = la.inv(Phi)
+        iH2 = iH@iH
+
+        return nla.norm(self.f.T@iH2@self.f/(n*np.diag(iH2)),
+                        ord=1)
+    
+    def optimize(self):
+        """Optimize internal parameters based on the Leave-One-Out
+        error using a differential evolution algorithm [1]_, [2]_. A
+        constraint is applied to the condition number of the kernel
+        matrix to ensure the smoothness of the function.
+        
+        References
+        ----------
+        .. [1] Rippa, S. 1999. An algorithm for selecting a good value
+            for the parameter c in radial basis function interpolation.
+            Advances in Computational Mathematics 11 (2). 193-210.
+        .. [2] Bompard, M, J Peter and J A Desideri. 2010. Surrogate
+            models based on function and derivative values for aerodynamic
+            global optimization. V European Conference on Computational
+            Fluid Dynamics ECCOMAS CFD 2010, ECCOMAS. Lisbon, Portugal.
+        """
+        nlc = NonlinearConstraint(self.constr, 0, 0.1/EPS)
+        
+        error0 = self.eloo(self.l)
+        try:
+            sol = differential_evolution(func=self.eloo,
+                                         bounds=(((1e-5,1e1),)*self.x.shape[1]),
+                                         constraints=(nlc),
+                                         strategy="rand2bin", maxiter=100)
+            if sol["fun"]<error0:
+                self.update(l=sol["x"])
+        except np.linalg.LinAlgError:
+            pass
+    
     def update(self, l=1.0, nu=5/2):
         """Update internal parameters of the kernel.
         
@@ -164,6 +235,10 @@ class GRBF_Matern():
     x : ndarray, shape (m,d,)
         Array of points where function values are known. m is the
         number of sampling points and d is the number of dimensions.
+    f : ndarray, shape (m,)
+        Array of function values at ``x``.
+    df : ndarray, shape (m*d,)
+        Array of function gradient values at ``x``.
     """
     
     def __init__(self, l=1.0, nu=5/2):
@@ -171,6 +246,8 @@ class GRBF_Matern():
         self.nu = nu
         self.s = None
         self.x = None
+        self.f = None
+        self.df = None
     
     def fit(self, x, f, df):
         """Build surrogate model.
@@ -193,6 +270,8 @@ class GRBF_Matern():
             GRBF matrix with gradient terms.
         """
         self.x = x
+        self.f = f
+        self.df = df
         m,d = self.x.shape
         
         l = np.ones(d)*self.l
@@ -269,10 +348,10 @@ class GRBF_Matern():
         F = np.zeros(m*(d+1))
 
         # function value
-        F[:m] = f
+        F[:m] = self.f
 
         # derivative function value
-        F[m:m*(d+1)] = df 
+        F[m:m*(d+1)] = self.df 
 
         # solution
         self.s = la.solve(A, F)
@@ -336,6 +415,15 @@ class GRBF_Matern():
         f = np.dot(A, self.s)
         
         return f
+    
+    def optimize(self):
+        """Optimize internal parameters as the inverse of the average
+        gradient.
+        """
+        m,d = self.x.shape
+        tmp_grad = self.df.reshape(m, d)
+        tmp_ip = np.mean(tmp_grad, axis=0)
+        self.l = 1/tmp_ip
     
     def update(self, l=1.0, nu=5/2):
         """Update internal parameters of the kernel.
