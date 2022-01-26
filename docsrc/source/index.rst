@@ -6,17 +6,19 @@
 Reference documentation
 =======================
 
-DyCors
-------
+DyCors/G-DyCors
+---------------
 
-DYCORS (DYnamic COordinate search using Response Surfaces).
+DYCORS (DYnamic COordinate search using Response Surfaces),
+G-DYCORS (Gradient-enhanced DYnamic COordinate search using Response Surfaces).
 
 Version implemented here is DYCORS-LMSRBF (Local Metric Stochastic
 Radial Basis Functions) [1]_. 
 
 Both RBF (Radial Basis Functions) and GRBF (Gradient-enhanced Radial
 Basis Functions) can be used. Three different kernels have been
-implemented: exponential kernel, Matérn kernel and cubic kernel.
+implemented: exponential kernel, Matérn kernel and cubic kernel. The internal
+parameters of the kernel can be optimized.
 
 Source code available in `DyCors code
 <https://github.com/aquirosr/DyCors>`_.
