@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from DyCors import minimize, SLatinHyperCube, RLatinHyperCube
+from DyCors import minimize, ERLatinHyperCube
 
 def Rastrigin(x):
     f = 10*len(x) + sum(x*x - 10*np.cos(2*np.pi*x))
@@ -16,13 +16,7 @@ m,d       = 12,2
 bounds    = np.array([[-2,2],]*d)
 
 x0 = np.outer(m*[1],bounds[:,0]) + np.outer(m*[1],bounds[:,1]-bounds[:,0])\
-          *np.random.rand(m,d)
-
-# x0 = np.outer(m*[1],bounds[:,0]) + np.outer(m*[1],bounds[:,1]-bounds[:,0])\
-#           *SLatinHyperCube(m,d)
-
-# x0 = np.outer(m*[1],bounds[:,0]) + np.outer(m*[1],bounds[:,1]-bounds[:,0])\
-#           *RLatinHyperCube(m,d)
+          *ERLatinHyperCube(m,d)
 
 Nmax     = 250
 sig0     = np.array([0.2]*d)
