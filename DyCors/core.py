@@ -18,7 +18,7 @@ from dask.distributed import Client
 EPS = np.finfo(np.float64).eps
 
 DEFAULT_OPTIONS = {"Nmax":250, "sig0":0.2, "sigm":0.2/2**6, "Ts":3, "Tf":5,
-                   "weights":[0.3,0.5,0.8,0.95], "l":1.0, "nu":5/2,
+                   "weights":[0.3,0.5,0.8,0.95], "l":None, "nu":5/2,
                    "optim_loo":False, "nits_loo":40, "warnings":True}
 
 METHODS = ["RBF-Expo", "RBF-Matern", "RBF-Cubic",
@@ -287,30 +287,21 @@ class DyCorsMinimize:
         if self.bounds is not None:
             self.bL, self.bU = self.bounds[:,0], self.bounds[:,1]
             self.sigm = self.options["sigm"]*(self.bU - self.bL)
-            self.sig = self.options["sig0"]*(self.bU - self.bL)
-            if np.all(self.options["l"]==DEFAULT_OPTIONS["l"]):
-                self.l = self.options["l"]*(self.bU - self.bL)
-            else:
-                self.l = self.options["l"]*np.ones((self.d,))    
+            self.sig = self.options["sig0"]*(self.bU - self.bL)  
         else:
             self.sigm = self.options["sigm"]*np.ones((self.d,))
             self.sig  = self.options["sig0"]*np.ones((self.d,))
-            self.l = self.options["l"]*np.ones((self.d,))
         
-        self.nu = self.options["nu"]
+        if self.options["l"] is None and self.restart is None:
+            self.l = sla.norm(self.x0, axis=0)
+        elif self.options["l"] is None and self.restart is not None:
+            pass
+        elif isinstance(self.options["l"], float):
+            self.l = self.options["l"]*np.ones((self.d,))
+        else:
+            self.l = self.options["l"]*np.ones((self.d,))
 
-        if self.method=="RBF-Expo":
-            self.kernel = RBF_Exponential(self.l)
-        elif self.method=="RBF-Matern":
-            self.kernel = RBF_Matern(self.l, self.nu)
-        elif self.method=="RBF-Cubic":
-            self.kernel = RBF_Cubic(self.l)
-        elif self.method=="GRBF-Expo":
-            self.kernel = GRBF_Exponential(self.l)
-        elif self.method=="GRBF-Matern":
-            self.kernel = GRBF_Matern(self.l, self.nu)
-        elif self.method=="GRBF-Cubic":
-            self.kernel = GRBF_Cubic(self.l)
+        self.nu = self.options["nu"]
 
         if self.method.startswith("G"):
             self.grad = True
@@ -339,6 +330,19 @@ class DyCorsMinimize:
             self.initialize()
         else:
             self.initialize_restart()
+            
+        if self.method=="RBF-Expo":
+            self.kernel = RBF_Exponential(self.l)
+        elif self.method=="RBF-Matern":
+            self.kernel = RBF_Matern(self.l, self.nu)
+        elif self.method=="RBF-Cubic":
+            self.kernel = RBF_Cubic(self.l)
+        elif self.method=="GRBF-Expo":
+            self.kernel = GRBF_Exponential(self.l)
+        elif self.method=="GRBF-Matern":
+            self.kernel = GRBF_Matern(self.l, self.nu)
+        elif self.method=="GRBF-Cubic":
+            self.kernel = GRBF_Cubic(self.l)
             
         self.n0, self.Np = self.m, self.Nmax - self.m
         
@@ -561,6 +565,9 @@ class DyCorsMinimize:
         self.ic = self.x.shape[0] - self.m
         self.Cs, self.Cf = 0, 0
         self.fevals += self.x.shape[0]
+        
+        if self.options["l"] is None:
+            self.l = sla.norm(self.x, axis=0)
     
     def trial_points(self):
         """Generate trial points.
