@@ -291,17 +291,6 @@ class DyCorsMinimize:
         else:
             self.sigm = self.options["sigm"]*np.ones((self.d,))
             self.sig  = self.options["sig0"]*np.ones((self.d,))
-        
-        if self.options["l"] is None and self.restart is None:
-            self.l = sla.norm(self.x0, axis=0)
-        elif self.options["l"] is None and self.restart is not None:
-            pass
-        elif isinstance(self.options["l"], float):
-            self.l = self.options["l"]*np.ones((self.d,))
-        else:
-            self.l = self.options["l"]*np.ones((self.d,))
-
-        self.nu = self.options["nu"]
 
         if self.method.startswith("G"):
             self.grad = True
@@ -330,6 +319,20 @@ class DyCorsMinimize:
             self.initialize()
         else:
             self.initialize_restart()
+            
+        if self.options["l"] is None:
+            if not self.grad:
+                self.l = sla.norm(self.x, axis=0)
+            else:
+                tmp_grad = self.df.reshape(self.m, self.d)
+                tmp_ip = np.mean(tmp_grad, axis=0)
+                self.l = 1/tmp_ip
+        elif isinstance(self.options["l"], float):
+            self.l = self.options["l"]*np.ones((self.d,))
+        else:
+            self.l = self.options["l"]*np.ones((self.d,))
+
+        self.nu = self.options["nu"]
             
         if self.method=="RBF-Expo":
             self.kernel = RBF_Exponential(self.l)
@@ -565,9 +568,6 @@ class DyCorsMinimize:
         self.ic = self.x.shape[0] - self.m
         self.Cs, self.Cf = 0, 0
         self.fevals += self.x.shape[0]
-        
-        if self.options["l"] is None:
-            self.l = sla.norm(self.x, axis=0)
     
     def trial_points(self):
         """Generate trial points.
