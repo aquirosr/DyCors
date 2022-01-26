@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Sampling techniques &mdash; DyCors  documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,11 +32,11 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -86,7 +89,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="minimize.html">DyCors Algorithm</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="tools.html">Tools</a><ul class="current">
@@ -164,11 +167,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="sampling-techniques">
+  <section id="sampling-techniques">
 <h1>Sampling techniques<a class="headerlink" href="#sampling-techniques" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
-<dt id="DyCors.sampling.LatinHyperCube">
-<code class="sig-prename descclassname">DyCors.sampling.</code><code class="sig-name descname">LatinHyperCube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/LatinHypercube.html#LatinHyperCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.sampling.LatinHyperCube" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.sampling.LatinHyperCube">
+<span class="sig-prename descclassname"><span class="pre">DyCors.sampling.</span></span><span class="sig-name descname"><span class="pre">LatinHyperCube</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/LatinHypercube.html#LatinHyperCube"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.sampling.LatinHyperCube" title="Permalink to this definition">¶</a></dt>
 <dd><p>Non-symmetric Latin Hypercube <a class="reference internal" href="#r2b492a3047e8-1" id="id1">[1]</a>.</p>
 <p>Data is sampled at the center of the bins.</p>
 <dl class="field-list simple">
@@ -198,8 +201,8 @@ Systems. Reliability Engineering &amp; System Safety 81 (1): 23-69.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="DyCors.sampling.SLatinHyperCube">
-<code class="sig-prename descclassname">DyCors.sampling.</code><code class="sig-name descname">SLatinHyperCube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/SymLatinHypercube.html#SLatinHyperCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.sampling.SLatinHyperCube" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.sampling.SLatinHyperCube">
+<span class="sig-prename descclassname"><span class="pre">DyCors.sampling.</span></span><span class="sig-name descname"><span class="pre">SLatinHyperCube</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/SymLatinHypercube.html#SLatinHyperCube"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.sampling.SLatinHyperCube" title="Permalink to this definition">¶</a></dt>
 <dd><p>Symmetric Latin Hypercube <a class="reference internal" href="#rbf017300ac27-1" id="id3">[1]</a>.</p>
 <p>Data is sampled at the center of the bins.</p>
 <dl class="field-list simple">
@@ -229,8 +232,8 @@ Systems. Reliability Engineering &amp; System Safety 81 (1): 23-69.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="DyCors.sampling.RLatinHyperCube">
-<code class="sig-prename descclassname">DyCors.sampling.</code><code class="sig-name descname">RLatinHyperCube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/RandLatinHypercube.html#RLatinHyperCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.sampling.RLatinHyperCube" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.sampling.RLatinHyperCube">
+<span class="sig-prename descclassname"><span class="pre">DyCors.sampling.</span></span><span class="sig-name descname"><span class="pre">RLatinHyperCube</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/RandLatinHypercube.html#RLatinHyperCube"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.sampling.RLatinHyperCube" title="Permalink to this definition">¶</a></dt>
 <dd><p>Non-symmetric random Latin Hypercube <a class="reference internal" href="#rae13820fd0bc-1" id="id5">[1]</a>.</p>
 <p>Data is randomly sampled using a uniform distribution inside each
 bin.</p>
@@ -261,8 +264,8 @@ Systems. Reliability Engineering &amp; System Safety 81 (1): 23-69.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="DyCors.sampling.RSLatinHyperCube">
-<code class="sig-prename descclassname">DyCors.sampling.</code><code class="sig-name descname">RSLatinHyperCube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/RandSymLatinHypercube.html#RSLatinHyperCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.sampling.RSLatinHyperCube" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.sampling.RSLatinHyperCube">
+<span class="sig-prename descclassname"><span class="pre">DyCors.sampling.</span></span><span class="sig-name descname"><span class="pre">RSLatinHyperCube</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/RandSymLatinHypercube.html#RSLatinHyperCube"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.sampling.RSLatinHyperCube" title="Permalink to this definition">¶</a></dt>
 <dd><p>Symmetric random Latin Hypercube <a class="reference internal" href="#r4ead1d246c7d-1" id="id7">[1]</a>.</p>
 <p>Data is randomly sampled using a uniform distribution inside each
 bin.</p>
@@ -293,8 +296,8 @@ Systems. Reliability Engineering &amp; System Safety 81 (1): 23-69.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="DyCors.sampling.ERLatinHyperCube">
-<code class="sig-prename descclassname">DyCors.sampling.</code><code class="sig-name descname">ERLatinHyperCube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/EnhRandLatinHypercube.html#ERLatinHyperCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.sampling.ERLatinHyperCube" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.sampling.ERLatinHyperCube">
+<span class="sig-prename descclassname"><span class="pre">DyCors.sampling.</span></span><span class="sig-name descname"><span class="pre">ERLatinHyperCube</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/EnhRandLatinHypercube.html#ERLatinHyperCube"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.sampling.ERLatinHyperCube" title="Permalink to this definition">¶</a></dt>
 <dd><p>Non-symmetric enhanced random Latin Hypercube <a class="reference internal" href="#re08178ee8ef6-1" id="id9">[1]</a>.</p>
 <p>Data is randomly sampled using a uniform distribution inside each
 bin.</p>
@@ -326,8 +329,8 @@ Colorado.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="DyCors.sampling.ERSLatinHyperCube">
-<code class="sig-prename descclassname">DyCors.sampling.</code><code class="sig-name descname">ERSLatinHyperCube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/EnhRandSymLatinHypercube.html#ERSLatinHyperCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.sampling.ERSLatinHyperCube" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.sampling.ERSLatinHyperCube">
+<span class="sig-prename descclassname"><span class="pre">DyCors.sampling.</span></span><span class="sig-name descname"><span class="pre">ERSLatinHyperCube</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/sampling/EnhRandSymLatinHypercube.html#ERSLatinHyperCube"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.sampling.ERSLatinHyperCube" title="Permalink to this definition">¶</a></dt>
 <dd><p>Non-symmetric enhanced random symmetric Latin Hypercube <a class="reference internal" href="#r10d6b670e10b-1" id="id11">[1]</a>.</p>
 <p>Data is randomly sampled using a uniform distribution inside each
 bin.</p>
@@ -358,7 +361,7 @@ Colorado.</p>
 </dl>
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>

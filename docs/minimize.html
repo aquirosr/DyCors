@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>DyCors Algorithm &mdash; DyCors  documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,11 +32,11 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -86,7 +89,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">DyCors Algorithm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
@@ -157,108 +160,59 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-DyCors.core">
+  <section id="module-DyCors.core">
 <span id="dycors-algorithm"></span><h1>DyCors Algorithm<a class="headerlink" href="#module-DyCors.core" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="DyCors.core.DyCorsMinimize">
-<em class="property">class </em><code class="sig-prename descclassname">DyCors.core.</code><code class="sig-name descname">DyCorsMinimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">x0</span></em>, <em class="sig-param"><span class="n">args</span></em>, <em class="sig-param"><span class="n">method</span></em>, <em class="sig-param"><span class="n">jac</span></em>, <em class="sig-param"><span class="n">bounds</span></em>, <em class="sig-param"><span class="n">options</span></em>, <em class="sig-param"><span class="n">restart</span></em>, <em class="sig-param"><span class="n">parallel</span></em>, <em class="sig-param"><span class="n">par_options</span></em>, <em class="sig-param"><span class="n">verbose</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.core.DyCorsMinimize">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">DyCors.core.</span></span><span class="sig-name descname"><span class="pre">DyCorsMinimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restart</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implementation of DyCors algorithm.</p>
 <p>For a full description of the different options see <a class="reference internal" href="#DyCors.core.minimize" title="DyCors.core.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p>
 <dl class="py method">
-<dt id="DyCors.core.DyCorsMinimize.initialize">
-<code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.initialize" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.core.DyCorsMinimize.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute function and gradient evaluations of initial
 sampling points.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="DyCors.core.DyCorsMinimize.initialize_restart">
-<code class="sig-name descname">initialize_restart</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.initialize_restart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.initialize_restart" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.core.DyCorsMinimize.initialize_restart">
+<span class="sig-name descname"><span class="pre">initialize_restart</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.initialize_restart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.initialize_restart" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize optimization from a previous optimization.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="DyCors.core.DyCorsMinimize.par_fun">
-<code class="sig-name descname">par_fun</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">xnew</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.par_fun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.par_fun" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper around the function to be evaluated. Needed in case
-of parallel function evaluations.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>fun</strong><span class="classifier">callable</span></dt><dd><p>Function to be evaluated.</p>
-</dd>
-<dt><strong>xnew</strong><span class="classifier">float</span></dt><dd><p>Point where the function is to be evaluated.</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>f</strong><span class="classifier">float</span></dt><dd><p>Value of the function <cite>fun</cite> at <cite>xnew</cite>.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="DyCors.core.DyCorsMinimize.restart_dycors">
-<code class="sig-name descname">restart_dycors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.restart_dycors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.restart_dycors" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.core.DyCorsMinimize.restart_dycors">
+<span class="sig-name descname"><span class="pre">restart_dycors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.restart_dycors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.restart_dycors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restart DyCors keeping only the best point.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="DyCors.core.DyCorsMinimize.select_new_pts">
-<code class="sig-name descname">select_new_pts</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.select_new_pts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.select_new_pts" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.core.DyCorsMinimize.select_new_pts">
+<span class="sig-name descname"><span class="pre">select_new_pts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.select_new_pts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.select_new_pts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate trial points using the surrogate model, compute
 scores and select the new points where we want to run the
 expensive function evaluation.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="DyCors.core.DyCorsMinimize.trial_points">
-<code class="sig-name descname">trial_points</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.trial_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.trial_points" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.core.DyCorsMinimize.trial_points">
+<span class="sig-name descname"><span class="pre">trial_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.trial_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.trial_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate trial points.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="DyCors.core.DyCorsMinimize.update">
-<code class="sig-name descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.core.DyCorsMinimize.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update information after every iteration.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="DyCors.core.DyCorsMinimize.update_internal_params">
-<code class="sig-name descname">update_internal_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#DyCorsMinimize.update_internal_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.DyCorsMinimize.update_internal_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Optimize internal parameters based on the Leave-One-Out
-error using a differential evolution algorithm <a class="reference internal" href="#r99c3ba7c1b96-1" id="id1">[1]</a>, <a class="reference internal" href="#r99c3ba7c1b96-2" id="id2">[2]</a>. A
-constraint is applied to the condition number of the kernel
-matrix to ensure the smoothness of the function.</p>
-<p class="rubric">Notes</p>
-<p>We are not using the gradient information at the moment to
-compute the LOO-Error.</p>
-<p class="rubric">References</p>
-<dl class="citation">
-<dt class="label" id="r99c3ba7c1b96-1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
-<dd><p>Rippa, S. 1999. An algorithm for selecting a good value
-for the parameter c in radial basis function interpolation.
-Advances in Computational Mathematics 11 (2). 193-210.</p>
-</dd>
-<dt class="label" id="r99c3ba7c1b96-2"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
-<dd><p>Bompard, M, J Peter and J A Desideri. 2010. Surrogate
-models based on function and derivative values for aerodynamic
-global optimization. V European Conference on Computational
-Fluid Dynamics ECCOMAS CFD 2010, ECCOMAS. Lisbon, Portugal.</p>
-</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
-<dt id="DyCors.core.minimize">
-<code class="sig-prename descclassname">DyCors.core.</code><code class="sig-name descname">minimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">x0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">()</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'RBF-Cubic'</span></em>, <em class="sig-param"><span class="n">jac</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bounds</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">options</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">restart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">par_options</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#minimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.core.minimize" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.core.minimize">
+<span class="sig-prename descclassname"><span class="pre">DyCors.core.</span></span><span class="sig-name descname"><span class="pre">minimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RBF-Cubic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/core.html#minimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.core.minimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Minimization of scalar function of one or more variables using
-DyCors algorithm <a class="reference internal" href="#r3046228dd70a-1" id="id5">[1]</a>.</p>
+DyCors algorithm <a class="reference internal" href="#r3046228dd70a-1" id="id1">[1]</a>.</p>
 <p>This function is a wrapper around the class
 <a class="reference internal" href="#DyCors.core.DyCorsMinimize" title="DyCors.core.DyCorsMinimize"><code class="xref py py-class docutils literal notranslate"><span class="pre">DyCorsMinimize</span></code></a>.</p>
 <p>The only mandatory parameters are <code class="docutils literal notranslate"><span class="pre">fun</span></code> and either <code class="docutils literal notranslate"><span class="pre">x0</span></code> or
@@ -345,31 +299,6 @@ iterations.</p>
 </dd>
 <dt><strong>restart</strong><span class="classifier">ResultDyCors, optional</span></dt><dd><p>Restart optimization from a previous optimization.</p>
 </dd>
-<dt><strong>parallel</strong><span class="classifier">boolean, optional</span></dt><dd><p>Whether or not to use parallel function evaluations. The
-default is to run in serial.</p>
-</dd>
-<dt><strong>par_options</strong><span class="classifier">dict, optional</span></dt><dd><p>A dictionary of options to set the task manager:</p>
-<blockquote>
-<div><dl class="simple">
-<dt>SLURM<span class="classifier">boolean</span></dt><dd><p>Whether or not the computations are carried out by
-SLURM. To use with supercomputers.</p>
-</dd>
-<dt>cores_per_feval<span class="classifier">int</span></dt><dd><p>Number of cores to use in each function evaluation.</p>
-</dd>
-<dt>par_fevals<span class="classifier">int</span></dt><dd><p>Number of function evaluations to run in parallel.</p>
-</dd>
-<dt>memory<span class="classifier">str</span></dt><dd><p>Requested memory for each function evaluation. To use
-only if SLURM is set to True.</p>
-</dd>
-<dt>walltime<span class="classifier">str</span></dt><dd><p>Requested wall time for each function evaluation. To
-use only if SLURM is set to True.</p>
-</dd>
-<dt>queue<span class="classifier">str</span></dt><dd><p>Name of the partition. To use only if SLURM is set to
-True.</p>
-</dd>
-</dl>
-</div></blockquote>
-</dd>
 <dt><strong>verbose</strong><span class="classifier">boolean, optional</span></dt><dd><p>Whether or not to print information of the solver iterations.</p>
 </dd>
 </dl>
@@ -386,11 +315,9 @@ for a description of other attributes.</p>
 </dl>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>The parallel function evaluations feature needs further testing.</p>
 <p class="rubric">References</p>
 <dl class="citation">
-<dt class="label" id="r3046228dd70a-1"><span class="brackets"><a class="fn-backref" href="#id5">1</a></span></dt>
+<dt class="label" id="r3046228dd70a-1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
 <dd><p>Regis, R G and C A Shoemaker. 2013. Combining radial basis
 function surrogates and dynamic coordinate search in
 high-dimensional expensive black-box optimization. Engineering
@@ -430,7 +357,7 @@ the boundaries of the domain as follows:</p>
 </div>
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>

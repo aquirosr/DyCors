@@ -108,7 +108,7 @@ is defined as follows:
     \dfrac{p!}{(2p)!} \sum_{i=0}^{p} \dfrac{(p+i)!}{i!(p-i)!}
     \left( 2 \sqrt{2p+1} \dfrac{r}{l} \right)^{p-i},
 
-where :math:`p=\left \lfloor{\nu - 1/2}\right \rfloor , l>0, nu>=1/2`
+where :math:`p=\left \lfloor{\nu - 1/2}\right \rfloor , l>0, \nu>=1/2`
 and :math:`r=\|y-x\|`, where :math:`\|\cdot\|` is the Euclidean norm.
 
 The first derivative of the Matérn Kernel with respect to the
@@ -148,21 +148,21 @@ Cubic Kernel
 The Cubic Kernel is defined as follows:
 
 .. math:: 
-    \Phi(r) = r^3
+    \Phi(r) = r^3/l^3
 
-where :math:`r=\|y-x\|`, where :math:`\|\cdot\|` is the
+where :math:`l>0`, :math:`r=\|y-x\|`, where :math:`\|\cdot\|` is the
 Euclidean norm.
 
 The first derivative of the Cubic Kernel with respect to the
 distance is defined as:
 
 .. math::
-    \Phi_{,r}(r) = 3 r^2
+    \Phi_{,r}(r) = 3 r^2/l^3
 
 The second derivative is defined as:
 
 .. math::
-    \Phi_{,rr}(r) = 6 r
+    \Phi_{,rr}(r) = 6 r/l^3
 
 .. automodule:: DyCors.kernels.cubic
     :members:

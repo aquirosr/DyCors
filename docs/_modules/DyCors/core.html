@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,11 +31,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -84,7 +85,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../minimize.html">DyCors Algorithm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tools.html">Tools</a></li>
@@ -159,7 +160,6 @@
 <span class="kn">import</span> <span class="nn">numpy.linalg</span> <span class="k">as</span> <span class="nn">nla</span>
 <span class="kn">import</span> <span class="nn">scipy.linalg</span> <span class="k">as</span> <span class="nn">sla</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">differential_evolution</span><span class="p">,</span> <span class="n">NonlinearConstraint</span>
-<span class="kn">import</span> <span class="nn">multiprocessing</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 
 <span class="kn">from</span> <span class="nn">.kernels</span> <span class="kn">import</span> <span class="n">RBF_Exponential</span><span class="p">,</span> <span class="n">GRBF_Exponential</span>
@@ -168,26 +168,17 @@
 <span class="kn">from</span> <span class="nn">.result</span> <span class="kn">import</span> <span class="n">ResultDyCors</span>
 <span class="kn">from</span> <span class="nn">.sampling</span> <span class="kn">import</span> <span class="n">ERLatinHyperCube</span>
 
-<span class="kn">from</span> <span class="nn">dask_jobqueue</span> <span class="kn">import</span> <span class="n">SLURMCluster</span>
-<span class="kn">from</span> <span class="nn">dask.distributed</span> <span class="kn">import</span> <span class="n">Client</span>
-
 <span class="n">EPS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
 
 <span class="n">DEFAULT_OPTIONS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Nmax&quot;</span><span class="p">:</span><span class="mi">250</span><span class="p">,</span> <span class="s2">&quot;sig0&quot;</span><span class="p">:</span><span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;sigm&quot;</span><span class="p">:</span><span class="mf">0.2</span><span class="o">/</span><span class="mi">2</span><span class="o">**</span><span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;Ts&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Tf&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span>
-                   <span class="s2">&quot;weights&quot;</span><span class="p">:[</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.95</span><span class="p">],</span> <span class="s2">&quot;l&quot;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;nu&quot;</span><span class="p">:</span><span class="mi">5</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                   <span class="s2">&quot;weights&quot;</span><span class="p">:[</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.95</span><span class="p">],</span> <span class="s2">&quot;l&quot;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;nu&quot;</span><span class="p">:</span><span class="mi">5</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
                    <span class="s2">&quot;optim_loo&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;nits_loo&quot;</span><span class="p">:</span><span class="mi">40</span><span class="p">,</span> <span class="s2">&quot;warnings&quot;</span><span class="p">:</span><span class="kc">True</span><span class="p">}</span>
 
 <span class="n">METHODS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;RBF-Expo&quot;</span><span class="p">,</span> <span class="s2">&quot;RBF-Matern&quot;</span><span class="p">,</span> <span class="s2">&quot;RBF-Cubic&quot;</span><span class="p">,</span>
            <span class="s2">&quot;GRBF-Expo&quot;</span><span class="p">,</span> <span class="s2">&quot;GRBF-Matern&quot;</span><span class="p">,</span> <span class="s2">&quot;GRBF-Cubic&quot;</span><span class="p">]</span>
 
-<span class="n">NCORES</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
-<span class="n">PAR_DEFAULT_OPTIONS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;SLURM&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;cores_per_feval&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
-                       <span class="s2">&quot;par_fevals&quot;</span><span class="p">:</span><span class="n">NCORES</span><span class="p">,</span> <span class="s2">&quot;memory&quot;</span><span class="p">:</span><span class="s2">&quot;1GB&quot;</span><span class="p">,</span>
-                       <span class="s2">&quot;walltime&quot;</span><span class="p">:</span><span class="s2">&quot;00:10:00&quot;</span><span class="p">,</span> <span class="s2">&quot;queue&quot;</span><span class="p">:</span><span class="s2">&quot;regular&quot;</span><span class="p">}</span>
-
 <div class="viewcode-block" id="minimize"><a class="viewcode-back" href="../../minimize.html#DyCors.core.minimize">[docs]</a><span class="k">def</span> <span class="nf">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;RBF-Cubic&quot;</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-             <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">par_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+             <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Minimization of scalar function of one or more variables using</span>
 <span class="sd">    DyCors algorithm [1]_.</span>
 <span class="sd">    </span>
@@ -274,29 +265,6 @@
 <span class="sd">        </span>
 <span class="sd">    restart : ResultDyCors, optional</span>
 <span class="sd">        Restart optimization from a previous optimization.</span>
-<span class="sd">    parallel : boolean, optional</span>
-<span class="sd">        Whether or not to use parallel function evaluations. The </span>
-<span class="sd">        default is to run in serial.</span>
-<span class="sd">    par_options : dict, optional</span>
-<span class="sd">        A dictionary of options to set the task manager:</span>
-
-<span class="sd">            SLURM : boolean</span>
-<span class="sd">                Whether or not the computations are carried out by </span>
-<span class="sd">                SLURM. To use with supercomputers.</span>
-<span class="sd">            cores_per_feval : int</span>
-<span class="sd">                Number of cores to use in each function evaluation.</span>
-<span class="sd">            par_fevals : int</span>
-<span class="sd">                Number of function evaluations to run in parallel.</span>
-<span class="sd">            memory : str</span>
-<span class="sd">                Requested memory for each function evaluation. To use </span>
-<span class="sd">                only if SLURM is set to True.</span>
-<span class="sd">            walltime : str</span>
-<span class="sd">                Requested wall time for each function evaluation. To </span>
-<span class="sd">                use only if SLURM is set to True.</span>
-<span class="sd">            queue : str</span>
-<span class="sd">                Name of the partition. To use only if SLURM is set to </span>
-<span class="sd">                True.</span>
-
 <span class="sd">    verbose : boolean, optional</span>
 <span class="sd">        Whether or not to print information of the solver iterations.</span>
 
@@ -309,10 +277,6 @@
 <span class="sd">        successfully and ``message`` which describes the cause of the</span>
 <span class="sd">        termination. See :class:`ResultDyCors &lt;.result.ResultDyCors&gt;`</span>
 <span class="sd">        for a description of other attributes.</span>
-<span class="sd">        </span>
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    The parallel function evaluations feature needs further testing.</span>
 <span class="sd">    </span>
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -394,16 +358,6 @@
             <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="n">options</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_OPTIONS</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">par_options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">par_options</span> <span class="o">=</span> <span class="n">PAR_DEFAULT_OPTIONS</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">PAR_DEFAULT_OPTIONS</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">par_options</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                    <span class="n">par_options</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">PAR_DEFAULT_OPTIONS</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">par_options</span> <span class="o">=</span> <span class="kc">None</span>
-
     <span class="c1"># ignore annoying warnings</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;warnings&quot;</span><span class="p">]:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">sla</span><span class="o">.</span><span class="n">LinAlgWarning</span><span class="p">)</span>
@@ -412,7 +366,7 @@
 
     <span class="c1"># run the optimization</span>
     <span class="n">DyCorsMin</span> <span class="o">=</span> <span class="n">DyCorsMinimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">jac</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span>
-                               <span class="n">restart</span><span class="p">,</span> <span class="n">parallel</span><span class="p">,</span> <span class="n">par_options</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+                               <span class="n">restart</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">DyCorsMin</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="DyCorsMinimize"><a class="viewcode-back" href="../../minimize.html#DyCors.core.DyCorsMinimize">[docs]</a><span class="k">class</span> <span class="nc">DyCorsMinimize</span><span class="p">:</span>
@@ -421,7 +375,7 @@
 <span class="sd">    For a full description of the different options see :func:`minimize`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">jac</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span>
-                 <span class="n">parallel</span><span class="p">,</span> <span class="n">par_options</span><span class="p">,</span> <span class="n">verbose</span><span class="p">):</span>
+                 <span class="n">verbose</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fun</span> <span class="o">=</span> <span class="n">fun</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
@@ -430,8 +384,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">options</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">restart</span> <span class="o">=</span> <span class="n">restart</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="o">=</span> <span class="n">parallel</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">par_options</span> <span class="o">=</span> <span class="n">par_options</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">Nmax</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;Nmax&quot;</span><span class="p">]</span>
@@ -443,18 +395,39 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bU</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sigm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;sigm&quot;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bU</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bL</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;sig0&quot;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bU</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bL</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">]</span><span class="o">==</span><span class="n">DEFAULT_OPTIONS</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">]):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bU</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bL</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,))</span>    
+            <span class="bp">self</span><span class="o">.</span><span class="n">sig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;sig0&quot;</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bU</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bL</span><span class="p">)</span>  
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sigm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;sigm&quot;</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sig</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;sig0&quot;</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,))</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;nu&quot;</span><span class="p">]</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;G&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">la</span> <span class="o">=</span> <span class="n">sla</span>
+            
+        <span class="c1"># compute starting points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fevals</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialize_restart</span><span class="p">()</span>
+            
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="n">sla</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tmp_grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">)</span>
+                <span class="n">tmp_ip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">tmp_grad</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">tmp_ip</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">],</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;l&quot;</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;nu&quot;</span><span class="p">]</span>
+            
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">==</span><span class="s2">&quot;RBF-Expo&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">RBF_Exponential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">==</span><span class="s2">&quot;RBF-Matern&quot;</span><span class="p">:</span>
@@ -467,34 +440,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">GRBF_Matern</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">==</span><span class="s2">&quot;GRBF-Cubic&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">GRBF_Cubic</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;G&quot;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">False</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">la</span> <span class="o">=</span> <span class="n">sla</span>
-
-        <span class="c1"># Set parallel variables</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">SLURM</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par_options</span><span class="p">[</span><span class="s2">&quot;SLURM&quot;</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par_options</span><span class="p">[</span><span class="s2">&quot;cores_per_feval&quot;</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">procs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par_options</span><span class="p">[</span><span class="s2">&quot;par_fevals&quot;</span><span class="p">]</span>
-            
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">SLURM</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par_options</span><span class="p">[</span><span class="s2">&quot;memory&quot;</span><span class="p">]</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">wt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par_options</span><span class="p">[</span><span class="s2">&quot;walltime&quot;</span><span class="p">]</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">queue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par_options</span><span class="p">[</span><span class="s2">&quot;queue&quot;</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">procs</span> <span class="o">=</span> <span class="mi">1</span>
-            
-        <span class="c1"># compute starting points</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fevals</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">initialize_restart</span><span class="p">()</span>
             
         <span class="bp">self</span><span class="o">.</span><span class="n">n0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Np</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nmax</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span>
         
@@ -503,6 +448,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;weights&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optim_loo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;optim_loo&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nits_loo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;nits_loo&quot;</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">xres</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fres</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gres</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restart_its</span> <span class="o">=</span> <span class="p">[]</span>
             
         <span class="bp">self</span><span class="o">.</span><span class="n">iB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span> <span class="c1"># find best solution</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xB</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fB</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">iB</span><span class="p">,:],</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">iB</span><span class="p">]])</span>
@@ -517,16 +468,6 @@
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Perform the optimization.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># First, set up Client</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">SLURM</span><span class="p">:</span>
-            <span class="n">cluster</span> <span class="o">=</span> <span class="n">SLURMCluster</span><span class="p">(</span><span class="n">n_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">procs</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span>
-                                   <span class="n">processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="p">,</span> 
-                                   <span class="n">walltime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wt</span><span class="p">,</span> <span class="n">queue</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="p">)</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">SLURM</span><span class="p">:</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">n_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">procs</span><span class="p">,</span> 
-                            <span class="n">threads_per_worker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        
         <span class="k">try</span><span class="p">:</span>
             <span class="n">nits</span> <span class="o">=</span> <span class="mi">1</span>
 
@@ -536,7 +477,7 @@
             <span class="k">while</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fevals</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nmax</span><span class="p">):</span>
                 <span class="c1"># update internal parameters</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim_loo</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ic</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">nits_loo</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">update_internal_params</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
                     
                 <span class="c1"># fit response surface model</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
@@ -548,32 +489,13 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">trial_points</span><span class="p">()</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">select_new_pts</span><span class="p">()</span>
 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span><span class="p">:</span>
-                    <span class="c1"># submit parallel fevals</span>
-                    <span class="n">futf</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">par_fun</span><span class="p">,</span> 
-                                      <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">fun</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">procs</span><span class="p">)],</span>
-                                      <span class="bp">self</span><span class="o">.</span><span class="n">xnew</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
-                        <span class="n">futdf</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">par_fun</span><span class="p">,</span> 
-                                           <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span>
-                                            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">procs</span><span class="p">)],</span>
-                                           <span class="bp">self</span><span class="o">.</span><span class="n">xnew</span><span class="p">)</span>
-                    
-                    <span class="c1"># gather data</span>
-                    <span class="n">fnew</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">futf</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">fnew</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">fnew</span><span class="p">])</span>
-
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
-                        <span class="n">dfnew</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">futdf</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">dfnew</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dfnew</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># run serial fevals</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">fnew</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xnew</span><span class="p">,</span> 
-                                                    <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">dfnew</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> 
-                                                         <span class="bp">self</span><span class="o">.</span><span class="n">xnew</span><span class="p">,</span> 
-                                                         <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+                <span class="c1"># run function and gradient evaluations</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fnew</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xnew</span><span class="p">,</span> 
+                                                <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dfnew</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> 
+                                                        <span class="bp">self</span><span class="o">.</span><span class="n">xnew</span><span class="p">,</span> 
+                                                        <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">ic</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -596,9 +518,13 @@
         <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
             <span class="n">task_str</span> <span class="o">=</span> <span class="s2">&quot;STOP: SINGULAR MATRIX&quot;</span>
             <span class="n">warnflag</span> <span class="o">=</span> <span class="mi">2</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span><span class="p">:</span>
-            <span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xres</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">xres</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">fres</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gres</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">]</span>
+            
         
         <span class="k">return</span> <span class="n">ResultDyCors</span><span class="p">(</span><span class="n">fun</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fB</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                             <span class="n">jac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dfB</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
@@ -608,29 +534,12 @@
                             <span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xB</span><span class="p">),</span> <span class="n">success</span><span class="o">=</span><span class="p">(</span><span class="n">warnflag</span><span class="o">==</span><span class="mi">0</span><span class="p">),</span>
                             <span class="n">m</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fBhist</span><span class="p">),</span>
                             <span class="n">dhist</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dfBhist</span><span class="p">)</span>
-                                   <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
-                            <span class="n">xres</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">fres</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">,</span>
-                            <span class="n">gres</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-
-<div class="viewcode-block" id="DyCorsMinimize.par_fun"><a class="viewcode-back" href="../../minimize.html#DyCors.core.DyCorsMinimize.par_fun">[docs]</a>    <span class="k">def</span> <span class="nf">par_fun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="n">xnew</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Wrapper around the function to be evaluated. Needed in case</span>
-<span class="sd">        of parallel function evaluations.</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        fun : callable</span>
-<span class="sd">            Function to be evaluated.</span>
-<span class="sd">        xnew : float</span>
-<span class="sd">            Point where the function is to be evaluated.</span>
-<span class="sd">        </span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        f : float</span>
-<span class="sd">            Value of the function `fun` at `xnew`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="n">xnew</span><span class="p">],</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
-        
-        <span class="k">return</span> <span class="n">f</span></div>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+                            <span class="n">xres</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xres</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">xres</span><span class="p">,</span>
+                            <span class="n">fres</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fres</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">fres</span><span class="p">,</span>
+                            <span class="n">gres</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gres</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">gres</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                            <span class="n">restart_its</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">restart_its</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DyCorsMinimize.initialize"><a class="viewcode-back" href="../../minimize.html#DyCors.core.DyCorsMinimize.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute function and gradient evaluations of initial</span>
@@ -639,17 +548,6 @@
         <span class="c1"># counters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ic</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Cs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Cf</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fevals</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span>
-
-        <span class="c1"># set up client</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">SLURM</span><span class="p">:</span>
-            <span class="n">cluster</span> <span class="o">=</span> <span class="n">SLURMCluster</span><span class="p">(</span><span class="n">n_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">procs</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span> 
-                                   <span class="n">processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="p">,</span> 
-                                   <span class="n">walltime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wt</span><span class="p">,</span> <span class="n">queue</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="p">)</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">SLURM</span><span class="p">:</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">n_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">procs</span><span class="p">,</span> 
-                            <span class="n">threads_per_worker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span>
-                            <span class="n">processes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># enforce bounds</span>
@@ -660,37 +558,23 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="c1"># evaluate initial points</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span><span class="p">:</span>
-            <span class="n">futf</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">par_fun</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">fun</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)],</span>
-                              <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
-                <span class="n">futdf</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">par_fun</span><span class="p">,</span> 
-                                   <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)],</span>
-                                   <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
-
-            <span class="c1"># gather data</span>
-            <span class="n">f</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">futf</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span> <span class="p">)</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
-                <span class="n">df</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">futdf</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> 
-                                              <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-        
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span><span class="p">:</span>
-            <span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fun</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> 
+                                            <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span></div>
             
 <div class="viewcode-block" id="DyCorsMinimize.initialize_restart"><a class="viewcode-back" href="../../minimize.html#DyCors.core.DyCorsMinimize.initialize_restart">[docs]</a>    <span class="k">def</span> <span class="nf">initialize_restart</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize optimization from a previous optimization.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart</span><span class="p">[</span><span class="s2">&quot;xres&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart</span><span class="p">[</span><span class="s2">&quot;fres&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart</span><span class="p">[</span><span class="s2">&quot;restart_its&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">restart_it</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">restart_it</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart</span><span class="p">[</span><span class="s2">&quot;restart_its&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart</span><span class="p">[</span><span class="s2">&quot;xres&quot;</span><span class="p">][</span><span class="n">restart_it</span><span class="p">:,:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart</span><span class="p">[</span><span class="s2">&quot;fres&quot;</span><span class="p">][</span><span class="n">restart_it</span><span class="p">:]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart</span><span class="p">[</span><span class="s2">&quot;gres&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart</span><span class="p">[</span><span class="s2">&quot;gres&quot;</span><span class="p">][</span><span class="n">restart_it</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">:]</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">restart</span><span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span>
@@ -754,7 +638,7 @@
         <span class="n">iB</span><span class="p">,</span> <span class="n">iP</span><span class="p">,</span> <span class="n">iX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">V</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">xnew</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xnew</span><span class="p">)</span><span class="o">&lt;</span><span class="bp">self</span><span class="o">.</span><span class="n">procs</span><span class="p">:</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xnew</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">:</span>
             <span class="n">xnew</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yk</span><span class="p">[</span><span class="n">iB</span><span class="p">[</span><span class="n">iP</span><span class="o">+</span><span class="n">iX</span><span class="p">],:]</span>
             <span class="k">while</span> <span class="p">((</span><span class="n">xnew</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span> 
                    <span class="ow">or</span> <span class="p">(</span><span class="n">xnew</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">xnew</span><span class="p">)):</span>
@@ -771,12 +655,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># update counters</span>
         <span class="n">Cs</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">procs</span><span class="p">):</span>
-            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fnew</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">&lt;</span><span class="bp">self</span><span class="o">.</span><span class="n">fB</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">xB</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fB</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xnew</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">fnew</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">dfB</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dfnew</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">]</span>
-                <span class="n">Cs</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fnew</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&lt;</span><span class="bp">self</span><span class="o">.</span><span class="n">fB</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xB</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fB</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xnew</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">fnew</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dfB</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dfnew</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">Cs</span> <span class="o">+=</span> <span class="mi">1</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">fBhist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fB</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dfBhist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dfB</span><span class="p">)</span>
@@ -799,139 +683,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fnew</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dfnew</span><span class="p">))</span></div>
-
-<div class="viewcode-block" id="DyCorsMinimize.update_internal_params"><a class="viewcode-back" href="../../minimize.html#DyCors.core.DyCorsMinimize.update_internal_params">[docs]</a>    <span class="k">def</span> <span class="nf">update_internal_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Optimize internal parameters based on the Leave-One-Out</span>
-<span class="sd">        error using a differential evolution algorithm [1]_, [2]_. A</span>
-<span class="sd">        constraint is applied to the condition number of the kernel</span>
-<span class="sd">        matrix to ensure the smoothness of the function.</span>
-<span class="sd">        </span>
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        We are not using the gradient information at the moment to</span>
-<span class="sd">        compute the LOO-Error.</span>
-<span class="sd">        </span>
-<span class="sd">        References</span>
-<span class="sd">        ----------</span>
-<span class="sd">        .. [1] Rippa, S. 1999. An algorithm for selecting a good value</span>
-<span class="sd">            for the parameter c in radial basis function interpolation.</span>
-<span class="sd">            Advances in Computational Mathematics 11 (2). 193-210.</span>
-<span class="sd">        .. [2] Bompard, M, J Peter and J A Desideri. 2010. Surrogate</span>
-<span class="sd">            models based on function and derivative values for aerodynamic</span>
-<span class="sd">            global optimization. V European Conference on Computational</span>
-<span class="sd">            Fluid Dynamics ECCOMAS CFD 2010, ECCOMAS. Lisbon, Portugal.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">constr_f</span><span class="p">(</span><span class="n">ip</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Expo&quot;</span><span class="p">):</span>
-                <span class="n">l</span> <span class="o">=</span> <span class="n">ip</span>
-                
-                <span class="n">kernel</span> <span class="o">=</span> <span class="n">RBF_Exponential</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
-                <span class="n">Phi</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
-                
-                <span class="k">return</span> <span class="n">nla</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">Phi</span><span class="p">)</span>
-                
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Matern&quot;</span><span class="p">):</span>
-                <span class="n">l</span>  <span class="o">=</span> <span class="n">ip</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">nu</span> <span class="o">=</span> <span class="n">ip</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                
-                <span class="n">kernel</span> <span class="o">=</span> <span class="n">RBF_Matern</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
-                <span class="n">Phi</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
-                
-                <span class="k">return</span> <span class="n">nla</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">Phi</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Cubic&quot;</span><span class="p">):</span>
-                <span class="n">l</span>  <span class="o">=</span> <span class="n">ip</span>
-                
-                <span class="n">kernel</span> <span class="o">=</span> <span class="n">RBF_Cubic</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
-                <span class="n">Phi</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
-                
-                <span class="k">return</span> <span class="n">nla</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">Phi</span><span class="p">)</span>
-            
-        <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">ip</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Expo&quot;</span><span class="p">):</span>
-                <span class="n">l</span> <span class="o">=</span> <span class="n">ip</span>
-                <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                
-                <span class="n">kernel</span> <span class="o">=</span> <span class="n">RBF_Exponential</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
-                <span class="n">Phi</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
-                
-                <span class="n">H_inv</span> <span class="o">=</span> <span class="n">sla</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">Phi</span><span class="p">)</span>
-                <span class="n">H_inv2</span> <span class="o">=</span> <span class="n">H_inv</span><span class="nd">@H_inv</span>
-
-                <span class="k">return</span> <span class="n">nla</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">T</span><span class="nd">@H_inv2@self</span><span class="o">.</span><span class="n">f</span><span class="o">/</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">H_inv2</span><span class="p">)),</span>
-                                <span class="nb">ord</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Matern&quot;</span><span class="p">):</span>
-                <span class="n">l</span>  <span class="o">=</span> <span class="n">ip</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">nu</span> <span class="o">=</span> <span class="n">ip</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                
-                <span class="n">kernel</span> <span class="o">=</span> <span class="n">RBF_Matern</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">nu</span><span class="p">)</span>
-                <span class="n">Phi</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
-                
-                <span class="n">H_inv</span> <span class="o">=</span> <span class="n">sla</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">Phi</span><span class="p">)</span>
-                <span class="n">H_inv2</span> <span class="o">=</span> <span class="n">H_inv</span><span class="nd">@H_inv</span>
-
-                <span class="k">return</span> <span class="n">nla</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">T</span><span class="nd">@H_inv2@self</span><span class="o">.</span><span class="n">f</span><span class="o">/</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">H_inv2</span><span class="p">)),</span>
-                                <span class="nb">ord</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Cubic&quot;</span><span class="p">):</span>
-                <span class="n">l</span>  <span class="o">=</span> <span class="n">ip</span>
-                <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                
-                <span class="n">kernel</span> <span class="o">=</span> <span class="n">RBF_Cubic</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
-                <span class="n">Phi</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
-                
-                <span class="n">H_inv</span> <span class="o">=</span> <span class="n">sla</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">Phi</span><span class="p">)</span>
-                <span class="n">H_inv2</span> <span class="o">=</span> <span class="n">H_inv</span><span class="nd">@H_inv</span>
-
-                <span class="k">return</span> <span class="n">nla</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">T</span><span class="nd">@H_inv2@self</span><span class="o">.</span><span class="n">f</span><span class="o">/</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">H_inv2</span><span class="p">)),</span>
-                                <span class="nb">ord</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-        <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">NonlinearConstraint</span>
-        <span class="n">nlc</span> <span class="o">=</span> <span class="n">NonlinearConstraint</span><span class="p">(</span><span class="n">constr_f</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="o">/</span><span class="n">EPS</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Updating internal params...&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Expo&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Cubic&quot;</span><span class="p">):</span>
-            <span class="n">error0</span> <span class="o">=</span> <span class="n">error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">)</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">sol</span> <span class="o">=</span> <span class="n">differential_evolution</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">error</span><span class="p">,</span>
-                                             <span class="n">bounds</span><span class="o">=</span><span class="p">(((</span><span class="mf">1e-5</span><span class="p">,</span><span class="mf">1e1</span><span class="p">),)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">),</span>
-                                             <span class="n">constraints</span><span class="o">=</span><span class="p">(</span><span class="n">nlc</span><span class="p">),</span>
-                                             <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;rand2bin&quot;</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">sol</span><span class="p">[</span><span class="s2">&quot;fun&quot;</span><span class="p">]</span><span class="o">&lt;</span><span class="n">error0</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Updated&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="n">sol</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not updated&quot;</span><span class="p">)</span>
-            <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not updated&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Matern&quot;</span><span class="p">):</span>
-            <span class="n">error0</span> <span class="o">=</span> <span class="n">error</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">,[</span><span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">])))</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">sol</span> <span class="o">=</span> <span class="n">differential_evolution</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">error</span><span class="p">,</span> 
-                                             <span class="n">bounds</span><span class="o">=</span><span class="p">(((</span><span class="mf">1e-5</span><span class="p">,</span><span class="mf">1e1</span><span class="p">),)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span> 
-                                                     <span class="o">+</span> <span class="p">((</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">5e1</span><span class="p">),)),</span>
-                                             <span class="n">constraints</span><span class="o">=</span><span class="p">(</span><span class="n">nlc</span><span class="p">),</span> 
-                                             <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;rand2bin&quot;</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">sol</span><span class="p">[</span><span class="s2">&quot;fun&quot;</span><span class="p">]</span><span class="o">&lt;</span><span class="n">error0</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Updated&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="n">sol</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="n">sol</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not updated&quot;</span><span class="p">)</span>
-            <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not updated&quot;</span><span class="p">)</span></div>
                 
 <div class="viewcode-block" id="DyCorsMinimize.restart_dycors"><a class="viewcode-back" href="../../minimize.html#DyCors.core.DyCorsMinimize.restart_dycors">[docs]</a>    <span class="k">def</span> <span class="nf">restart_dycors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Restart DyCors keeping only the best point.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restart_its</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fevals</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xres</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">xres</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">fres</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gres</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">]</span>
+        
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span> \
             <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span> \
                 <span class="o">*</span> <span class="n">ERLatinHyperCube</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">)</span>

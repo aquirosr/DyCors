@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Return object &mdash; DyCors  documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,11 +32,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -86,7 +88,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="minimize.html">DyCors Algorithm</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="tools.html">Tools</a><ul class="current">
@@ -164,11 +166,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-DyCors.result">
+  <section id="module-DyCors.result">
 <span id="return-object"></span><h1>Return object<a class="headerlink" href="#module-DyCors.result" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
-<dt id="DyCors.result.ResultDyCors">
-<em class="property">class </em><code class="sig-prename descclassname">DyCors.result.</code><code class="sig-name descname">ResultDyCors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span></em>, <em class="sig-param"><span class="n">jac</span></em>, <em class="sig-param"><span class="n">nfev</span></em>, <em class="sig-param"><span class="n">njev</span></em>, <em class="sig-param"><span class="n">nit</span></em>, <em class="sig-param"><span class="n">status</span></em>, <em class="sig-param"><span class="n">message</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">success</span></em>, <em class="sig-param"><span class="n">m</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dhist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xres</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fres</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gres</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/result.html#ResultDyCors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.result.ResultDyCors" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.result.ResultDyCors">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">DyCors.result.</span></span><span class="sig-name descname"><span class="pre">ResultDyCors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nfev</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">njev</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">success</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dhist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gres</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restart_its</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/result.html#ResultDyCors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.result.ResultDyCors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents the optimization result.</p>
 <p>Inherits from <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.OptimizeResult.html">scipy.optimize.OptimizeResult</a>.</p>
 <dl class="field-list simple">
@@ -205,12 +207,15 @@ that have been evaluated.</p>
 <dt><strong>gres</strong><span class="classifier">ndarray, optional</span></dt><dd><p>Array with the values of the gradient of the objective function
 at all points that have been evaluated.</p>
 </dd>
+<dt><strong>restart_its</strong><span class="classifier">list, optional</span></dt><dd><p>List with iterations at which the optimization algorithm has
+been restarted</p>
+</dd>
 </dl>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="DyCors.result.ResultDyCors.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">()</span></em>, <em class="sig-param"><span class="n">ylim_f</span><span class="o">=</span><span class="default_value">()</span></em>, <em class="sig-param"><span class="n">ylim_df</span><span class="o">=</span><span class="default_value">()</span></em>, <em class="sig-param"><span class="n">fontsize</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/result.html#ResultDyCors.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#DyCors.result.ResultDyCors.plot" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="DyCors.result.ResultDyCors.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim_f</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim_df</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DyCors/result.html#ResultDyCors.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DyCors.result.ResultDyCors.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot evolution of minimum value and norm of the gradient
 if used.</p>
 <dl class="field-list simple">
@@ -231,7 +236,7 @@ if used.</p>
 
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>
