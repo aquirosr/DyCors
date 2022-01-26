@@ -3,7 +3,6 @@ import numpy as np
 import numpy.linalg as nla
 import scipy.linalg as sla
 from scipy.optimize import differential_evolution, NonlinearConstraint
-import multiprocessing
 import warnings
 
 from .kernels import RBF_Exponential, GRBF_Exponential
@@ -11,9 +10,6 @@ from .kernels import RBF_Matern, GRBF_Matern
 from .kernels import RBF_Cubic, GRBF_Cubic
 from .result import ResultDyCors
 from .sampling import ERLatinHyperCube
-
-from dask_jobqueue import SLURMCluster
-from dask.distributed import Client
 
 EPS = np.finfo(np.float64).eps
 
@@ -24,14 +20,8 @@ DEFAULT_OPTIONS = {"Nmax":250, "sig0":0.2, "sigm":0.2/2**6, "Ts":3, "Tf":5,
 METHODS = ["RBF-Expo", "RBF-Matern", "RBF-Cubic",
            "GRBF-Expo", "GRBF-Matern", "GRBF-Cubic"]
 
-NCORES = multiprocessing.cpu_count()
-PAR_DEFAULT_OPTIONS = {"SLURM":False, "cores_per_feval":1,
-                       "par_fevals":NCORES, "memory":"1GB",
-                       "walltime":"00:10:00", "queue":"regular"}
-
 def minimize(fun, x0=None, args=(), method="RBF-Cubic", jac=None, bounds=None, 
-             options=None, restart=None, parallel=False, par_options=None,
-             verbose=True):
+             options=None, restart=None, verbose=True):
     """Minimization of scalar function of one or more variables using
     DyCors algorithm [1]_.
     
@@ -118,29 +108,6 @@ def minimize(fun, x0=None, args=(), method="RBF-Cubic", jac=None, bounds=None,
         
     restart : ResultDyCors, optional
         Restart optimization from a previous optimization.
-    parallel : boolean, optional
-        Whether or not to use parallel function evaluations. The 
-        default is to run in serial.
-    par_options : dict, optional
-        A dictionary of options to set the task manager:
-
-            SLURM : boolean
-                Whether or not the computations are carried out by 
-                SLURM. To use with supercomputers.
-            cores_per_feval : int
-                Number of cores to use in each function evaluation.
-            par_fevals : int
-                Number of function evaluations to run in parallel.
-            memory : str
-                Requested memory for each function evaluation. To use 
-                only if SLURM is set to True.
-            walltime : str
-                Requested wall time for each function evaluation. To 
-                use only if SLURM is set to True.
-            queue : str
-                Name of the partition. To use only if SLURM is set to 
-                True.
-
     verbose : boolean, optional
         Whether or not to print information of the solver iterations.
 
@@ -153,10 +120,6 @@ def minimize(fun, x0=None, args=(), method="RBF-Cubic", jac=None, bounds=None,
         successfully and ``message`` which describes the cause of the
         termination. See :class:`ResultDyCors <.result.ResultDyCors>`
         for a description of other attributes.
-        
-    Notes
-    -----
-    The parallel function evaluations feature needs further testing.
     
     References
     ----------
@@ -238,16 +201,6 @@ def minimize(fun, x0=None, args=(), method="RBF-Cubic", jac=None, bounds=None,
             if key not in options.keys():
                 options[key] = DEFAULT_OPTIONS[key]
 
-    if parallel:
-        if par_options is None:
-            par_options = PAR_DEFAULT_OPTIONS
-        else:
-            for key in PAR_DEFAULT_OPTIONS:
-                if key not in par_options.keys():
-                    par_options[key] = PAR_DEFAULT_OPTIONS[key]
-    else:
-        par_options = None
-
     # ignore annoying warnings
     if not options["warnings"]:
         warnings.filterwarnings("ignore", category=sla.LinAlgWarning)
@@ -256,7 +209,7 @@ def minimize(fun, x0=None, args=(), method="RBF-Cubic", jac=None, bounds=None,
 
     # run the optimization
     DyCorsMin = DyCorsMinimize(fun, x0, args, method, jac, bounds, options,
-                               restart, parallel, par_options, verbose)
+                               restart, verbose)
     return DyCorsMin()
 
 class DyCorsMinimize:
@@ -265,7 +218,7 @@ class DyCorsMinimize:
     For a full description of the different options see :func:`minimize`
     """
     def __init__(self, fun, x0, args, method, jac, bounds, options, restart,
-                 parallel, par_options, verbose):
+                 verbose):
         self.fun = fun
         self.x0 = x0
         self.args = args
@@ -274,8 +227,6 @@ class DyCorsMinimize:
         self.bounds = bounds
         self.options = options
         self.restart = restart
-        self.parallel = parallel
-        self.par_options = par_options
         self.verbose = verbose
         
         self.Nmax  = self.options["Nmax"]
@@ -298,20 +249,6 @@ class DyCorsMinimize:
             self.grad = False
 
         self.la = sla
-
-        # Set parallel variables
-        if self.parallel:
-            self.SLURM = self.par_options["SLURM"]
-            self.cores = self.par_options["cores_per_feval"]
-            self.procs = self.par_options["par_fevals"]
-            
-            if self.SLURM:
-                self.memory = self.par_options["memory"]
-                self.wt = self.par_options["walltime"]
-                self.queue = self.par_options["queue"]
-        else:
-            self.cores = 1
-            self.procs = 1
             
         # compute starting points
         self.fevals = 0
@@ -374,16 +311,6 @@ class DyCorsMinimize:
     def __call__(self):
         """Perform the optimization.
         """
-        # First, set up Client
-        if self.parallel and self.SLURM:
-            cluster = SLURMCluster(n_workers=self.procs, cores=self.cores,
-                                   processes=1, memory=self.memory, 
-                                   walltime=self.wt, queue=self.queue)
-            client = Client(cluster)
-        elif self.parallel and not self.SLURM:
-            client = Client(n_workers=self.procs, 
-                            threads_per_worker=self.cores, processes=False)
-        
         try:
             nits = 1
 
@@ -405,32 +332,13 @@ class DyCorsMinimize:
                 self.trial_points()
                 self.select_new_pts()
 
-                if self.parallel:
-                    # submit parallel fevals
-                    futf = client.map(self.par_fun, 
-                                      [self.fun for k in range(self.procs)],
-                                      self.xnew)
-                    if self.grad:
-                        futdf = client.map(self.par_fun, 
-                                           [self.jac
-                                            for k in range(self.procs)],
-                                           self.xnew)
-                    
-                    # gather data
-                    fnew = client.gather(futf)
-                    self.fnew = np.asarray([k[0] for k in fnew])
-
-                    if self.grad:
-                        dfnew = client.gather(futdf)
-                        self.dfnew = np.asarray(dfnew).flatten()
-                else:
-                    # run serial fevals
-                    self.fnew = np.apply_along_axis(self.fun, 1, self.xnew, 
-                                                    *self.args)
-                    if self.grad:
-                        self.dfnew = np.apply_along_axis(self.jac, 1, 
-                                                         self.xnew, 
-                                                         *self.args).flatten()
+                # run function and gradient evaluations
+                self.fnew = np.apply_along_axis(self.fun, 1, self.xnew, 
+                                                *self.args)
+                if self.grad:
+                    self.dfnew = np.apply_along_axis(self.jac, 1, 
+                                                        self.xnew, 
+                                                        *self.args).flatten()
                 self.update()
 
                 self.ic += 1
@@ -453,9 +361,6 @@ class DyCorsMinimize:
         except np.linalg.LinAlgError:
             task_str = "STOP: SINGULAR MATRIX"
             warnflag = 2
-
-        if self.parallel:
-            client.close()
             
         if self.xres is not None:
             self.xres = np.r_[self.xres, self.x]
@@ -479,26 +384,6 @@ class DyCorsMinimize:
                                 if self.grad else None,
                             restart_its=self.restart_its)
 
-    def par_fun(self, fun, xnew):
-        """Wrapper around the function to be evaluated. Needed in case
-        of parallel function evaluations.
-        
-        Parameters
-        ----------
-        fun : callable
-            Function to be evaluated.
-        xnew : float
-            Point where the function is to be evaluated.
-        
-        Returns
-        -------
-        f : float
-            Value of the function `fun` at `xnew`.
-        """
-        f = np.apply_along_axis(fun, 1, [xnew], *self.args)
-        
-        return f
-
     def initialize(self):
         """Compute function and gradient evaluations of initial
         sampling points.
@@ -506,17 +391,6 @@ class DyCorsMinimize:
         # counters
         self.ic, self.Cs, self.Cf = 0, 0, 0
         self.fevals += self.m
-
-        # set up client
-        if self.parallel and self.SLURM:
-            cluster = SLURMCluster(n_workers=self.procs, cores=self.cores, 
-                                   processes=1, memory=self.memory, 
-                                   walltime=self.wt, queue=self.queue)
-            client = Client(cluster)
-        elif self.parallel and not self.SLURM:
-            client = Client(n_workers=self.procs, 
-                            threads_per_worker=self.cores,
-                            processes=False)
 
         if self.bounds is not None:
             # enforce bounds
@@ -527,29 +401,10 @@ class DyCorsMinimize:
             self.x = self.x0.copy()
 
         # evaluate initial points
-        if self.parallel:
-            futf = client.map(self.par_fun, [self.fun for k in range(self.m)],
-                              self.x)
-            if self.grad:
-                futdf = client.map(self.par_fun, 
-                                   [self.jac for k in range(self.m)],
-                                   self.x)
-
-            # gather data
-            f = client.gather(futf)
-            self.f = np.asarray([k[0] for k in f] )
-
-            if self.grad:
-                df = client.gather(futdf)
-                self.df = np.asarray(df).flatten()
-        else:
-            self.f = np.apply_along_axis(self.fun, 1, self.x, *self.args)
-            if self.grad:
-                self.df = np.apply_along_axis(self.jac, 1, self.x, 
-                                              *self.args).flatten()
-        
-        if self.parallel:
-            client.close()
+        self.f = np.apply_along_axis(self.fun, 1, self.x, *self.args)
+        if self.grad:
+            self.df = np.apply_along_axis(self.jac, 1, self.x, 
+                                            *self.args).flatten()
             
     def initialize_restart(self):
         """Initialize optimization from a previous optimization.
@@ -626,7 +481,7 @@ class DyCorsMinimize:
         iB, iP, iX = np.argsort(V), 0, 0
 
         self.xnew = []
-        while len(self.xnew)<self.procs:
+        while len(self.xnew)<1:
             xnew  = self.yk[iB[iP+iX],:]
             while ((xnew.tolist() in self.x.tolist()) 
                    or (xnew.tolist() in self.xnew)):
@@ -643,12 +498,12 @@ class DyCorsMinimize:
         """
         # update counters
         Cs = 0
-        for i in range(self.procs):
-            if (self.fnew[i]<self.fB):
-                self.xB, self.fB = self.xnew[i], [self.fnew[i]]
-                if self.grad:
-                    self.dfB = self.dfnew[i*self.d:(i+1)*self.d]
-                Cs += 1
+        if (self.fnew[0]<self.fB):
+            self.xB, self.fB = self.xnew[0], [self.fnew[0]]
+            if self.grad:
+                self.dfB = self.dfnew.copy()
+            Cs += 1
+        
         self.fBhist.append(self.fB[0])
         if self.grad:
             self.dfBhist.append(self.dfB)

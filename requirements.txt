@@ -1,4 +1,2 @@
 numpy
 scipy
-dask
-dask_jobqueue
