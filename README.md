@@ -1,4 +1,7 @@
 # DyCors/G-DyCors
+
+[![DOI](https://zenodo.org/badge/337030866.svg)](https://zenodo.org/badge/latestdoi/337030866)
+
 DYCORS (DYnamic COordinate search using Response Surfaces)
 
 G-DYCORS (Gradient-enhanced DYnamic COordinate search using Response Surfaces)
